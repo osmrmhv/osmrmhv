@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="osm" default="dist" basedir=".">
+	<property name="src" location="src/" />
+	<property name="build" location="build/" />
+	<property name="dist" location="dist/" />
+	<property name="etc" location="etc/" />
+	<property name="jks.keystore" location="${etc}/osm.jks" />
+	<property name="jks.alias" value="osm" />
+	<property name="jarfile" location="${dist}/lib/osm.jar" />
+
+	<target name="init">
+		<tstamp />
+		<available file="${jks.keystore}" property="jks.exists" />
+	</target>
+
+	<target name="compile" depends="init" description="Compile the source.">
+		<mkdir dir="${build}" />
+		<javac srcdir="${src}" destdir="${build}" debug="true" classpath="lib/cmdargs/cmdargs.jar:lib/sqlite-jdbc-3.6.14.1.jar" />
+	</target>
+
+	<target name="dist" depends="compile,jks-create,jks-password" description="Compile the source and create a JAR file.">
+		<mkdir dir="${dist}/lib/" />
+		<jar jarfile="${jarfile}" basedir="${build}">
+			<manifest>
+				<!--<attribute name="Main-Class" value="de.cdauth.osm.routemanager.Main"/>-->
+			</manifest>
+		</jar>
+		<echo message="Signing code with this certificate: ${jks.keystore}" />
+		<exec dir="${basedir}" executable="keytool" failonerror="true">
+			<arg value="-list"/>
+			<arg value="-v"/>
+			<arg value="-alias"/>
+			<arg value="${jks.alias}"/>
+			<arg value="-keystore"/>
+			<arg value="${jks.keystore}"/>
+			<arg value="-storepass"/>
+			<arg value="${jks.password}"/>
+		</exec>
+		<signjar jar="${jarfile}" alias="${jks.alias}" keystore="${jks.keystore}" storepass="${jks.password}" verbose="false"/>
+	</target>
+
+	<target name="clean" description="Delete compiled files.">
+		<delete dir="${build}" />
+	</target>
+
+	<target name="jks-create" unless="jks.exists">
+		<echo>
+The library needs a digital certificate for code signing its JAR files.
+Since you don't appear to have one, we need to generate a new certificate.
+Once generated, it will be used to sign the osm.jar file. To create
+the certificate, we need to ask you for your name and a few other things.
+
+The certificate file will be generated at: ${jks.keystore}.
+
+If something in this process goes wrong, you can simply delete
+${jks.keystore} and execute this target again... no harm done.
+To automate the JAR signing processs, you can add the property
+'jks.password' to your build.properties file.
+		</echo>
+		<input message="Your name (example: Candid Dauth):" addproperty="jks.cn" />
+		<input message="Your organization (example: cdauth.de):" addproperty="jks.o" />
+		<input message="Your country (example: US, DE, AU):" addproperty="jks.c" />
+		<input message="Keystore password (>6 characters):" addproperty="jks.password" />
+		<exec dir="${basedir}" executable="keytool" failonerror="true">
+			<arg value="-genkey"/>
+			<arg value="-keysize"/>
+			<arg value="1024"/>
+			<arg value="-alias"/>
+			<arg value="${jks.alias}"/>
+			<arg value="-keystore"/>
+			<arg value="${jks.keystore}"/>
+			<arg value="-storepass"/>
+			<arg value="${jks.password}"/>
+			<arg value="-dname"/>
+			<arg value="cn=${jks.cn}, ou=S-U-A server, o=${jks.o}, c=${jks.c}"/>
+		</exec>
+	</target>
+
+	<target name="jks-password" unless="jks.password">
+		<input message="Keystore password:" addproperty="jks.password" />
+	</target>
+</project>
