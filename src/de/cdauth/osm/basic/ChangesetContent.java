@@ -337,7 +337,7 @@ public class ChangesetContent extends XMLObject
 				if(nodesAdded.containsKey(id))
 					thisNodeNew = nodesAdded.get(id);
 				if(nodesRemoved.containsKey(id))
-					thisNodeOld = nodesAdded.get(id);
+					thisNodeOld = nodesRemoved.get(id);
 				
 				if(thisNodeOld == null || thisNodeNew == null)
 				{
