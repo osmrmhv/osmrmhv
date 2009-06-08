@@ -309,7 +309,7 @@ public class ChangesetContent extends XMLObject
 					}
 				}
 				if(!changed)
-					break;
+					continue;
 			}
 			
 			for(String id : newVersion)
