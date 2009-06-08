@@ -126,16 +126,16 @@ public class ChangesetContent extends XMLObject
 	}
 	
 	/**
-	 * Checks which nodes and ways were changed on a per-node basis. If a node is moved, this
-	 * influences all the ways that it belongs to, but they don’t necessarily appear in the
-	 * changeset. This method gets all ways that were changed by adding, removing of moving  
-	 * their nodes. Thus, created and removed ways are also returned. Nodes that are part of the
-	 * changeset but that weren’t moved are ignored. Moved nodes are returned as well, represented
-	 * by an array of one node (whereas ways are repesented by an array of multiple nodes). An
-	 * empty array indicates that the way or node did not exist before or afterwards.
-	 * @return An array of two ArrayLists of ArrayLists of Nodes. For each index, the value in the
-	 * first ArrayList represents the nodes of the way before the changeset was commited, the
-	 * value in the second one represents the nodes after the commit. 
+	 * Resolves all ways and nodes that were changed in this changeset to segments
+	 * (connections of two nodes). Then returns three lists of segments:
+	 * 1. Those that have been removed (which is the case even if one of their nodes has been moved)
+	 * 2. Those that have been created
+	 * 3. Those that haven’t been changed but have somehow been affected by the changeset,
+	 *   be it by changing their tags or by changing another part of the way they belong to.
+	 * Nodes that have been changed will be represented by a Segment consisting of two
+	 * equal Nodes.
+	 * @return An array of three Segment arrays. The first one is the removed segments, 
+	 * the second one the created and the third one the unchanged ones.
 	 * @throws IOException
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
@@ -143,7 +143,7 @@ public class ChangesetContent extends XMLObject
 	 * @throws ParseException
 	 */
 	
-	public Node[][][] getNodeChanges() throws IOException, SAXException, ParserConfigurationException, APIError, ParseException
+	public Segment[][] getNodeChanges() throws IOException, SAXException, ParserConfigurationException, APIError, ParseException
 	{
 		Hashtable<Object,Object> old = getPreviousVersions();
 		
@@ -151,24 +151,16 @@ public class ChangesetContent extends XMLObject
 		Hashtable<String,Node> nodesAdded = new Hashtable<String,Node>(); // All created nodes and the new versions of all moved nodes
 		Hashtable<String,Node> nodesChanged = new Hashtable<String,Node>(); // Only the new versions of all moved nodes
 		
-		Hashtable<String,Node> nodePosition = new Hashtable<String,Node>(); // Nodes that are part of the changeset but whose position isn’t changed
-		
 		for(Object obj : getMemberObjects(ChangeType.delete))
 		{
 			if(obj.getDOM().getTagName().equals("node"))
-			{
 				nodesRemoved.put(obj.getDOM().getAttribute("id"), (Node) obj);
-				nodePosition.put(obj.getDOM().getAttribute("id"), (Node) obj);
-			}
 		}
 		
 		for(Object obj : getMemberObjects(ChangeType.create))
 		{
 			if(obj.getDOM().getTagName().equals("node"))
-			{
 				nodesAdded.put(obj.getDOM().getAttribute("id"), (Node) obj);
-				nodePosition.put(obj.getDOM().getAttribute("id"), (Node) obj);
-			}
 		}
 		
 		for(Object obj : getMemberObjects(ChangeType.modify))
@@ -176,17 +168,15 @@ public class ChangesetContent extends XMLObject
 			if(!obj.getDOM().getTagName().equals("node"))
 				continue;
 			Node newVersion = (Node)obj;
-			nodePosition.put(newVersion.getDOM().getAttribute("id"), newVersion);
 			
 			Node oldVersion = (Node)old.get(obj);
 			if(oldVersion == null)
 				continue;
-			if(oldVersion.getLonLat().equals(newVersion.getLonLat()))
-				continue;
 			
 			nodesRemoved.put(oldVersion.getDOM().getAttribute("id"), oldVersion);
 			nodesAdded.put(newVersion.getDOM().getAttribute("id"), newVersion);
-			nodesChanged.put(newVersion.getDOM().getAttribute("id"), newVersion);
+			if(!oldVersion.getLonLat().equals(newVersion.getLonLat()))
+				nodesChanged.put(newVersion.getDOM().getAttribute("id"), newVersion);
 		}
 		
 		Hashtable<Way,List<String>> containedWays = new Hashtable<Way,List<String>>();
@@ -211,14 +201,14 @@ public class ChangesetContent extends XMLObject
 		{
 			String nodeID = node.getDOM().getAttribute("id");
 			// First guess: Ways that have been changed in the changeset
-			for(Map.Entry<Way,List<String>> entry : containedWays.entrySet())
+			/*for(Map.Entry<Way,List<String>> entry : containedWays.entrySet())
 			{
 				if(entry.getValue().contains(nodeID))
 				{
 					String id = entry.getKey().getDOM().getAttribute("id");
 					waysChanged.put(id, previousWays.get(id));
 				}
-			}
+			}*/
 			
 			// Second guess: Current parent nodes of the node
 			for(Object obj : API.get("/node/"+node.getDOM().getAttribute("id")+"/ways"))
@@ -244,46 +234,54 @@ public class ChangesetContent extends XMLObject
 		}
 		
 		// Now make an array of node arrays to represent the old and the new form of the changed ways
-		ArrayList<ArrayList<String>> wayNodes1 = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> wayNodes2 = new ArrayList<ArrayList<String>>();
-		HashSet<String> fetchNodes = new HashSet<String>();
+		Hashtable<String,Node> nodesCache = new Hashtable<String,Node>();
+		HashSet<Segment> segmentsOld = new HashSet<Segment>();
+		HashSet<Segment> segmentsNew = new HashSet<Segment>();
 		
 		for(Object obj : getMemberObjects(ChangeType.create))
 		{
 			if(!obj.getDOM().getTagName().equals("way"))
 				continue;
-			
-			ArrayList<String> oldVersion = new ArrayList<String>();
-			ArrayList<String> newVersion = new ArrayList<String>();
-			newVersion.addAll(Arrays.asList(((Way)obj).getMembers()));
-			
-			for(String id : newVersion)
+			Node lastNode = null;
+			for(String id : ((Way)obj).getMembers())
 			{
-				if(!nodePosition.containsKey(id))
-					fetchNodes.add(id);
+				Node thisNode = null;
+				if(nodesAdded.containsKey(id))
+					thisNode = nodesAdded.get(id);
+				else
+				{
+					if(!nodesCache.containsKey(id))
+						nodesCache.put(id, Node.fetch(id, changesetDate));
+					thisNode = nodesCache.get(id);
+				}
+				
+				if(lastNode != null)
+					segmentsNew.add(new Segment(lastNode, thisNode));
+				lastNode = thisNode;
 			}
-			
-			wayNodes1.add(oldVersion);
-			wayNodes2.add(newVersion);
 		}
 		
 		for(Object obj : getMemberObjects(ChangeType.delete))
 		{
 			if(!obj.getDOM().getTagName().equals("way"))
 				continue;
-			
-			ArrayList<String> oldVersion = new ArrayList<String>();
-			ArrayList<String> newVersion = new ArrayList<String>();
-			oldVersion.addAll(Arrays.asList(((Way)obj).getMembers()));
-			
-			for(String id : oldVersion)
+			Node lastNode = null;
+			for(String id : ((Way)obj).getMembers())
 			{
-				if(!nodePosition.containsKey(id))
-					fetchNodes.add(id);
+				Node thisNode = null;
+				if(nodesRemoved.containsKey(id))
+					thisNode = nodesRemoved.get(id);
+				else
+				{
+					if(!nodesCache.containsKey(id))
+						nodesCache.put(id, Node.fetch(id, changesetDate));
+					thisNode = nodesCache.get(id);
+				}
+				
+				if(lastNode != null)
+					segmentsOld.add(new Segment(lastNode, thisNode));
+				lastNode = thisNode;
 			}
-			
-			wayNodes1.add(oldVersion);
-			wayNodes2.add(newVersion);
 		}
 		
 		for(Object obj : getMemberObjects(ChangeType.modify))
@@ -291,118 +289,90 @@ public class ChangesetContent extends XMLObject
 			if(!obj.getDOM().getTagName().equals("way"))
 				continue;
 			
-			ArrayList<String> oldVersion = new ArrayList<String>();
-			ArrayList<String> newVersion = new ArrayList<String>();
-			
-			oldVersion.addAll(Arrays.asList(((Way)old.get(obj)).getMembers()));
-			newVersion.addAll(Arrays.asList(((Way)obj).getMembers()));
-			
-			if(oldVersion.equals(newVersion))
+			Node lastNode = null;
+			for(String id : ((Way)old.get(obj)).getMembers())
 			{
-				boolean changed = false;
-				for(String id : newVersion)
+				Node thisNode = null;
+				if(nodesRemoved.containsKey(id))
+					thisNode = nodesRemoved.get(id);
+				else
 				{
-					if(nodesChanged.containsKey(id))
-					{
-						changed = true;
-						break;
-					}
+					if(!nodesCache.containsKey(id))
+						nodesCache.put(id, Node.fetch(id, changesetDate));
+					thisNode = nodesCache.get(id);
 				}
-				if(!changed)
-					continue;
+				
+				if(lastNode != null)
+					segmentsOld.add(new Segment(lastNode, thisNode));
+				lastNode = thisNode;
 			}
 			
-			for(String id : newVersion)
+			lastNode = null;
+			for(String id : ((Way)obj).getMembers())
 			{
-				if(!nodePosition.containsKey(id))
-					fetchNodes.add(id);
+				Node thisNode = null;
+				if(nodesAdded.containsKey(id))
+					thisNode = nodesAdded.get(id);
+				else
+				{
+					if(!nodesCache.containsKey(id))
+						nodesCache.put(id, Node.fetch(id, changesetDate));
+					thisNode = nodesCache.get(id);
+				}
+				
+				if(lastNode != null)
+					segmentsNew.add(new Segment(lastNode, thisNode));
+				lastNode = thisNode;
 			}
-			
-			wayNodes1.add(oldVersion);
-			wayNodes2.add(newVersion);
 		}
 		
 		for(Way way : waysChanged.values())
 		{
-			ArrayList<String> members = new ArrayList<String>();
-			members.addAll(Arrays.asList(way.getMembers()));
-			
-			for(String id : members)
+			Node lastNodeOld = null;
+			Node lastNodeNew = null;
+			for(String id : way.getMembers())
 			{
-				if(!nodePosition.containsKey(id))
-					fetchNodes.add(id);
-			}
-			
-			wayNodes1.add(members);
-			wayNodes2.add(members);
-		}
-		
-		// Download all needed nodes in the right version
-		for(String id : fetchNodes)
-		{
-			TreeMap<Long,Node> history = Node.getHistory(id);
-			for(Node historyEntry : history.descendingMap().values())
-			{
-				Date historyDate = dateFormat.parse(historyEntry.getDOM().getAttribute("timestamp"));
-				if(historyDate.compareTo(changesetDate) < 0)
-				{
-					nodePosition.put(id, historyEntry);
-					break;
-				}
-			}
-		}
-		
-		// Make arrays of nodes
-		ArrayList<ArrayList<Node>> wayPoints1 = new ArrayList<ArrayList<Node>>();
-		ArrayList<ArrayList<Node>> wayPoints2 = new ArrayList<ArrayList<Node>>();
-		for(int i=0; i<wayNodes1.size(); i++)
-		{
-			ArrayList<Node> oldVersion = new ArrayList<Node>();
-			ArrayList<Node> newVersion = new ArrayList<Node>();
-			
-			for(String id : wayNodes1.get(i))
-			{
-				if(nodesRemoved.containsKey(id))
-					oldVersion.add(nodesRemoved.get(id));
-				else
-					oldVersion.add(nodePosition.get(id));
-			}
-			
-			for(String id : wayNodes2.get(i))
-			{
+				Node thisNodeOld = null;
+				Node thisNodeNew = null;
 				if(nodesAdded.containsKey(id))
-					newVersion.add(nodesAdded.get(id));
-				else
-					newVersion.add(nodePosition.get(id));
+					thisNodeNew = nodesAdded.get(id);
+				if(nodesRemoved.containsKey(id))
+					thisNodeOld = nodesAdded.get(id);
+				
+				if(thisNodeOld == null || thisNodeNew == null)
+				{
+					if(!nodesCache.containsKey(id))
+						nodesCache.put(id, Node.fetch(id, changesetDate));
+					if(thisNodeOld == null)
+						thisNodeOld = nodesCache.get(id);
+					if(thisNodeNew == null)
+						thisNodeNew = nodesCache.get(id);
+				}
+				
+				if(lastNodeOld != null)
+					segmentsOld.add(new Segment(lastNodeOld, thisNodeOld));
+				if(lastNodeNew != null)
+					segmentsNew.add(new Segment(lastNodeNew, thisNodeNew));
+				
+				lastNodeOld = thisNodeOld;
+				lastNodeNew = thisNodeNew;
 			}
-			wayPoints1.add(oldVersion);
-			wayPoints2.add(newVersion);
 		}
 		
 		// Create one-node entries for node changes
-		ArrayList<String> changedNodes = new ArrayList<String>();
-		changedNodes.addAll(nodesAdded.keySet());
-		changedNodes.addAll(nodesRemoved.keySet());
-		for(String id : changedNodes)
-		{
-			ArrayList<Node> oldVersion = new ArrayList<Node>();
-			ArrayList<Node> newVersion = new ArrayList<Node>();
-			
-			if(nodesRemoved.containsKey(id))
-				oldVersion.add(nodesRemoved.get(id));
-			if(nodesAdded.containsKey(id))
-				newVersion.add(nodesAdded.get(id));
-			
-			wayPoints1.add(oldVersion);
-			wayPoints2.add(newVersion);
-		}
+		for(Node node : nodesRemoved.values())
+			segmentsOld.add(new Segment(node, node));
+		for(Node node : nodesAdded.values())
+			segmentsNew.add(new Segment(node, node));
 		
-		Node[][][] ret = new Node[2][wayPoints1.size()][];
-		for(int i=0; i<wayPoints1.size(); i++)
-		{
-			ret[0][i] = wayPoints1.get(i).toArray(new Node[0]);
-			ret[1][i] = wayPoints2.get(i).toArray(new Node[0]);
-		}
+		HashSet<Segment> segmentsUnchanged = new HashSet<Segment>();
+		segmentsUnchanged.addAll(segmentsOld);
+		segmentsUnchanged.retainAll(segmentsNew);
+		
+		segmentsOld.removeAll(segmentsUnchanged);
+		segmentsNew.removeAll(segmentsUnchanged);
+		
+		Segment[][] ret = { segmentsOld.toArray(new Segment[0]), segmentsNew.toArray(new Segment[0]), segmentsUnchanged.toArray(new Segment[0]) };
 		return ret;
 	}
 }

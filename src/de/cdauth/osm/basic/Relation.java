@@ -18,8 +18,10 @@
 package de.cdauth.osm.basic;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.TreeMap;
@@ -55,6 +57,11 @@ public class Relation extends de.cdauth.osm.basic.Object
 	public static Relation fetch(String a_id, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		return fetchVersion(a_id, sm_cache, "relation", a_version);
+	}
+	
+	public static Relation fetch(String a_id, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
+	{
+		return fetchVersion(a_id, sm_cache, "relation", a_date);
 	}
 	
 	protected static boolean isCached(String a_id)

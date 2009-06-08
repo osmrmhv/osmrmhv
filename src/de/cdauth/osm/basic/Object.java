@@ -19,8 +19,11 @@ package de.cdauth.osm.basic;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -75,6 +78,33 @@ abstract public class Object extends XMLObject
 		if(fetched.length < 1)
 			throw new APIError("Server sent no data.");
 		return (T) fetched[0];
+	}
+	
+	/**
+	 * Fetches the version of an object that was the current one at the given point of time.
+	 * @param <T>
+	 * @param a_id
+	 * @param a_cache
+	 * @param a_type
+	 * @param a_date
+	 * @return null if the element did not exist at the given point of time
+	 * @throws ParseException 
+	 * @throws APIError 
+	 * @throws ParserConfigurationException 
+	 * @throws SAXException 
+	 * @throws IOException 
+	 */
+	protected static <T extends Object> T fetchVersion(String a_id, Hashtable<String,T> a_cache, String a_type, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
+	{
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		TreeMap<Long,T> history = fetchHistory(a_id, a_cache, a_type);
+		for(T historyEntry : history.descendingMap().values())
+		{
+			Date historyDate = dateFormat.parse(historyEntry.getDOM().getAttribute("timestamp"));
+			if(historyDate.compareTo(a_date) < 0)
+				return historyEntry;
+		}
+		return null;
 	}
 
 	/**

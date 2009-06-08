@@ -18,6 +18,8 @@
 package de.cdauth.osm.basic;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.TreeMap;
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,6 +53,11 @@ public class Node extends de.cdauth.osm.basic.Object
 	public static Node fetch(String a_id, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		return fetchVersion(a_id, sm_cache, "node", a_version);
+	}
+	
+	public static Node fetch(String a_id, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
+	{
+		return fetchVersion(a_id, sm_cache, "node", a_date);
 	}
 	
 	protected static boolean isCached(String a_id)
