@@ -34,7 +34,12 @@ public class Segment
 
 	public boolean equals(java.lang.Object obj)
 	{
-		return (getNode1().equals(obj.getNode1()) && getNode2().equals(obj.getNode2())) || (getNode1().equals(obj.getNode2()) && getNode2().equals(obj.getNode1()));
+		if(obj instanceof Segment)
+		{
+			Segment other = (Segment) obj;
+			return (getNode1().equals(other.getNode1()) && getNode2().equals(other.getNode2())) || (getNode1().equals(other.getNode2()) && getNode2().equals(other.getNode1()));
+		}
+		return false;
 	}
 
 	public int hashCode()
