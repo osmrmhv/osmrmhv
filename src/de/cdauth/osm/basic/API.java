@@ -31,18 +31,44 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * Provides static methods to communicate with the OSM API. Handles the HTTP connection
+ * and parses XML responses.
+ */
 
 public class API
 {
-	private static final String API_SERVER = "www.openstreetmap.org";
+	private static final String API_SERVER = "api.openstreetmap.org";
 	private static final int API_PORT = 80;
 	private static final String API_PREFIX = "/api/0.6";
+	private static String sm_userAgent = "cdauth’s OSM library";
 	
+	/**
+	 * Sets the User-Agent HTTP request header for all future API requests.
+	 * @param a_userAgent
+	 */
+	public static void setUserAgent(String a_userAgent)
+	{
+		sm_userAgent = a_userAgent;
+	}
+
+	/**
+	 * Makes a HTTP request to the API and returns the XML root element of the response.
+	 * @param a_url The URL to be appended to the API prefix, for example "/node/1"
+	 * @param a_server The API hostname, for example "api.openstreetmap.org"
+	 * @param a_port The API port, usually 80.
+	 * @param a_prefix The API prefix, for example "/api/0.6"
+	 * @return The root DOM Element of the XML response.
+	 * @throws IOException There was an error communicating with the API server.
+	 * @throws APIError The HTTP response code was not 200 or the XML response did not contain a root element.
+	 * @throws SAXException The XML response could not be parsed.
+	 * @throws ParserConfigurationException There was a problem while initialising the XML parser.
+	 */
 	public static Element fetch(String a_url, String a_server, int a_port, String a_prefix) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		HttpURLConnection connection = (HttpURLConnection) new URL("http://"+a_server+":"+a_port+a_prefix+a_url).openConnection();
 		connection.setRequestMethod("GET");
-		connection.setRequestProperty("User-Agent", "OSM Route Manager");
+		connection.setRequestProperty("User-Agent", sm_userAgent);
 		System.out.println("API call "+connection.getURL().toString());
 		connection.connect();
 
@@ -66,11 +92,30 @@ public class API
 		return root;
 	}
 	
+	/**
+	 * Makes a HTTP request to the API (default URL) and returns the XML root element of the response.
+	 * @param a_url
+	 * @return
+	 * @throws IOException
+	 * @throws APIError
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 */
 	protected static Element fetch(String a_url) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		return fetch(a_url, API_SERVER, API_PORT, API_PREFIX);
 	}
 	
+	/**
+	 * Makes OSM objects out of an XML element containing &lt;node&gt;, &lt;way&gt; and
+	 * &lt;relation&gt; elements.
+	 * @param a_root The root element.
+	 * @param a_cache Whether the objects should be cached immediately using the Node.cache(),
+	 * Way.cache() and Relation.cache() methods. You should use this when you aren’t
+	 * working with old versions of objects.
+	 * @return An ArrayList of OSM Objects. They can be cast to the sub-types by checking
+	 * Object.getDOM().getTagName().
+	 */
 	public static ArrayList<Object> makeObjects(Element a_root, boolean a_cache)
 	{
 		ArrayList<Object> ret = new ArrayList<Object>();
@@ -113,16 +158,44 @@ public class API
 
 		return ret;
 	}
+	
+	/**
+	 * Fetches OSM objects from the given API URL.
+	 * @param a_url For example "/node/1"
+	 * @param a_cache Whether to cache the objects using the Node.cache(), Way.cache() and Relation.cache() methods.
+	 * @return An array of OSM Objects. They can be cast to the sub-types checking the Object.getDOM().getTagName() value.
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws APIError
+	 */
 
 	public static Object[] get(String a_url, boolean a_cache) throws IOException, SAXException, ParserConfigurationException, APIError
 	{
 		return makeObjects(fetch(a_url), a_cache).toArray(new Object[0]);
 	}
 
+	/**
+	 * Fetches OSM objects from the given API URL and caches the results using the cache()
+	 * methods of the Object sub-types.
+	 * @param a_url For example "/node/1"
+	 * @return An array of OSM Objects. They can be cast to the sub-types checking the Object.getDOM().getTagName() value.
+	 * @throws IOException
+	 * @throws APIError
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 */
 	public static Object[] get(String a_url) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		return get(a_url, true);
 	}
+	
+	/**
+	 * Joins the values of an array using a specified delimiter.
+	 * @param a_delim
+	 * @param a_array
+	 * @return
+	 */
 
 	public static String joinStringArray(String a_delim, String[] a_array)
 	{

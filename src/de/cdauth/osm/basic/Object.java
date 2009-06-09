@@ -49,6 +49,9 @@ abstract public class Object extends XMLObject
 		super(a_dom);
 	}
 	
+	/**
+	 * Two Objects are compared by comparing their tag names, their ids and their versions.
+	 */
 	public boolean equals(java.lang.Object a_other)
 	{
 		if(a_other instanceof Object)

@@ -26,6 +26,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+/**
+ * Represents a Node in OpenStreetMap.
+ */
+
 public class Node extends de.cdauth.osm.basic.Object
 {
 	static private Hashtable<String,Node> sm_cache = new Hashtable<String,Node>();
@@ -69,6 +73,11 @@ public class Node extends de.cdauth.osm.basic.Object
 	{
 		sm_cache.put(a_object.getDOM().getAttribute("id"), a_object);
 	}
+	
+	/**
+	 * Returns a LonLat object for the coordinates of this node. 
+	 * @return
+	 */
 	
 	public LonLat getLonLat()
 	{

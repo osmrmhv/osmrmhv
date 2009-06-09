@@ -34,6 +34,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * Represents the content (the modified elements) of a changeset.
+ */
+
 public class ChangesetContent extends XMLObject
 {
 	static private Hashtable<String,ChangesetContent> sm_cache = new Hashtable<String,ChangesetContent>();
@@ -42,12 +46,16 @@ public class ChangesetContent extends XMLObject
 	
 	public enum ChangeType { create, modify, delete };
 	
+	/**
+	 * @param a_id The ID of the changeset, as it is not provided with the XML response.
+	 * @param a_dom
+	 */
 	protected ChangesetContent(String a_id, Element a_dom)
 	{
 		super(a_dom);
 		m_id = a_id;
 	}
-	
+
 	public static ChangesetContent fetch(String a_id) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		if(isCached(a_id))

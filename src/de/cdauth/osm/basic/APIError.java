@@ -20,11 +20,18 @@ package de.cdauth.osm.basic;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+/**
+ * An error has occured while talking to the OSM API.
+ */
 public class APIError extends Exception
 {
 	private static final long serialVersionUID = 437977542958386370L;
 	private String m_message;
 
+	/**
+	 * An error has occured with the HTTP connection to the API.
+	 * @param a_connection
+	 */
 	public APIError(HttpURLConnection a_connection)
 	{
 		m_message = "URL: "+a_connection.getURL().toString();

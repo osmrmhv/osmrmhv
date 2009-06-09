@@ -23,6 +23,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+/**
+ * Represents an OpenStreetMap changeset. This only includes the tags and other information
+ * about the changeset, the content (the modified elements) are represented by a ChangesetContent
+ * object.
+ */
+
 public class Changeset extends Object
 {
 	static private Hashtable<String,Changeset> sm_cache = new Hashtable<String,Changeset>();
@@ -46,7 +52,15 @@ public class Changeset extends Object
 	{
 		sm_cache.put(a_object.getDOM().getAttribute("id"), a_object);
 	}
-	
+
+	/**
+	 * Returns the ChangesetContent object for this changeset.
+	 * @return
+	 * @throws IOException
+	 * @throws APIError
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 */
 	public ChangesetContent getContent() throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		return ChangesetContent.fetch(getDOM().getAttribute("id"));
