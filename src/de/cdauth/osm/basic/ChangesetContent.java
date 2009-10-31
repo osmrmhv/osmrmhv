@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -117,8 +118,21 @@ public class ChangesetContent extends XMLObject
 	 * @throws ParserConfigurationException
 	 * @throws APIError
 	 */
-	
 	public Hashtable<Object,Object> getPreviousVersions() throws IOException, SAXException, ParserConfigurationException, APIError
+	{
+		return getPreviousVersions(false);
+	}
+	
+	/**
+	 * Fetches the previous version of all objects that were modified in this changeset.
+	 * @param onlyWithTagChanges If true, only objects will be returned whose tags have changed
+	 * @return A hashtable with the new version of an object in the key and the old version in the value
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws APIError
+	 */
+	public Hashtable<Object,Object> getPreviousVersions(boolean onlyWithTagChanges) throws IOException, SAXException, ParserConfigurationException, APIError
 	{
 		Object[] newVersions = getMemberObjects(ChangeType.modify);
 		Hashtable<Object,Object> ret = new Hashtable<Object,Object>();
@@ -138,33 +152,11 @@ public class ChangesetContent extends XMLObject
 			catch(APIError e)
 			{
 			}
-			ret.put(newVersions[i], last);
+			if(!onlyWithTagChanges || !last.getTags().equals(newVersions[i].getTags()))
+				ret.put(newVersions[i], last);
 		}
 		return ret;
-	}
-	
-	/**
-	 * Same as getPreviousVersions(), but returns only those objects whose tags have changed.
-	 * @return
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws APIError
-	 */
-	
-	public Hashtable<Object,Object> getPreviousVersionsWithTagChanges() throws IOException, SAXException, ParserConfigurationException, APIError
-	{
-		Hashtable<Object,Object> versions = getPreviousVersions();
-		Set<Object> oldVersions = versions.keySet();
-		for(Object newVersion : oldVersions)
-		{
-			Object oldVersion = versions.get(newVersion);
-			if(newVersion.getTags().equals(oldVersion.getTags()))
-				versions.remove(newVersion);
-		}
-		return versions;
-	}
-		
+	}	
 	
 	/**
 	 * Resolves all ways and nodes that were changed in this changeset to segments
