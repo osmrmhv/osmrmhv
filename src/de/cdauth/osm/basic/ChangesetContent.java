@@ -284,8 +284,14 @@ public class ChangesetContent extends XMLObject
 				else
 				{
 					if(!nodesCache.containsKey(id))
-						nodesCache.put(id, Node.fetch(id, changesetDate));
-					thisNode = nodesCache.get(id);
+					{
+						thisNode = Node.fetch(id, changesetDate);
+						if(thisNode == null)
+							continue;
+						nodesCache.put(id, thisNode);
+					}
+					else
+						thisNode = nodesCache.get(id);
 				}
 				
 				if(lastNode != null)
