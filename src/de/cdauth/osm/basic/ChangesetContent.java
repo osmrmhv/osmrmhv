@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -141,6 +142,29 @@ public class ChangesetContent extends XMLObject
 		}
 		return ret;
 	}
+	
+	/**
+	 * Same as getPreviousVersions(), but returns only those objects whose tags have changed.
+	 * @return
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws APIError
+	 */
+	
+	public Hashtable<Object,Object> getPreviousVersionsWithTagChanges() throws IOException, SAXException, ParserConfigurationException, APIError
+	{
+		Hashtable<Object,Object> versions = getPreviousVersions();
+		Set<Object> oldVersions = versions.keySet();
+		for(Object newVersion : oldVersions)
+		{
+			Object oldVersion = versions.get(newVersion);
+			if(newVersion.getTags().equals(oldVersion.getTags()))
+				versions.remove(newVersion);
+		}
+		return versions;
+	}
+		
 	
 	/**
 	 * Resolves all ways and nodes that were changed in this changeset to segments

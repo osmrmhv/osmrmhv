@@ -25,13 +25,13 @@ public class Segment
 {
 	private Node m_node1;
 	private Node m_node2;
-
+	
 	public Segment(Node a_node1, Node a_node2)
 	{
 		m_node1 = a_node1;
 		m_node2 = a_node2;
 	}
-
+	
 	public boolean equals(java.lang.Object obj)
 	{
 		if(obj instanceof Segment)

@@ -69,7 +69,7 @@ public class Main
 			Changeset changeset = Changeset.fetch(token_changeset.parameter());
 			ChangesetContent content = changeset.getContent();
 			Segment[][] changes = content.getNodeChanges();
-			sm_cache.cacheChangesetChanges(changeset, changes, downloadTime);
+			sm_cache.cacheChangesetChanges(changeset, changes, downloadTime, content.getPreviousVersionsWithTagChanges());
 			
 			System.out.println("Successfully saved changes of changeset "+changeset.getDOM().getAttribute("id")+".");
 		}
