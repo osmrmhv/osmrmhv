@@ -32,7 +32,7 @@ import org.xml.sax.SAXException;
 
 public class Node extends de.cdauth.osm.basic.Object
 {
-	static private ObjectCache<Node> sm_cache = new ObjectCache<Node>();
+	static private ObjectCache<Node> sm_cache = new ObjectCache<Node>("node");
 	
 	protected Node(Element a_dom)
 	{
@@ -46,32 +46,32 @@ public class Node extends de.cdauth.osm.basic.Object
 	
 	public static Hashtable<String,Node> fetch(String[] a_ids) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		return fetchWithCache(a_ids, sm_cache, "node");
+		return fetchWithCache(a_ids, sm_cache);
 	}
 	
 	public static Node fetch(String a_id) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		return fetchWithCache(a_id, sm_cache, "node");
+		return fetchWithCache(a_id, sm_cache);
 	}
 	
 	public static Node fetch(String a_id, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		return fetchWithCache(a_id, sm_cache, "node", a_version);
+		return fetchWithCache(a_id, sm_cache, a_version);
 	}
 	
 	public static Node fetch(String a_id, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
 	{
-		return fetchWithCache(a_id, sm_cache, "node", a_date);
+		return fetchWithCache(a_id, sm_cache, a_date);
 	}
 	
 	public static Node fetch(String a_id, Changeset a_changeset) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
 	{
-		return fetchWithCache(a_id, sm_cache, "node", a_changeset);
+		return fetchWithCache(a_id, sm_cache, a_changeset);
 	}
 	
 	public static TreeMap<Long,Node> getHistory(String a_id) throws IOException, SAXException, ParserConfigurationException, APIError
 	{
-		return fetchHistory(a_id, sm_cache, "node");
+		return fetchHistory(a_id, sm_cache);
 	}
 	
 	/**

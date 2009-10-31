@@ -24,9 +24,24 @@ public class ObjectCache <T extends Object>
 {
 	private Hashtable<String,T> m_newest = new Hashtable<String,T>();
 	private Hashtable<String,TreeMap<Long,T>> m_history = new Hashtable<String,TreeMap<Long,T>>();
+	private String m_type;
+	
+	public ObjectCache(String a_type)
+	{
+		m_type = a_type;
+	}
+	
+	public String getType()
+	{
+		return m_type;
+	}
 	
 	public T getCurrent(String a_id)
 	{
+		if(m_newest.get(a_id) == null)
+			System.out.println(getType()+" "+a_id+" is not cached.");
+		else
+			System.out.println(getType()+" "+a_id+" is cached.");
 		return m_newest.get(a_id);
 	}
 	
@@ -49,6 +64,7 @@ public class ObjectCache <T extends Object>
 		if(history == null)
 			return null;
 		
+		// Check if all versions have been fetched into history
 		T current = getCurrent(a_id);
 		if(current == null)
 			return null;
@@ -64,6 +80,7 @@ public class ObjectCache <T extends Object>
 	
 	public void cacheCurrent(T a_object)
 	{
+		System.out.println("Saving "+getType()+" "+a_object.getDOM().getAttribute("id"));
 		m_newest.put(a_object.getDOM().getAttribute("id"), a_object);
 		cacheVersion(a_object);
 	}

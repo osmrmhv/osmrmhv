@@ -32,7 +32,7 @@ import org.xml.sax.SAXException;
 
 public class Relation extends de.cdauth.osm.basic.Object
 {
-	static private ObjectCache<Relation> sm_cache = new ObjectCache<Relation>();
+	static private ObjectCache<Relation> sm_cache = new ObjectCache<Relation>("relation");
 
 	protected Relation(Element a_dom)
 	{
@@ -46,32 +46,32 @@ public class Relation extends de.cdauth.osm.basic.Object
 	
 	public static Hashtable<String,Relation> fetch(String[] a_ids) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		return fetchWithCache(a_ids, sm_cache, "relation");
+		return fetchWithCache(a_ids, sm_cache);
 	}
 	
 	public static Relation fetch(String a_id) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		return fetchWithCache(a_id, sm_cache, "relation");
+		return fetchWithCache(a_id, sm_cache);
 	}
 	
 	public static Relation fetch(String a_id, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		return fetchWithCache(a_id, sm_cache, "relation", a_version);
+		return fetchWithCache(a_id, sm_cache, a_version);
 	}
 	
 	public static Relation fetch(String a_id, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
 	{
-		return fetchWithCache(a_id, sm_cache, "relation", a_date);
+		return fetchWithCache(a_id, sm_cache, a_date);
 	}
 	
 	public static Relation fetch(String a_id, Changeset a_changeset) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
 	{
-		return fetchWithCache(a_id, sm_cache, "relation", a_changeset);
+		return fetchWithCache(a_id, sm_cache, a_changeset);
 	}
 	
 	public static TreeMap<Long,Relation> getHistory(String a_id) throws IOException, SAXException, ParserConfigurationException, APIError
 	{
-		return fetchHistory(a_id, sm_cache, "relation");
+		return fetchHistory(a_id, sm_cache);
 	}
 	
 	/**

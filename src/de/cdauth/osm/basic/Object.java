@@ -75,13 +75,13 @@ abstract public class Object extends XMLObject implements Comparable<Object>
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, String a_type, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
+	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		T cached = a_cache.getVersion(a_id, a_version);
 		if(cached != null)
 			return cached;
 		
-		Object[] fetched = API.get("/"+a_type+"/"+a_id+"/"+a_version);
+		Object[] fetched = API.get("/"+a_cache.getType()+"/"+a_id+"/"+a_version);
 		if(fetched.length < 1)
 			throw new APIError("Server sent no data.");
 		a_cache.cacheVersion((T) fetched[0]);
@@ -102,10 +102,10 @@ abstract public class Object extends XMLObject implements Comparable<Object>
 	 * @throws SAXException 
 	 * @throws IOException 
 	 */
-	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, String a_type, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
+	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
 	{
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		TreeMap<Long,T> history = fetchHistory(a_id, a_cache, a_type);
+		TreeMap<Long,T> history = fetchHistory(a_id, a_cache);
 		for(T historyEntry : history.descendingMap().values())
 		{
 			Date historyDate = dateFormat.parse(historyEntry.getDOM().getAttribute("timestamp"));
@@ -130,10 +130,10 @@ abstract public class Object extends XMLObject implements Comparable<Object>
 	 * @throws APIError
 	 */
 	
-	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, String a_type, Changeset a_changeset) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
+	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, Changeset a_changeset) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
 	{
 		long changeset = Long.parseLong(a_changeset.getDOM().getAttribute("id"));
-		TreeMap<Long,T> history = fetchHistory(a_id, a_cache, a_type);
+		TreeMap<Long,T> history = fetchHistory(a_id, a_cache);
 		for(T historyEntry : history.descendingMap().values())
 		{
 			long entryChangeset = Long.parseLong(historyEntry.getDOM().getAttribute("changeset"));
@@ -156,7 +156,7 @@ abstract public class Object extends XMLObject implements Comparable<Object>
 	 */
 	
 	@SuppressWarnings("unchecked")
-	protected static <T extends Object> Hashtable<String,T> fetchWithCache(String[] a_ids, ObjectCache<T> a_cache, String a_type) throws IOException, APIError, SAXException, ParserConfigurationException
+	protected static <T extends Object> Hashtable<String,T> fetchWithCache(String[] a_ids, ObjectCache<T> a_cache) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		Hashtable<String,T> ret = new Hashtable<String,T>();
 		ArrayList<String> ids = new ArrayList<String>(Arrays.asList(a_ids));
@@ -173,9 +173,9 @@ abstract public class Object extends XMLObject implements Comparable<Object>
 		{
 			Object[] fetched;
 			if(ids.size() == 1)
-				fetched = API.get("/"+a_type+"/"+ids.get(0)); // URLEncoder.encode(, "UTF-8");
+				fetched = API.get("/"+a_cache.getType()+"/"+ids.get(0)); // URLEncoder.encode(, "UTF-8");
 			else
-				fetched = API.get("/"+a_type+"s/?"+a_type+"s="+API.joinStringArray(",", ids.toArray(new String[0])));
+				fetched = API.get("/"+a_cache.getType()+"s/?"+a_cache.getType()+"s="+API.joinStringArray(",", ids.toArray(new String[0])));
 			for(int i=0; i<fetched.length; i++)
 			{
 				ret.put(fetched[i].getDOM().getAttribute("id"), (T)fetched[i]);
@@ -197,10 +197,10 @@ abstract public class Object extends XMLObject implements Comparable<Object>
 	 * @throws ParserConfigurationException
 	 */
 	
-	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, String a_type) throws IOException, APIError, SAXException, ParserConfigurationException
+	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		String[] ids = { a_id };
-		return fetchWithCache(ids, a_cache, a_type).get(a_id);
+		return fetchWithCache(ids, a_cache).get(a_id);
 	}
 	
 	/**
@@ -215,13 +215,13 @@ abstract public class Object extends XMLObject implements Comparable<Object>
 	 * @throws IOException 
 	 */
 	@SuppressWarnings("unchecked")
-	protected static <T extends Object> TreeMap<Long,T> fetchHistory(String a_id, ObjectCache<T> a_cache, String a_type) throws IOException, SAXException, ParserConfigurationException, APIError
+	protected static <T extends Object> TreeMap<Long,T> fetchHistory(String a_id, ObjectCache<T> a_cache) throws IOException, SAXException, ParserConfigurationException, APIError
 	{
 		TreeMap<Long,T> cached = a_cache.getHistory(a_id);
 		if(cached != null)
 			return cached;
 
-		Object[] historyElements = API.get("/"+a_type+"/"+a_id+"/history");
+		Object[] historyElements = API.get("/"+a_cache.getType()+"/"+a_id+"/history");
 		TreeMap<Long,T> ordered = new TreeMap<Long,T>();
 		for(Object element : historyElements)
 			ordered.put(Long.parseLong(element.getDOM().getAttribute("version")), (T)element);

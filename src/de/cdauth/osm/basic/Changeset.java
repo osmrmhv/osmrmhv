@@ -30,7 +30,7 @@ import org.xml.sax.SAXException;
 
 public class Changeset extends Object
 {
-	static private ObjectCache<Changeset> sm_cache = new ObjectCache<Changeset>();
+	static private ObjectCache<Changeset> sm_cache = new ObjectCache<Changeset>("changeset");
 	
 	protected Changeset(Element a_dom)
 	{
@@ -39,7 +39,7 @@ public class Changeset extends Object
 	
 	public static Changeset fetch(String a_id) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		return fetchWithCache(a_id, sm_cache, "changeset");
+		return fetchWithCache(a_id, sm_cache);
 	}
 	
 	public static ObjectCache<Changeset> getCache()

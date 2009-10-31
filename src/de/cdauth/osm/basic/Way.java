@@ -29,7 +29,7 @@ import org.xml.sax.SAXException;
 
 public class Way extends de.cdauth.osm.basic.Object
 {
-	static private ObjectCache<Way> sm_cache = new ObjectCache<Way>();
+	static private ObjectCache<Way> sm_cache = new ObjectCache<Way>("way");
 	
 	protected Way(Element a_dom)
 	{
@@ -43,32 +43,32 @@ public class Way extends de.cdauth.osm.basic.Object
 	
 	public static Hashtable<String,Way> fetch(String[] a_ids) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		return fetchWithCache(a_ids, sm_cache, "way");
+		return fetchWithCache(a_ids, sm_cache);
 	}
 	
 	public static Way fetch(String a_id) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		return fetchWithCache(a_id, sm_cache, "way");
+		return fetchWithCache(a_id, sm_cache);
 	}
 	
 	public static Way fetch(String a_id, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		return fetchWithCache(a_id, sm_cache, "way", a_version);
+		return fetchWithCache(a_id, sm_cache, a_version);
 	}
 	
 	public static Way fetch(String a_id, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
 	{
-		return fetchWithCache(a_id, sm_cache, "way", a_date);
+		return fetchWithCache(a_id, sm_cache, a_date);
 	}
 	
 	public static Way fetch(String a_id, Changeset a_changeset) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
 	{
-		return fetchWithCache(a_id, sm_cache, "way", a_changeset);
+		return fetchWithCache(a_id, sm_cache, a_changeset);
 	}
 	
 	public static TreeMap<Long,Way> getHistory(String a_id) throws IOException, SAXException, ParserConfigurationException, APIError
 	{
-		return fetchHistory(a_id, sm_cache, "way");
+		return fetchHistory(a_id, sm_cache);
 	}
 	
 	/**
