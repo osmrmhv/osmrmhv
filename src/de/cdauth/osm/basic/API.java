@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -110,13 +109,12 @@ public class API
 	 * Makes OSM objects out of an XML element containing &lt;node&gt;, &lt;way&gt; and
 	 * &lt;relation&gt; elements.
 	 * @param a_root The root element.
-	 * @param a_cache Whether the objects should be cached immediately using the Node.cache(),
 	 * Way.cache() and Relation.cache() methods. You should use this when you aren’t
 	 * working with old versions of objects.
 	 * @return An ArrayList of OSM Objects. They can be cast to the sub-types by checking
 	 * Object.getDOM().getTagName().
 	 */
-	public static ArrayList<Object> makeObjects(Element a_root, boolean a_cache)
+	public static ArrayList<Object> makeObjects(Element a_root)
 	{
 		ArrayList<Object> ret = new ArrayList<Object>();
 
@@ -129,29 +127,21 @@ public class API
 			if(element.getTagName().equals("node"))
 			{
 				Node el = new Node(element);
-				if(a_cache)
-					Node.cache(el);
 				ret.add(el);
 			}
 			else if(element.getTagName().equals("way"))
 			{
 				Way el = new Way(element);
-				if(a_cache)
-					Way.cache(el);
 				ret.add(el);
 			}
 			else if(element.getTagName().equals("relation"))
 			{
 				Relation el = new Relation(element);
-				if(a_cache)
-					Relation.cache(el);
 				ret.add(el);
 			}
 			else if(element.getTagName().equals("changeset"))
 			{
 				Changeset el = new Changeset(element);
-				if(a_cache)
-					Changeset.cache(el);
 				ret.add(el);
 			}
 		}
@@ -162,7 +152,6 @@ public class API
 	/**
 	 * Fetches OSM objects from the given API URL.
 	 * @param a_url For example "/node/1"
-	 * @param a_cache Whether to cache the objects using the Node.cache(), Way.cache() and Relation.cache() methods.
 	 * @return An array of OSM Objects. They can be cast to the sub-types checking the Object.getDOM().getTagName() value.
 	 * @throws IOException
 	 * @throws SAXException
@@ -170,24 +159,9 @@ public class API
 	 * @throws APIError
 	 */
 
-	public static Object[] get(String a_url, boolean a_cache) throws IOException, SAXException, ParserConfigurationException, APIError
+	public static Object[] get(String a_url) throws IOException, SAXException, ParserConfigurationException, APIError
 	{
-		return makeObjects(fetch(a_url), a_cache).toArray(new Object[0]);
-	}
-
-	/**
-	 * Fetches OSM objects from the given API URL and caches the results using the cache()
-	 * methods of the Object sub-types.
-	 * @param a_url For example "/node/1"
-	 * @return An array of OSM Objects. They can be cast to the sub-types checking the Object.getDOM().getTagName() value.
-	 * @throws IOException
-	 * @throws APIError
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 */
-	public static Object[] get(String a_url) throws IOException, APIError, SAXException, ParserConfigurationException
-	{
-		return get(a_url, true);
+		return makeObjects(fetch(a_url)).toArray(new Object[0]);
 	}
 	
 	/**

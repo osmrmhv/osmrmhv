@@ -24,8 +24,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -81,8 +79,19 @@ public class ChangesetContent extends XMLObject
 		ArrayList<Object> ret = new ArrayList<Object>();
 		NodeList nodes = getDOM().getElementsByTagName(a_type.toString());
 		for(int i=0; i<nodes.getLength(); i++)
-			ret.addAll(API.makeObjects((Element) nodes.item(i), false));
-		return ret.toArray(new Object[0]);
+			ret.addAll(API.makeObjects((Element) nodes.item(i)));
+		Object[] retArr = ret.toArray(new Object[0]);
+		for(Object object : retArr)
+		{
+			String type = object.getDOM().getTagName();
+			if(type.equals("node"))
+				Node.getCache().cacheVersion((Node)object);
+			else if(type.equals("way"))
+				Way.getCache().cacheVersion((Way)object);
+			else if(type.equals("relation"))
+				Relation.getCache().cacheVersion((Relation)object);
+		}
+		return retArr;
 	}
 	
 	/**

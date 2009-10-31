@@ -66,9 +66,9 @@ public class LonLat
 	
 	/**
 	 * Calculate the distance from this point to another.
-	 * Formula from {@link http://mathforum.org/library/drmath/view/51879.html}.
+	 * Formula from {@link "http://mathforum.org/library/drmath/view/51879.html"}.
 	 * @param a_to
-	 * @return
+	 * @return The distance in km.
 	 */
 	
 	public double getDistance(LonLat a_to)

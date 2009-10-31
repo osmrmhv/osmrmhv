@@ -18,7 +18,6 @@
 package de.cdauth.osm.basic;
 
 import java.io.IOException;
-import java.util.Hashtable;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -31,7 +30,7 @@ import org.xml.sax.SAXException;
 
 public class Changeset extends Object
 {
-	static private Hashtable<String,Changeset> sm_cache = new Hashtable<String,Changeset>();
+	static private ObjectCache<Changeset> sm_cache = new ObjectCache<Changeset>();
 	
 	protected Changeset(Element a_dom)
 	{
@@ -43,14 +42,9 @@ public class Changeset extends Object
 		return fetchWithCache(a_id, sm_cache, "changeset");
 	}
 	
-	protected static boolean isCached(String a_id)
+	public static ObjectCache<Changeset> getCache()
 	{
-		return sm_cache.containsKey(a_id);
-	}
-
-	public static void cache(Changeset a_object)
-	{
-		sm_cache.put(a_object.getDOM().getAttribute("id"), a_object);
+		return sm_cache;
 	}
 
 	/**

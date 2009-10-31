@@ -32,11 +32,16 @@ import org.xml.sax.SAXException;
 
 public class Relation extends de.cdauth.osm.basic.Object
 {
-	static private Hashtable<String,Relation> sm_cache = new Hashtable<String,Relation>();
+	static private ObjectCache<Relation> sm_cache = new ObjectCache<Relation>();
 
 	protected Relation(Element a_dom)
 	{
 		super(a_dom);
+	}
+	
+	public static ObjectCache<Relation> getCache()
+	{
+		return sm_cache;
 	}
 	
 	public static Hashtable<String,Relation> fetch(String[] a_ids) throws IOException, APIError, SAXException, ParserConfigurationException
@@ -49,30 +54,30 @@ public class Relation extends de.cdauth.osm.basic.Object
 		return fetchWithCache(a_id, sm_cache, "relation");
 	}
 	
+	public static Relation fetch(String a_id, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
+	{
+		return fetchWithCache(a_id, sm_cache, "relation", a_version);
+	}
+	
+	public static Relation fetch(String a_id, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
+	{
+		return fetchWithCache(a_id, sm_cache, "relation", a_date);
+	}
+	
+	public static Relation fetch(String a_id, Changeset a_changeset) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
+	{
+		return fetchWithCache(a_id, sm_cache, "relation", a_changeset);
+	}
+	
 	public static TreeMap<Long,Relation> getHistory(String a_id) throws IOException, SAXException, ParserConfigurationException, APIError
 	{
 		return fetchHistory(a_id, sm_cache, "relation");
 	}
 	
-	public static Relation fetch(String a_id, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
-	{
-		return fetchVersion(a_id, sm_cache, "relation", a_version);
-	}
-	
-	public static Relation fetch(String a_id, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
-	{
-		return fetchVersion(a_id, sm_cache, "relation", a_date);
-	}
-	
-	protected static boolean isCached(String a_id)
-	{
-		return sm_cache.containsKey(a_id);
-	}
-	
-	public static void cache(Relation a_object)
-	{
-		sm_cache.put(a_object.getDOM().getAttribute("id"), a_object);
-	}
+	/**
+	 * Returns an array of all members of this relation.
+	 * @return
+	 */
 	
 	public RelationMember[] getMembers()
 	{
@@ -95,7 +100,7 @@ public class Relation extends de.cdauth.osm.basic.Object
 	public static void downloadFull(String a_id) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		boolean downloadNecessary = true;
-		if(isCached(a_id))
+		if(getCache().getCurrent(a_id) != null)
 		{
 			downloadNecessary = false;
 			for(RelationMember it : Relation.fetch(a_id).getMembers())
@@ -104,11 +109,11 @@ public class Relation extends de.cdauth.osm.basic.Object
 				String id = it.getDOM().getAttribute("ref");
 				boolean isCached = true;
 				if(type.equals("node"))
-					isCached = Node.isCached(id);
+					isCached = (Node.getCache().getCurrent(id) != null);
 				else if(type.equals("way"))
-					isCached = Way.isCached(id);
+					isCached = (Way.getCache().getCurrent(id) != null);
 				else if(type.equals("relation"))
-					isCached = Relation.isCached(id);
+					isCached = (Relation.getCache().getCurrent(id) != null);
 				if(!isCached)
 				{
 					downloadNecessary = true;
@@ -118,7 +123,19 @@ public class Relation extends de.cdauth.osm.basic.Object
 		}
 		
 		if(downloadNecessary)
-			API.get("/relation/"+a_id+"/full");
+		{
+			Object[] fetched = API.get("/relation/"+a_id+"/full");
+			for(Object object : fetched)
+			{
+				String type = object.getDOM().getAttribute("type");
+				if(type.equals("node"))
+					Node.getCache().cacheCurrent((Node) object);
+				else if(type.equals("way"))
+					Way.getCache().cacheCurrent((Way) object);
+				else if(type.equals("relation"))
+					Relation.getCache().cacheCurrent((Relation) object);
+			}
+		}
 	}
 	
 	/**
@@ -140,7 +157,7 @@ public class Relation extends de.cdauth.osm.basic.Object
 		HashSet<String> downloadWays = new HashSet<String>();
 		HashSet<String> downloadNodes = new HashSet<String>();
 
-		if(!isCached(a_id))
+		if(getCache().getCurrent(a_id) == null)
 			downloadFull(a_id);
 		
 		checkRelations.add(a_id);
@@ -161,7 +178,7 @@ public class Relation extends de.cdauth.osm.basic.Object
 			if(downloadRelations.size() == 1)
 			{
 				String one = downloadRelations.iterator().next();
-				if(isCached(one))
+				if(getCache().getCurrent(one) == null)
 					Relation.downloadFull(one);
 			}
 			else if(downloadRelations.size() > 1)
@@ -183,38 +200,103 @@ public class Relation extends de.cdauth.osm.basic.Object
 		Node.fetch(downloadNodes.toArray(new String[0]));
 	}
 	
-	private HashSet<Way> getWaysRecursive(ArrayList<String> a_ignore_relations) throws IOException, APIError, SAXException, ParserConfigurationException
-	{
-		a_ignore_relations.add(this.getDOM().getAttribute("id"));
-		downloadFull(this.getDOM().getAttribute("id"));
-
-		HashSet<Way> ret = new HashSet<Way>();
-		for(RelationMember it : getMembers())
-		{
-			String type = it.getDOM().getAttribute("type");
-			if(type.equals("way"))
-			{
-				if(!ret.add(Way.fetch(it.getDOM().getAttribute("ref"))))
-					System.out.println("Double");
-			}
-			else if(type.equals("relation") && !a_ignore_relations.contains(it.getDOM().getAttribute("ref")))
-				ret.addAll(Relation.fetch(it.getDOM().getAttribute("ref")).getWaysRecursive(a_ignore_relations));
-		}
-		return ret;
-	}
-	
 	/**
-	 * Returns an array of all ways that are contained in this relation and all of its sub-relations. You may want to call downloadRecursive() first.
+	 * Returns an array of all ways and nodes that are contained in this relation and all of its
+	 * sub-relations. You may want to call downloadRecursive() first.
+	 * @param a_ignore_relations
 	 * @return
 	 * @throws IOException
 	 * @throws APIError
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
+	 * @throws ParseException 
+	 * @throws ParseException 
+	 */
+	private HashSet<Object> getMembersRecursive(ArrayList<String> a_ignoreRelations, Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	{
+		a_ignoreRelations.add(this.getDOM().getAttribute("id"));
+		downloadFull(this.getDOM().getAttribute("id"));
+
+		HashSet<Object> ret = new HashSet<Object>();
+		for(RelationMember it : getMembers())
+		{
+			String type = it.getDOM().getAttribute("type");
+			String id = it.getDOM().getAttribute("ref");
+			if(type.equals("way"))
+			{
+				Way obj = (a_date == null ? Way.fetch(id) : Way.fetch(id, a_date));
+				if(!ret.add(obj))
+					System.out.println("Double");
+			}
+			else if(type.equals("node"))
+			{
+				Node obj = (a_date == null ? Node.fetch(id) : Node.fetch(id, a_date));
+				if(!ret.add(obj))
+					System.out.println("Double");
+			}
+			else if(type.equals("relation") && !a_ignoreRelations.contains(id))
+				ret.addAll(a_date == null ? Relation.fetch(id).getMembersRecursive(a_ignoreRelations, a_date) : Relation.fetch(id, a_date).getMembersRecursive(a_ignoreRelations, a_date));
+		}
+		return ret;
+	}
+	
+	public Object[] getMembersRecursive() throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	{
+		return getMembersRecursive(new ArrayList<String>(), null).toArray(new Object[0]);
+	}
+	
+	/**
+	 * Returns an array of all ways that are contained in this relation and all of its sub-relations. You may want to call downloadRecursive() first.
+	 * @return
+	 * @throws ParseException 
+	 * @throws ParserConfigurationException 
+	 * @throws SAXException 
+	 * @throws APIError 
+	 * @throws IOException
 	 */
 	
-	public Way[] getWaysRecursive() throws IOException, APIError, SAXException, ParserConfigurationException
+	public Way[] getWaysRecursive() throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
 	{
-		return getWaysRecursive(new ArrayList<String>()).toArray(new Way[0]);
+		return getWaysRecursive(null);
+	}
+	
+	public Way[] getWaysRecursive(Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	{
+		HashSet<Object> members = getMembersRecursive(new ArrayList<String>(), a_date);
+		ArrayList<Way> ret = new ArrayList<Way>();
+		for(Object member : members)
+		{
+			if(member.getDOM().getTagName().equals("way"))
+				ret.add((Way) member);
+		}
+		return ret.toArray(new Way[0]);
+	}
+	
+	/**
+	 * Returns an array of all nodes that are contained in this relation and all of its sub-relations. You may want to call downloadRecursive() first.
+	 * @return
+	 * @throws IOException
+	 * @throws APIError
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws ParseException 
+	 */
+	
+	public Node[] getNodesRecursive() throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	{
+		return getNodesRecursive(null);
+	}
+	
+	public Node[] getNodesRecursive(Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	{
+		HashSet<Object> members = getMembersRecursive(new ArrayList<String>(), a_date);
+		ArrayList<Node> ret = new ArrayList<Node>();
+		for(Object member : members)
+		{
+			if(member.getDOM().getTagName().equals("node"))
+				ret.add((Node) member);
+		}
+		return ret.toArray(new Node[0]);
 	}
 	
 	/**
@@ -224,9 +306,11 @@ public class Relation extends de.cdauth.osm.basic.Object
 	 * @throws APIError
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
+	 * @throws ParseException 
 	 */
 	
-	public RelationSegment[] segmentate() throws IOException, APIError, SAXException, ParserConfigurationException
+	@SuppressWarnings("unchecked")
+	public RelationSegment[] segmentate() throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
 	{
 		ArrayList<Way> waysList = new ArrayList<Way>(Arrays.asList(getWaysRecursive()));
 		
@@ -448,4 +532,9 @@ public class Relation extends de.cdauth.osm.basic.Object
 		
 		return segmentsNodes;
 	}
+	
+	/*public static TreeMap<Changeset,ArrayList<Segment> getVersions(String a_id)
+	{
+		
+	}*/
 }

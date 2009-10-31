@@ -18,7 +18,6 @@
 package de.cdauth.osm.basic;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,7 +25,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -40,7 +38,7 @@ import de.cdauth.osm.basic.API;
  * Parent class for all geographical objects in OSM, currently Nodes, Ways and Relations.
 */
 
-abstract public class Object extends XMLObject
+abstract public class Object extends XMLObject implements Comparable<Object>
 {
 	private Hashtable<String,String> m_tags = null;
 
@@ -68,18 +66,25 @@ abstract public class Object extends XMLObject
 		return new Long(getDOM().getAttribute("id")).hashCode();
 	}
 	
-	protected static <T extends Object> T fetchVersion(String a_id, Hashtable<String,T> a_cache, String a_type, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
+	public int compareTo(Object o)
 	{
-		if(a_cache.containsKey(a_id))
-		{
-			T el = a_cache.get(a_id);
-			if(el.getDOM().getAttribute("version").equals(a_version))
-				return el;
-		}
+		int c1 = new Long(getDOM().getAttribute("id")).compareTo(new Long(o.getDOM().getAttribute("id")));
+		if(c1 != 0)
+			return c1;
+		return new Long(getDOM().getAttribute("version")).compareTo(new Long(o.getDOM().getAttribute("version")));
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, String a_type, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
+	{
+		T cached = a_cache.getVersion(a_id, a_version);
+		if(cached != null)
+			return cached;
 		
 		Object[] fetched = API.get("/"+a_type+"/"+a_id+"/"+a_version);
 		if(fetched.length < 1)
 			throw new APIError("Server sent no data.");
+		a_cache.cacheVersion((T) fetched[0]);
 		return (T) fetched[0];
 	}
 	
@@ -97,7 +102,7 @@ abstract public class Object extends XMLObject
 	 * @throws SAXException 
 	 * @throws IOException 
 	 */
-	protected static <T extends Object> T fetchVersion(String a_id, Hashtable<String,T> a_cache, String a_type, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
+	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, String a_type, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
 	{
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		TreeMap<Long,T> history = fetchHistory(a_id, a_cache, a_type);
@@ -105,6 +110,34 @@ abstract public class Object extends XMLObject
 		{
 			Date historyDate = dateFormat.parse(historyEntry.getDOM().getAttribute("timestamp"));
 			if(historyDate.compareTo(a_date) < 0)
+				return historyEntry;
+		}
+		return null;
+	}
+	
+	/**
+	 * Fetches the version of an object that was the current before the given changeset was committed.
+	 * @param <T>
+	 * @param a_id
+	 * @param a_cache
+	 * @param a_type
+	 * @param a_changeset
+	 * @return null if the element did not exist before this changeset
+	 * @throws ParseException
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws APIError
+	 */
+	
+	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, String a_type, Changeset a_changeset) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
+	{
+		long changeset = Long.parseLong(a_changeset.getDOM().getAttribute("id"));
+		TreeMap<Long,T> history = fetchHistory(a_id, a_cache, a_type);
+		for(T historyEntry : history.descendingMap().values())
+		{
+			long entryChangeset = Long.parseLong(historyEntry.getDOM().getAttribute("changeset"));
+			if(entryChangeset < changeset)
 				return historyEntry;
 		}
 		return null;
@@ -122,15 +155,17 @@ abstract public class Object extends XMLObject
 	 * @throws ParserConfigurationException
 	 */
 	
-	protected static <T extends Object> Hashtable<String,T> fetchWithCache(String[] a_ids, Hashtable<String,T> a_cache, String a_type) throws IOException, APIError, SAXException, ParserConfigurationException
+	@SuppressWarnings("unchecked")
+	protected static <T extends Object> Hashtable<String,T> fetchWithCache(String[] a_ids, ObjectCache<T> a_cache, String a_type) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		Hashtable<String,T> ret = new Hashtable<String,T>();
 		ArrayList<String> ids = new ArrayList<String>(Arrays.asList(a_ids));
 		for(int i=0; i<ids.size(); i++)
 		{
-			if(!a_cache.containsKey(ids.get(i)))
+			T cached = a_cache.getCurrent(ids.get(i));
+			if(cached == null)
 				continue;
-			ret.put(ids.get(i), a_cache.get(ids.get(i)));
+			ret.put(ids.get(i), cached);
 			ids.remove(i--);
 		}
 		
@@ -142,7 +177,10 @@ abstract public class Object extends XMLObject
 			else
 				fetched = API.get("/"+a_type+"s/?"+a_type+"s="+API.joinStringArray(",", ids.toArray(new String[0])));
 			for(int i=0; i<fetched.length; i++)
+			{
 				ret.put(fetched[i].getDOM().getAttribute("id"), (T)fetched[i]);
+				a_cache.cacheCurrent((T)fetched[i]);
+			}
 		}
 		
 		return ret;
@@ -159,7 +197,7 @@ abstract public class Object extends XMLObject
 	 * @throws ParserConfigurationException
 	 */
 	
-	protected static <T extends Object> T fetchWithCache(String a_id, Hashtable<String,T> a_cache, String a_type) throws IOException, APIError, SAXException, ParserConfigurationException
+	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, String a_type) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		String[] ids = { a_id };
 		return fetchWithCache(ids, a_cache, a_type).get(a_id);
@@ -176,17 +214,18 @@ abstract public class Object extends XMLObject
 	 * @throws SAXException 
 	 * @throws IOException 
 	 */
-	protected static <T extends Object> TreeMap<Long,T> fetchHistory(String a_id, Hashtable<String,T> a_cache, String a_type) throws IOException, SAXException, ParserConfigurationException, APIError
+	@SuppressWarnings("unchecked")
+	protected static <T extends Object> TreeMap<Long,T> fetchHistory(String a_id, ObjectCache<T> a_cache, String a_type) throws IOException, SAXException, ParserConfigurationException, APIError
 	{
-		Object[] historyElements = API.get("/"+a_type+"/"+a_id+"/history", false);
+		TreeMap<Long,T> cached = a_cache.getHistory(a_id);
+		if(cached != null)
+			return cached;
+
+		Object[] historyElements = API.get("/"+a_type+"/"+a_id+"/history");
 		TreeMap<Long,T> ordered = new TreeMap<Long,T>();
 		for(Object element : historyElements)
 			ordered.put(Long.parseLong(element.getDOM().getAttribute("version")), (T)element);
-		if(a_cache != null)
-		{
-			T last = ordered.get(ordered.lastKey());
-			a_cache.put(last.getDOM().getAttribute("id"), last);
-		}
+		a_cache.cacheHistory(ordered);
 		return ordered;
 	}
 	

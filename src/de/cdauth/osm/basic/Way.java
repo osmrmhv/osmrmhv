@@ -29,11 +29,16 @@ import org.xml.sax.SAXException;
 
 public class Way extends de.cdauth.osm.basic.Object
 {
-	static private Hashtable<String,Way> sm_cache = new Hashtable<String,Way>();
+	static private ObjectCache<Way> sm_cache = new ObjectCache<Way>();
 	
 	protected Way(Element a_dom)
 	{
 		super(a_dom);
+	}
+	
+	public static ObjectCache<Way> getCache()
+	{
+		return sm_cache;
 	}
 	
 	public static Hashtable<String,Way> fetch(String[] a_ids) throws IOException, APIError, SAXException, ParserConfigurationException
@@ -46,30 +51,68 @@ public class Way extends de.cdauth.osm.basic.Object
 		return fetchWithCache(a_id, sm_cache, "way");
 	}
 	
+	public static Way fetch(String a_id, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
+	{
+		return fetchWithCache(a_id, sm_cache, "way", a_version);
+	}
+	
+	public static Way fetch(String a_id, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
+	{
+		return fetchWithCache(a_id, sm_cache, "way", a_date);
+	}
+	
+	public static Way fetch(String a_id, Changeset a_changeset) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
+	{
+		return fetchWithCache(a_id, sm_cache, "way", a_changeset);
+	}
+	
 	public static TreeMap<Long,Way> getHistory(String a_id) throws IOException, SAXException, ParserConfigurationException, APIError
 	{
 		return fetchHistory(a_id, sm_cache, "way");
 	}
 	
-	public static Way fetch(String a_id, String a_version) throws IOException, APIError, SAXException, ParserConfigurationException
+	/**
+	 * Ensures that all nodes of the way are downloaded and cached. This saves a lot of time when accessing them with fetch(), as fetch() makes an API call for each uncached item whereas this method can download all members at once.
+	 * @param a_id
+	 * @throws ParserConfigurationException 
+	 * @throws SAXException 
+	 * @throws APIError 
+	 * @throws IOException 
+	 */
+	
+	public static void downloadFull(String a_id) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		return fetchVersion(a_id, sm_cache, "way", a_version);
+		boolean downloadNecessary = true;
+		if(getCache().getCurrent(a_id) != null)
+		{
+			downloadNecessary = false;
+			for(String it : Way.fetch(a_id).getMembers())
+			{
+				if(Node.getCache().getCurrent(it) != null)
+				{
+					downloadNecessary = true;
+					break;
+				}
+			}
+		}
+		
+		if(downloadNecessary)
+		{
+			Object[] fetched = API.get("/way/"+a_id+"/full");
+			for(Object object : fetched)
+			{
+				if(object.getDOM().getTagName().equals("way"))
+					Way.getCache().cacheCurrent((Way) object);
+				else if(object.getDOM().getTagName().equals("node"))
+					Node.getCache().cacheCurrent((Node) object);
+			}
+		}
 	}
 	
-	public static Way fetch(String a_id, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
-	{
-		return fetchVersion(a_id, sm_cache, "way", a_date);
-	}
-	
-	protected static boolean isCached(String a_id)
-	{
-		return sm_cache.containsKey(a_id);
-	}
-
-	public static void cache(Way a_object)
-	{
-		sm_cache.put(a_object.getDOM().getAttribute("id"), a_object);
-	}
+	/**
+	 * Returns an array of the IDs of all nodes that are part of this way.
+	 * @return
+	 */
 	
 	public String[] getMembers()
 	{
@@ -79,6 +122,15 @@ public class Way extends de.cdauth.osm.basic.Object
 			ret[i] = ((Element)members.item(i)).getAttribute("ref");
 		return ret;
 	}
+	
+	/**
+	 * Downloads all member nodes of this way (if necessary) and returns an array of them.
+	 * @return
+	 * @throws IOException
+	 * @throws APIError
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 */
 	
 	public Node[] getMemberNodes() throws IOException, APIError, SAXException, ParserConfigurationException
 	{
@@ -110,35 +162,6 @@ public class Way extends de.cdauth.osm.basic.Object
 		}
 		
 		return new LonLat(lon_sum/(nodes.length-1), lat_sum/(nodes.length-1));
-	}
-	
-	/**
-	 * Ensures that all nodes of the way are downloaded and cached. This saves a lot of time when accessing them with fetch(), as fetch() makes an API call for each uncached item whereas this method can download all members at once.
-	 * @param a_id
-	 * @throws ParserConfigurationException 
-	 * @throws SAXException 
-	 * @throws APIError 
-	 * @throws IOException 
-	 */
-	
-	public static void downloadFull(String a_id) throws IOException, APIError, SAXException, ParserConfigurationException
-	{
-		boolean downloadNecessary = true;
-		if(isCached(a_id))
-		{
-			downloadNecessary = false;
-			for(String it : Way.fetch(a_id).getMembers())
-			{
-				if(!Node.isCached(it))
-				{
-					downloadNecessary = true;
-					break;
-				}
-			}
-		}
-		
-		if(downloadNecessary)
-			API.get("/way/"+a_id+"/full");
 	}
 	
 	/**
