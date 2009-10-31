@@ -127,7 +127,7 @@ public class Relation extends de.cdauth.osm.basic.Object
 			Object[] fetched = API.get("/relation/"+a_id+"/full");
 			for(Object object : fetched)
 			{
-				String type = object.getDOM().getAttribute("type");
+				String type = object.getDOM().getTagName();
 				if(type.equals("node"))
 					Node.getCache().cacheCurrent((Node) object);
 				else if(type.equals("way"))

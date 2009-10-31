@@ -1,2 +1,2 @@
 dir="$(dirname "$(which "$0")")"
-java -classpath "$dir/lib/osm/osm.jar:$dir/lib/sqlite-jdbc/sqlite-jdbc-3.6.14.1.jar:$dir/lib/cmdargs/cmdargs.jar:$dir/dist/lib/osmhv.jar" de.cdauth.osm.historyviewer.Main "$@"
+java -classpath "$dir/lib/sqlite-jdbc/sqlite-jdbc-3.6.14.1.jar:$dir/lib/cmdargs/cmdargs.jar:$dir/dist/lib/osm.jar" de.cdauth.osm.historyviewer.Main "$@"

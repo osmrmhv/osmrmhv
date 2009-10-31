@@ -38,10 +38,6 @@ public class ObjectCache <T extends Object>
 	
 	public T getCurrent(String a_id)
 	{
-		if(m_newest.get(a_id) == null)
-			System.out.println(getType()+" "+a_id+" is not cached.");
-		else
-			System.out.println(getType()+" "+a_id+" is cached.");
 		return m_newest.get(a_id);
 	}
 	
@@ -80,7 +76,6 @@ public class ObjectCache <T extends Object>
 	
 	public void cacheCurrent(T a_object)
 	{
-		System.out.println("Saving "+getType()+" "+a_object.getDOM().getAttribute("id"));
 		m_newest.put(a_object.getDOM().getAttribute("id"), a_object);
 		cacheVersion(a_object);
 	}

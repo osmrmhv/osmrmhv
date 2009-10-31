@@ -19,6 +19,7 @@ package de.cdauth.osm.routemanager;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.Calendar;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
@@ -34,7 +35,7 @@ public class Main
 {
 	private static Cache sm_cache = null;
 
-	public static void main(String[] a_args) throws ArgumentParserException, ClassNotFoundException, SQLException, IOException, APIError, SAXException, ParserConfigurationException
+	public static void main(String[] a_args) throws ArgumentParserException, ClassNotFoundException, SQLException, IOException, APIError, SAXException, ParserConfigurationException, ParseException
 	{
 		API.setUserAgent("OSM Route Manager");
 
