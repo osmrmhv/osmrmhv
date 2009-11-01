@@ -88,7 +88,7 @@ public class Way extends de.cdauth.osm.basic.Object
 			downloadNecessary = false;
 			for(String it : Way.fetch(a_id).getMembers())
 			{
-				if(Node.getCache().getCurrent(it) != null)
+				if(Node.getCache().getCurrent(it) == null)
 				{
 					downloadNecessary = true;
 					break;

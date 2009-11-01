@@ -284,7 +284,7 @@ public class ChangesetContent extends XMLObject
 				else
 				{
 					if(!nodesCache.containsKey(id))
-					{
+					{ // FIXME FIXME
 						thisNode = Node.fetch(id, changesetDate);
 						if(thisNode == null)
 							continue;
@@ -335,7 +335,7 @@ public class ChangesetContent extends XMLObject
 				if(nodesRemoved.containsKey(id))
 					thisNode = nodesRemoved.get(id);
 				else
-				{
+				{ // FIXME FIXME
 					if(!nodesCache.containsKey(id))
 						nodesCache.put(id, Node.fetch(id, changesetDate));
 					thisNode = nodesCache.get(id);
@@ -353,7 +353,7 @@ public class ChangesetContent extends XMLObject
 				if(nodesAdded.containsKey(id))
 					thisNode = nodesAdded.get(id);
 				else
-				{
+				{ // FIXME FIXME
 					if(!nodesCache.containsKey(id))
 						nodesCache.put(id, Node.fetch(id, changesetDate));
 					thisNode = nodesCache.get(id);
