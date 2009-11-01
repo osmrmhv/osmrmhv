@@ -18,17 +18,15 @@
 package de.cdauth.osm.basic;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeMap;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -45,6 +43,8 @@ public class ChangesetContent extends XMLObject
 	private String m_id;
 	
 	public enum ChangeType { create, modify, delete };
+	
+	Hashtable<ChangeType,Object[]> m_content = null;
 	
 	/**
 	 * @param a_id The ID of the changeset, as it is not provided with the XML response.
@@ -71,12 +71,27 @@ public class ChangesetContent extends XMLObject
 	}
 	
 	/**
-	 * Returns an array of all objects that are part of one ChangeType of this changeset.
+	 * Returns an array of all objects that are part of one ChangeType of this changeset. The returned values are
+	 * clean of double entries, see fixMemberObjects().
 	 * @param a_type
 	 * @return For created and modified objects, their new version. For deleted objects, their old version. 
 	 */
 	
 	public Object[] getMemberObjects(ChangeType a_type)
+	{
+		if(m_content == null)
+			fixMemberObjects();
+		return m_content.get(a_type);
+	}
+	
+	/**
+	 * Returns an array of all objects that are part of one ChangeType of this changeset. The returned values are
+	 * _not_ clean of double entries.
+	 * @param a_type
+	 * @return
+	 */
+	
+	private Object[] getMemberObjectsUnfixed(ChangeType a_type)
 	{
 		ArrayList<Object> ret = new ArrayList<Object>();
 		NodeList nodes = getDOM().getElementsByTagName(a_type.toString());
@@ -94,6 +109,107 @@ public class ChangesetContent extends XMLObject
 				Relation.getCache().cacheVersion((Relation)object);
 		}
 		return retArr;
+	}
+	
+	/**
+	 * Removes double entries in this Changeset.
+	 * You can do very funny things in a changeset. You can create an object, modify it multiple times and then remove
+	 * it again, so that basically, you haven’t created nor modified nor removed anything in the changeset, because
+	 * afterwards everything is as it was.
+	 * This function cleans up such multiple entries considering the same object by doing the following things: 
+	 * 1. If an object was modified multiple times in one changeset, keep only the newest modification in the “modify” block
+	 * 2. If an object has been created and later modified in one changeset, move the newest modification to the “create” block
+	 * 3. If an object has been modified and later removed in one changeset, remove the part from the “modify” block
+	 * 4. If an object has been created and later removed in one changset, remove it from both the “create” and the “delete” part
+	 */
+	
+	private void fixMemberObjects()
+	{
+		Hashtable<Long,Object> created = new Hashtable<Long,Object>();
+		Hashtable<Long,Object> modified = new Hashtable<Long,Object>();
+		Hashtable<Long,Object> deleted = new Hashtable<Long,Object>();
+		
+		for(Object it : getMemberObjectsUnfixed(ChangeType.create))
+		{
+			String type = it.getDOM().getTagName();
+			long id = Long.parseLong(it.getDOM().getAttribute("id")) * 4;
+			if(type.equals("node"))
+				id += 1;
+			else if(type.equals("way"))
+				id += 2;
+			else if(type.equals("relation"))
+				id += 3;
+			created.put(new Long(id), it);
+		}
+		
+		for(Object it : getMemberObjectsUnfixed(ChangeType.modify))
+		{
+			String type = it.getDOM().getTagName();
+			long id = Long.parseLong(it.getDOM().getAttribute("id")) * 4;
+			if(type.equals("node"))
+				id += 1;
+			else if(type.equals("way"))
+				id += 2;
+			else if(type.equals("relation"))
+				id += 3;
+			Long idObj = new Long(id);
+			
+			// If an object has been created and then modified in one changeset, move the modified one to the “create” block
+			if(created.containsKey(idObj))
+			{
+				long thisVersion = Long.parseLong(it.getDOM().getAttribute("version"));
+				long thatVersion = Long.parseLong(created.get(idObj).getDOM().getAttribute("version"));
+				if(thisVersion > thatVersion)
+				{
+					created.put(idObj, it);
+					continue;
+				}
+			}
+
+			// If an object has been modified multiple times in one changeset, only keep the newest one
+			if(modified.containsKey(idObj))
+			{
+				long thisVersion = Long.parseLong(it.getDOM().getAttribute("version"));
+				long thatVersion = Long.parseLong(modified.get(idObj).getDOM().getAttribute("version"));
+				if(thisVersion <= thatVersion)
+					continue;
+			}
+			
+			created.put(idObj, it);
+		}
+		
+		for(Object it : getMemberObjectsUnfixed(ChangeType.delete))
+		{
+			String type = it.getDOM().getTagName();
+			long id = Long.parseLong(it.getDOM().getAttribute("id")) * 4;
+			if(type.equals("node"))
+				id += 1;
+			else if(type.equals("way"))
+				id += 2;
+			else if(type.equals("relation"))
+				id += 3;
+			Long idObj = new Long(id);
+			
+			// If an object has been modified and then deleted in one changeset, remove it from the “modify” block
+			if(modified.containsKey(idObj))
+				modified.remove(idObj);
+			
+			// If an object has been created and then deleted in one changeset, remove it from both blocks
+			if(created.containsKey(idObj))
+			{
+				created.remove(idObj);
+				continue;
+			}
+
+			deleted.put(new Long(id), it);
+		}
+		
+		Hashtable<ChangeType,Object[]> ret = new Hashtable<ChangeType,Object[]>();
+		ret.put(ChangeType.create, created.values().toArray(new Object[0]));
+		ret.put(ChangeType.modify, modified.values().toArray(new Object[0]));
+		ret.put(ChangeType.delete, deleted.values().toArray(new Object[0]));
+		
+		m_content = ret;
 	}
 	
 	/**
@@ -125,14 +241,14 @@ public class ChangesetContent extends XMLObject
 	
 	/**
 	 * Fetches the previous version of all objects that were modified in this changeset.
-	 * @param onlyWithTagChanges If true, only objects will be returned whose tags have changed
+	 * @param a_onlyWithTagChanges If true, only objects will be returned whose tags have changed
 	 * @return A hashtable with the new version of an object in the key and the old version in the value
 	 * @throws IOException
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws APIError
 	 */
-	public Hashtable<Object,Object> getPreviousVersions(boolean onlyWithTagChanges) throws IOException, SAXException, ParserConfigurationException, APIError
+	public Hashtable<Object,Object> getPreviousVersions(boolean a_onlyWithTagChanges) throws IOException, SAXException, ParserConfigurationException, APIError
 	{
 		Object[] newVersions = getMemberObjects(ChangeType.modify);
 		Hashtable<Object,Object> ret = new Hashtable<Object,Object>();
@@ -140,19 +256,20 @@ public class ChangesetContent extends XMLObject
 		{
 			Object last = null;
 			String tagName = newVersions[i].getDOM().getTagName();
-			try
+			long version = Long.parseLong(newVersions[i].getDOM().getAttribute("version"))-1;
+			do
 			{
 				if(tagName.equals("node"))
-					last = Node.fetch(newVersions[i].getDOM().getAttribute("id"), ""+(Long.parseLong(newVersions[i].getDOM().getAttribute("version"))-1));
+					last = Node.fetch(newVersions[i].getDOM().getAttribute("id"), ""+version);
 				else if(tagName.equals("way"))
-					last = Way.fetch(newVersions[i].getDOM().getAttribute("id"), ""+(Long.parseLong(newVersions[i].getDOM().getAttribute("version"))-1));
+					last = Way.fetch(newVersions[i].getDOM().getAttribute("id"), ""+version);
 				else if(tagName.equals("relation"))
-					last = Relation.fetch(newVersions[i].getDOM().getAttribute("id"), ""+(Long.parseLong(newVersions[i].getDOM().getAttribute("version"))-1));
+					last = Relation.fetch(newVersions[i].getDOM().getAttribute("id"), ""+version);
+				version--;
 			}
-			catch(APIError e)
-			{
-			}
-			if(!onlyWithTagChanges || !last.getTags().equals(newVersions[i].getTags()))
+			while(last.getDOM().getAttribute("changeset").equals(m_id) && version >= 1);
+
+			if(last != null && (!a_onlyWithTagChanges || !last.getTags().equals(newVersions[i].getTags())))
 				ret.put(newVersions[i], last);
 		}
 		return ret;
@@ -284,14 +401,8 @@ public class ChangesetContent extends XMLObject
 				else
 				{
 					if(!nodesCache.containsKey(id))
-					{ // FIXME FIXME
-						thisNode = Node.fetch(id, changesetDate);
-						if(thisNode == null)
-							continue;
-						nodesCache.put(id, thisNode);
-					}
-					else
-						thisNode = nodesCache.get(id);
+						nodesCache.put(id, Node.fetch(id, changesetDate));
+					thisNode = nodesCache.get(id);
 				}
 				
 				if(lastNode != null)
@@ -335,7 +446,7 @@ public class ChangesetContent extends XMLObject
 				if(nodesRemoved.containsKey(id))
 					thisNode = nodesRemoved.get(id);
 				else
-				{ // FIXME FIXME
+				{
 					if(!nodesCache.containsKey(id))
 						nodesCache.put(id, Node.fetch(id, changesetDate));
 					thisNode = nodesCache.get(id);
@@ -353,7 +464,7 @@ public class ChangesetContent extends XMLObject
 				if(nodesAdded.containsKey(id))
 					thisNode = nodesAdded.get(id);
 				else
-				{ // FIXME FIXME
+				{
 					if(!nodesCache.containsKey(id))
 						nodesCache.put(id, Node.fetch(id, changesetDate));
 					thisNode = nodesCache.get(id);
