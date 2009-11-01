@@ -175,7 +175,7 @@ public class ChangesetContent extends XMLObject
 					continue;
 			}
 			
-			created.put(idObj, it);
+			modified.put(idObj, it);
 		}
 		
 		for(Object it : getMemberObjectsUnfixed(ChangeType.delete))
