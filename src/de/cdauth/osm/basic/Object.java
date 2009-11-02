@@ -41,6 +41,8 @@ import de.cdauth.osm.basic.API;
 abstract public class Object extends XMLObject implements Comparable<Object>
 {
 	private Hashtable<String,String> m_tags = null;
+	
+	private static SimpleDateFormat sm_dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
 	protected Object(Element a_dom)
 	{
@@ -88,6 +90,38 @@ abstract public class Object extends XMLObject implements Comparable<Object>
 		return (T) fetched[0];
 	}
 	
+	public static SimpleDateFormat getDateFormat()
+	{
+		return sm_dateFormat;
+	}
+	
+	public long getID()
+	{
+		return Long.parseLong(getDOM().getAttribute("id"));
+	}
+	
+	public Date getTimestamp()
+	{
+		try
+		{
+			return getDateFormat().parse(getDOM().getAttribute("timestamp"));
+		}
+		catch(ParseException e)
+		{
+			return null;
+		}
+	}
+	
+	public long getVersion()
+	{
+		return Long.parseLong(getDOM().getAttribute("version"));
+	}
+	
+	public Changeset getChangeset() throws IOException, APIError, SAXException, ParserConfigurationException
+	{
+		return Changeset.fetch(getDOM().getAttribute("changeset"));
+	}
+	
 	/**
 	 * Fetches the version of an object that was the current one at the given point of time.
 	 * @param <T>
@@ -104,19 +138,18 @@ abstract public class Object extends XMLObject implements Comparable<Object>
 	 */
 	protected static <T extends Object> T fetchWithCache(String a_id, ObjectCache<T> a_cache, Date a_date) throws ParseException, IOException, SAXException, ParserConfigurationException, APIError
 	{
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		TreeMap<Long,T> history = fetchHistory(a_id, a_cache);
 		for(T historyEntry : history.descendingMap().values())
 		{
-			Date historyDate = dateFormat.parse(historyEntry.getDOM().getAttribute("timestamp"));
-			if(historyDate.compareTo(a_date) < 0)
+			Date historyDate = sm_dateFormat.parse(historyEntry.getDOM().getAttribute("timestamp"));
+			if(historyDate.compareTo(a_date) <= 0)
 				return historyEntry;
 		}
 		return null;
 	}
 	
 	/**
-	 * Fetches the version of an object that was the current before the given changeset was committed.
+	 * Fetches the version of an object that has been changed in a changeset with a number smaller then that of a_changeset.
 	 * @param <T>
 	 * @param a_id
 	 * @param a_cache

@@ -24,7 +24,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -215,7 +217,9 @@ public class Relation extends de.cdauth.osm.basic.Object
 	private HashSet<Object> getMembersRecursive(ArrayList<String> a_ignoreRelations, Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
 	{
 		a_ignoreRelations.add(this.getDOM().getAttribute("id"));
-		downloadFull(this.getDOM().getAttribute("id"));
+		
+		if(a_date == null)
+			downloadFull(this.getDOM().getAttribute("id"));
 
 		HashSet<Object> ret = new HashSet<Object>();
 		for(RelationMember it : getMembers())
@@ -235,14 +239,22 @@ public class Relation extends de.cdauth.osm.basic.Object
 					System.out.println("Double");
 			}
 			else if(type.equals("relation") && !a_ignoreRelations.contains(id))
+			{
+				ret.add(a_date == null ? Relation.fetch(id) : Relation.fetch(id, a_date));
 				ret.addAll(a_date == null ? Relation.fetch(id).getMembersRecursive(a_ignoreRelations, a_date) : Relation.fetch(id, a_date).getMembersRecursive(a_ignoreRelations, a_date));
+			}
 		}
 		return ret;
 	}
 	
+	public Object[] getMembersRecursive(Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	{
+		return getMembersRecursive(new ArrayList<String>(), a_date).toArray(new Object[0]);
+	}
+	
 	public Object[] getMembersRecursive() throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
 	{
-		return getMembersRecursive(new ArrayList<String>(), null).toArray(new Object[0]);
+		return getMembersRecursive(null);
 	}
 	
 	/**
@@ -297,6 +309,47 @@ public class Relation extends de.cdauth.osm.basic.Object
 				ret.add((Node) member);
 		}
 		return ret.toArray(new Node[0]);
+	}
+	
+	public Relation[] getRelationsRecursive() throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	{
+		return getRelationsRecursive(null);
+	}
+	
+	public Relation[] getRelationsRecursive(Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	{
+		HashSet<Object> members = getMembersRecursive(new ArrayList<String>(), a_date);
+		ArrayList<Relation> ret = new ArrayList<Relation>();
+		for(Object member : members)
+		{
+			if(member.getDOM().getTagName().equals("relation"))
+				ret.add((Relation) member);
+		}
+		return ret.toArray(new Relation[0]);
+	}
+	
+	public HashSet<Segment> getSegmentsRecursive(Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	{
+		HashSet<Segment> ret = new HashSet<Segment>();
+
+		Node[] nodes = getNodesRecursive(a_date);
+		for(int i=0; i<nodes.length; i++)
+			ret.add(new Segment(nodes[i], nodes[i]));
+		
+		Way[] ways = getWaysRecursive(a_date);
+		for(int i=0; i<ways.length; i++)
+		{
+			Node[] members = ways[i].getMemberNodes(a_date);
+			Node lastNode = null;
+			for(int j=0; j<members.length; j++)
+			{
+				if(lastNode != null)
+					ret.add(new Segment(lastNode, members[j]));
+				lastNode = members[j];
+			}
+		}
+		
+		return ret;
 	}
 	
 	/**
@@ -533,8 +586,109 @@ public class Relation extends de.cdauth.osm.basic.Object
 		return segmentsNodes;
 	}
 	
-	/*public static TreeMap<Changeset,ArrayList<Segment> getVersions(String a_id)
+	public static Hashtable<Segment,Changeset> blame(String a_id) throws IOException, SAXException, ParserConfigurationException, APIError, ParseException
 	{
+		Relation currentRelation = Relation.getHistory(a_id).lastEntry().getValue();
 		
-	}*/
+		Date currentDate = null;
+		Date nextDate = null;
+		String currentChangeset = null;
+		String nextChangeset = null;
+		
+		HashSet<Segment> currentSegments = currentRelation.getSegmentsRecursive(null);
+		Hashtable<Segment,String> blame = new Hashtable<Segment,String>();
+		
+		while(true)
+		{
+			Relation mainRelation = null;
+			Relation mainRelationOlder = null;
+
+			if(nextDate == null)
+			{ // First run
+				mainRelation = currentRelation;
+				mainRelationOlder = currentRelation;
+			}
+			else
+			{
+				currentDate = nextDate;
+				nextDate = null;
+				currentChangeset = nextChangeset;
+				nextChangeset = null;
+				mainRelation = Relation.fetch(a_id, currentDate);
+				mainRelationOlder = Relation.fetch(a_id, new Date(currentDate.getTime()-1000));
+			}
+			
+			if(mainRelation == null)
+				break;
+			
+			if(mainRelationOlder != null)
+			{
+				nextDate = getDateFormat().parse(mainRelationOlder.getDOM().getAttribute("timestamp"));
+				nextChangeset = mainRelationOlder.getDOM().getAttribute("changeset");
+			}
+			
+			Node[] nodeMembers = mainRelation.getNodesRecursive(currentDate);
+			for(int i=0; i<nodeMembers.length; i++)
+			{
+				TreeMap<Long,Node> nodeHistory = Node.getHistory(nodeMembers[i].getDOM().getAttribute("id"));
+				for(Node node : nodeHistory.values())
+				{
+					Date nodeDate = getDateFormat().parse(node.getDOM().getAttribute("timestamp"));
+					if((currentDate == null || nodeDate.compareTo(currentDate) < 0) && (nextDate == null || nodeDate.compareTo(nextDate) > 0))
+					{
+						nextDate = nodeDate;
+						nextChangeset = node.getDOM().getAttribute("changeset");
+					}
+				}
+			}
+			
+			Way[] wayMembers = mainRelation.getWaysRecursive(currentDate);
+			for(int i=0; i<wayMembers.length; i++)
+			{
+				TreeMap<Long,Way> wayHistory = Way.getHistory(wayMembers[i].getDOM().getAttribute("id"));
+				for(Way way : wayHistory.values())
+				{
+					Date wayDate = getDateFormat().parse(way.getDOM().getAttribute("timestamp"));
+					if((currentDate == null || wayDate.compareTo(currentDate) < 0) && (nextDate == null || wayDate.compareTo(nextDate) > 0))
+					{
+						nextDate = wayDate;
+						nextChangeset = way.getDOM().getAttribute("changeset");
+					}
+				}
+			}
+			
+			Relation[] relationMembers = mainRelation.getRelationsRecursive(currentDate);
+			for(int i=0; i<relationMembers.length; i++)
+			{
+				TreeMap<Long,Relation> relationHistory = Relation.getHistory(relationMembers[i].getDOM().getAttribute("id"));
+				for(Relation relation : relationHistory.values())
+				{
+					Date relationDate = getDateFormat().parse(relation.getDOM().getAttribute("timestamp"));
+					if((currentDate == null || relationDate.compareTo(currentDate) < 0) && (nextDate == null || relationDate.compareTo(nextDate) > 0))
+					{
+						nextDate = relationDate;
+						nextChangeset = relation.getDOM().getAttribute("changeset");
+					}
+				}
+			}
+			
+			HashSet<Segment> segments = mainRelation.getSegmentsRecursive(currentDate);
+			segments.retainAll(currentSegments);
+
+			if(segments.size() == 0)
+				break;
+			
+			if(currentChangeset != null)
+			{
+				for(Segment segment : segments)
+					blame.put(segment, currentChangeset);
+			}
+		}
+		
+		Hashtable<Segment,Changeset> ret = new Hashtable<Segment,Changeset>();
+		for(Map.Entry<Segment,String> e : blame.entrySet())
+			ret.put(e.getKey(), Changeset.fetch(e.getValue()));
+		
+		return ret;
+	}
 }

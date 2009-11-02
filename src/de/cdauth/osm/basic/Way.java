@@ -134,11 +134,24 @@ public class Way extends de.cdauth.osm.basic.Object
 	
 	public Node[] getMemberNodes() throws IOException, APIError, SAXException, ParserConfigurationException
 	{
-		downloadFull(getDOM().getAttribute("id"));
+		try
+		{
+			return getMemberNodes(null);
+		}
+		catch(ParseException e)
+		{ // Cannot occur as no date has to be parsed
+			return new Node[0];
+		}
+	}
+	
+	public Node[] getMemberNodes(Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	{
+		if(a_date != null)
+			downloadFull(getDOM().getAttribute("id"));
 		String[] members = getMembers();
 		Node[] ret = new Node[members.length];
 		for(int i=0; i<members.length; i++)
-			ret[i] = Node.fetch(members[i]);
+			ret[i] = (a_date == null ? Node.fetch(members[i]) : Node.fetch(members[i], a_date));
 		return ret;
 	}
 	

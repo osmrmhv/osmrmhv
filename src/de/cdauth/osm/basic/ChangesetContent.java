@@ -343,8 +343,8 @@ public class ChangesetContent extends XMLObject
 		// If only one node is moved in a changeset, that node might be a member of one or more
 		// ways and thus change these. As there is no real way to find out the parent ways
 		// of a node at the time of the changeset, we have to guess them.
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		Date changesetDate = dateFormat.parse(Changeset.fetch(m_id).getDOM().getAttribute("created_at"));
+		SimpleDateFormat dateFormat = Object.getDateFormat();
+		Date changesetDate = new Date(dateFormat.parse(Changeset.fetch(m_id).getDOM().getAttribute("created_at")).getTime()-1000);
 
 		Hashtable<String,Way> waysChanged = new Hashtable<String,Way>();
 		for(Node node : nodesChanged.values())

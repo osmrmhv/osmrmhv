@@ -25,6 +25,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 import de.cdauth.osm.basic.Changeset;
+import de.cdauth.osm.basic.LonLat;
 import de.cdauth.osm.basic.SQLite;
 import de.cdauth.osm.basic.Segment;
 import de.cdauth.osm.basic.Object;
@@ -166,6 +167,68 @@ public class Cache extends SQLite
 				clearStatement1.execute();
 				clearStatement2.execute();
 				clearStatement3.execute();
+				getConnection().commit();
+			}
+			catch(SQLException e2)
+			{
+			}
+			throw e;
+		}
+	}
+
+	public void cacheRelationBlame(long a_relation, Hashtable<Segment,Changeset> a_blame) throws SQLException
+	{
+		getConnection().createStatement().execute("CREATE TABLE IF NOT EXISTS relation_blame ( relation LONG, lon1 REAL, lat1 REAL, lon2 REAL, lat2 REAL, changeset LONG );");
+		getConnection().createStatement().execute("CREATE TABLE IF NOT EXISTS changeset_cache ( changeset LONG, user TEXT, message TEXT );");
+		getConnection().commit();
+		
+		PreparedStatement clearStatement = getConnection().prepareStatement("DELETE FROM relation_blame WHERE relation = ?;");
+		clearStatement.setLong(1, a_relation);
+		clearStatement.execute();
+		getConnection().commit();
+		
+		try
+		{
+			PreparedStatement segmentStatement = getConnection().prepareStatement("INSERT INTO relation_blame ( relation, lon1, lat1, lon2, lat2, changeset ) VALUES ( ?, ?, ?, ?, ?, ? );");
+			segmentStatement.setLong(1, a_relation);
+			
+			PreparedStatement changesetClearStatement = getConnection().prepareStatement("DELETE FROM changeset_cache WHERE changeset = ?;");
+			PreparedStatement changesetInsertStatement = getConnection().prepareStatement("INSERT INTO changeset_cache ( changeset, user, message ) VALUES ( ?, ?, ? );");
+
+			for(Map.Entry<Segment,Changeset> entry : a_blame.entrySet())
+			{
+				Segment segment = entry.getKey();
+				Changeset changeset = entry.getValue();
+				long changesetID = Long.parseLong(changeset.getDOM().getAttribute("id"));
+				LonLat node1 = segment.getNode1().getLonLat();
+				LonLat node2 = segment.getNode2().getLonLat();
+				
+				segmentStatement.setDouble(2, node1.getLon());
+				segmentStatement.setDouble(3, node1.getLat());
+				segmentStatement.setDouble(4, node2.getLon());
+				segmentStatement.setDouble(5, node2.getLat());
+				
+				segmentStatement.setLong(6, changesetID);
+				
+				segmentStatement.execute();
+				
+				changesetClearStatement.setLong(1, changesetID);
+				changesetClearStatement.execute();
+				
+				changesetInsertStatement.setLong(1, changesetID);
+				changesetInsertStatement.setString(2, changeset.getDOM().getAttribute("user"));
+				changesetInsertStatement.setString(3, changeset.getTag("comment"));
+				changesetInsertStatement.execute();
+			}
+			
+			getConnection().commit();
+		}
+		catch(SQLException e)
+		{
+			try
+			{
+				getConnection().rollback();
+				clearStatement.execute();
 				getConnection().commit();
 			}
 			catch(SQLException e2)

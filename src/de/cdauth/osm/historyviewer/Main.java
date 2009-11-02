@@ -30,6 +30,7 @@ import de.cdauth.osm.basic.API;
 import de.cdauth.osm.basic.APIError;
 import de.cdauth.osm.basic.Changeset;
 import de.cdauth.osm.basic.ChangesetContent;
+import de.cdauth.osm.basic.Relation;
 import de.cdauth.osm.basic.Segment;
 
 public class Main
@@ -46,6 +47,11 @@ public class Main
 		token_changeset.setDescription("The changeset to analyse.");
 		token_changeset.setParameter(Argument.PARAMETER_REQUIRED);
 		arguments.addArgument(token_changeset);
+		
+		Argument token_blame = new Argument('b', "blame");
+		token_blame.setDescription("The relation to blame.");
+		token_blame.setParameter(Argument.PARAMETER_REQUIRED);
+		arguments.addArgument(token_blame);
 		
 		Argument token_cache = new Argument('c', "cache");
 		token_cache.setDescription("The SQLite file to be used as cache.");
@@ -72,6 +78,13 @@ public class Main
 			sm_cache.cacheChangesetChanges(changeset, changes, downloadTime, content.getPreviousVersions(true));
 			
 			System.out.println("Successfully saved changes of changeset "+changeset.getDOM().getAttribute("id")+".");
+		}
+		
+		if(token_blame.set() > 0)
+		{
+			sm_cache.cacheRelationBlame(Long.parseLong(token_blame.parameter()), Relation.blame(token_blame.parameter()));
+			
+			System.out.println("Successfully saved relation blame "+token_blame.parameter()+".");
 		}
 	}
 	
