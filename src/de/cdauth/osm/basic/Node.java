@@ -75,8 +75,7 @@ public class Node extends de.cdauth.osm.basic.Object
 	}
 	
 	/**
-	 * Returns a LonLat object for the coordinates of this node. 
-	 * @return
+	 * Returns a LonLat object for the coordinates of this node.
 	 */
 	
 	public LonLat getLonLat()

@@ -86,7 +86,6 @@ public class LonLat
 	
 	public String toString()
 	{
-		//return "http://osm.cdauth.de/map/#mlat[0]="+getLat()+";mlon[0]="+getLon()+";zoom=15;lat="+getLat()+";lon="+getLon();
 		return getLat()+","+getLon();
 	}
 }

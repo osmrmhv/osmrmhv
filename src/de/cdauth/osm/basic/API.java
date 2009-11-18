@@ -168,7 +168,7 @@ public class API
 	 * Joins the values of an array using a specified delimiter.
 	 * @param a_delim
 	 * @param a_array
-	 * @return
+	 * @return The resulting string.
 	 */
 
 	public static String joinStringArray(String a_delim, String[] a_array)

@@ -42,9 +42,12 @@ public class ChangesetContent extends XMLObject
 	
 	private String m_id;
 	
+	/**
+	 * An osmChange file knows these types of changes.
+	 */
 	public enum ChangeType { create, modify, delete };
 	
-	Hashtable<ChangeType,Object[]> m_content = null;
+	private Hashtable<ChangeType,Object[]> m_content = null;
 	
 	/**
 	 * @param a_id The ID of the changeset, as it is not provided with the XML response.

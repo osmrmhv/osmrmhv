@@ -49,7 +49,7 @@ public class Changeset extends Object
 
 	/**
 	 * Returns the ChangesetContent object for this changeset.
-	 * @return
+	 * @return A ChangesetContent object
 	 * @throws IOException
 	 * @throws APIError
 	 * @throws SAXException
