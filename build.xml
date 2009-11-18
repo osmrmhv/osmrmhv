@@ -15,7 +15,7 @@
 
 	<target name="compile" depends="init" description="Compile the source.">
 		<mkdir dir="${build}" />
-		<javac srcdir="${src}" destdir="${build}" debug="true" classpath="lib/cmdargs/cmdargs.jar:lib/sqlite-jdbc-3.6.14.1.jar" />
+		<javac srcdir="${src}" destdir="${build}" debug="true" classpath="lib/cmdargs/dist_src/cmdargs.jar:lib/sqlite-jdbc-3.6.14.1.jar" />
 	</target>
 
 	<target name="dist" depends="compile,jks-create,jks-password" description="Compile the source and create a JAR file.">
