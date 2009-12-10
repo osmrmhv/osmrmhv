@@ -100,7 +100,7 @@ To automate the JAR signing processs, you can add the property
 	</target>
 	
 	<target name="doc">
-		<javadoc sourcepath="${src}" destdir="${doc}">
+		<javadoc sourcepath="${src}" destdir="${doc}" additionalparam="-notimestamp">
 			<classpath>
 				<path refid="classpath" />
 			</classpath>
