@@ -8,6 +8,17 @@
 	<property name="jks.alias" value="osm" />
 	<property name="jarfile" location="${dist}/osmrmhv.jar" />
 	<property name="doc" location="doc/" />
+	<property name="webapp" location="dist/webapp/" />
+	<property name="warfile" location="dist/osmrmhv.war" />
+	
+	<path id="classpath.jars">
+		<pathelement location="lib/sqlite-jdbc/sqlite-jdbc-3.6.14.1.jar" />
+		<pathelement location="lib/cmdargs/dist/cmdargs.jar" />
+	</path>
+	
+	<path id="classpath">
+		<path refid="classpath.jars" />
+	</path>
 
 	<target name="init">
 		<tstamp />
@@ -16,7 +27,11 @@
 
 	<target name="compile" depends="init" description="Compile the source.">
 		<mkdir dir="${build}" />
-		<javac srcdir="${src}" destdir="${build}" debug="true" classpath="lib/cmdargs/dist/cmdargs.jar:lib/sqlite-jdbc-3.6.14.1.jar" />
+		<javac srcdir="${src}" destdir="${build}" debug="true">
+			<classpath>
+				<path refid="classpath" />
+			</classpath>
+		</javac>
 	</target>
 
 	<target name="jar" depends="compile,jks-create,jks-password" description="Create a JAR file.">
@@ -85,6 +100,31 @@ To automate the JAR signing processs, you can add the property
 	</target>
 	
 	<target name="doc">
-		<javadoc sourcepath="${src}" destdir="${doc}" />
+		<javadoc sourcepath="${src}" destdir="${doc}">
+			<classpath>
+				<path refid="classpath" />
+			</classpath>
+		</javadoc>
+	</target>
+	
+	<target name="webapp" depends="jar">
+		<delete dir="${webapp}" />
+		<mkdir dir="${webapp}" />
+		<copy todir="${webapp}">
+			<fileset dir="jsp" />
+		</copy>
+		<mkdir dir="${webapp}/WEB-INF" />
+		<copy todir="${webapp}/WEB-INF/">
+			<fileset dir="etc/WEB-INF/" includes="**/*" />
+		</copy>
+		<mkdir dir="${webapp}/WEB-INF/lib" />
+		<copy todir="${webapp}/WEB-INF/lib/" flatten="true">
+			<path refid="classpath.jars" />
+			<fileset file="${jarfile}" />
+		</copy>
+	</target>
+	
+	<target name="war" depends="webapp">
+		<war basedir="${webapp}" destfile="${warfile}" />
 	</target>
 </project>
