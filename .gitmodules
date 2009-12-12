@@ -1,3 +1,3 @@
 [submodule "lib/cmdargs"]
 	path = lib/cmdargs
-	url = git://gitorious.org/osmrmhv/cmdargs.git
+	url = git://gitorious.org/cdauth/cmdargs.git
