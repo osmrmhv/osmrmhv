@@ -111,10 +111,8 @@
 	
 	<target name="gcj-lib" depends="gcj-lib-static,gcj-lib-shared" description="Compile the library with GCJ and build a shared and a static object." />
 	
-	<target name="gcj-osmrm" depends="gcj-lib-static,jar-osmrm" description="Compile Route Manager with GCJ.">
+	<target name="gcj-osmrm-static" depends="gcj-lib-static,jar-osmrm" description="Statically compile Route Manager with GCJ.">
 		<apply executable="gcj" dest="." parallel="true" skipemptyfilesets="true" force="yes">
-			<!-- FIXME: Get rid of force="yes". Currently, some input files are skipped of only some
-			     are newer than the output file. -->
 			<fileset file="${dist}/${jarfile-osmrm}" />
 			<fileset file="${cmdargs}/libcmdargs.a" />
 			<fileset file="${sqlite}/sqlite-jdbc.a" />
@@ -130,11 +128,26 @@
 			<srcfile />
 		</apply>
 	</target>
-		
-	<target name="gcj-osmhv" depends="gcj-lib-static,jar-osmhv" description="Compile History Viewer with GCJ.">
+	
+	<target name="gcj-osmrm-shared" depends="gcj-lib-shared,jar-osmrm" description="Compile Route Manager with GCJ and link dynamically.">
 		<apply executable="gcj" dest="." parallel="true" skipemptyfilesets="true" force="yes">
-			<!-- FIXME: Get rid of force="yes". Currently, some input files are skipped of only some
-			     are newer than the output file. -->
+			<fileset file="${dist}/${jarfile-osmrm}" />
+			<fileset file="${cmdargs}/libcmdargs.so.0" />
+			<fileset file="${sqlite}/sqlite-jdbc.so" />
+			<fileset file="${dist}/${sofile}" />
+			<mapper type="merge" to="osmrm" />
+			
+			<arg value="--classpath" />
+			<arg pathref="classpath-lib" />
+			<arg value="--main=de.cdauth.osm.routemanager.Main" />
+			<arg value="-o" />
+			<targetfile />
+			<srcfile />
+		</apply>
+	</target>
+		
+	<target name="gcj-osmhv-static" depends="gcj-lib-static,jar-osmhv" description="Statically compile History Viewer with GCJ.">
+		<apply executable="gcj" dest="." parallel="true" skipemptyfilesets="true" force="yes">
 			<fileset file="${dist}/${jarfile-osmhv}" />
 			<fileset file="${cmdargs}/libcmdargs.a" />
 			<fileset file="${sqlite}/sqlite-jdbc.a" />
@@ -151,7 +164,26 @@
 		</apply>
 	</target>
 	
-	<target name="gcj" depends="gcj-osmrm,gcj-osmhv" description="Build binaries with GCJ." />
+	<target name="gcj-osmhv-shared" depends="gcj-lib-shared,jar-osmhv" description="Compile History Viewer with GCJ and link dynamically.">
+		<apply executable="gcj" dest="." parallel="true" skipemptyfilesets="true" force="yes">
+			<fileset file="${dist}/${jarfile-osmhv}" />
+			<fileset file="${cmdargs}/libcmdargs.so.0" />
+			<fileset file="${sqlite}/sqlite-jdbc.so" />
+			<fileset file="${dist}/${sofile}" />
+			<mapper type="merge" to="osmhv" />
+			
+			<arg value="--classpath" />
+			<arg pathref="classpath-lib" />
+			<arg value="--main=de.cdauth.osm.historyviewer.Main" />
+			<arg value="-o" />
+			<targetfile />
+			<srcfile />
+		</apply>
+	</target>
+	
+	<target name="gcj-static" depends="gcj-osmrm-static,gcj-osmhv-static" description="Build static binaries with GCJ." />
+	
+	<target name="gcj-shared" depends="gcj-osmrm-shared,gcj-osmhv-shared" description="Build dynamically linked binaries with GCJ." />
 	
 	<target name="dist" depends="jar,war,gcj-lib,doc" description="Create JAR files, WAR files, Javadocs and GCJ-compiled library objects." />
 
