@@ -8,7 +8,6 @@
 	<property name="ofile" location="osmrmhv.o" />
 	<property name="afile" value="libosmrmhv.a" />
 	<property name="sofile" value="libosmrmhv.so.0" />
-	<property name="jarfile-osmrm" value="osmrm.jar" />
 	<property name="jarfile-osmhv" value="osmhv.jar" />
 	<property name="doc" location="doc/" />
 	<property name="webapp" location="dist/webapp/" />
@@ -49,17 +48,8 @@
 		</jar>
 	</target>
 	
-	<target name="jar-osmrm" depends="compile">
-		<jar jarfile="${dist}/${jarfile-osmrm}" basedir="${build}" description="Build the JAR file for the Route Manager.">
-			<include name="de/cdauth/osm/routemanager/**/*" />
-			<manifest>
-				<attribute name="Main-Class" value="de.cdauth.osm.routemanager.Main"/>
-			</manifest>
-		</jar>
-	</target>
-	
-	<target name="jar-osmhv" depends="compile">
-		<jar jarfile="${dist}/${jarfile-osmhv}" basedir="${build}" description="Build the JAR file for the History Viewer.">
+	<target name="jar-osmhv" depends="compile" description="Build the JAR file for the History Viewer.">
+		<jar jarfile="${dist}/${jarfile-osmhv}" basedir="${build}">
 			<include name="de/cdauth/osm/historyviewer/**/*" />
 			<manifest>
 				<attribute name="Main-Class" value="de.cdauth.osm.historyviewer.Main"/>
@@ -67,7 +57,7 @@
 		</jar>
 	</target>
 
-	<target name="jar" depends="jar-lib,jar-osmrm,jar-osmhv" description="Create JAR files." />
+	<target name="jar" depends="jar-lib,jar-osmhv" description="Create JAR files." />
 	
 	<target name="gcj-lib-compile" depends="jar-lib">
 		<apply executable="gcj" dest="." parallel="true" skipemptyfilesets="true">
@@ -110,41 +100,6 @@
 	</target>
 	
 	<target name="gcj-lib" depends="gcj-lib-static,gcj-lib-shared" description="Compile the library with GCJ and build a shared and a static object." />
-	
-	<target name="gcj-osmrm-static" depends="gcj-lib-static,jar-osmrm" description="Statically compile Route Manager with GCJ.">
-		<apply executable="gcj" dest="." parallel="true" skipemptyfilesets="true" force="yes">
-			<fileset file="${dist}/${jarfile-osmrm}" />
-			<fileset file="${cmdargs}/libcmdargs.a" />
-			<fileset file="${sqlite}/sqlite-jdbc.a" />
-			<fileset file="${dist}/${afile}" />
-			<mapper type="merge" to="osmrm" />
-			
-			<arg value="--classpath" />
-			<arg pathref="classpath-lib" />
-			<arg value="--static" />
-			<arg value="--main=de.cdauth.osm.routemanager.Main" />
-			<arg value="-o" />
-			<targetfile />
-			<srcfile />
-		</apply>
-	</target>
-	
-	<target name="gcj-osmrm-shared" depends="gcj-lib-shared,jar-osmrm" description="Compile Route Manager with GCJ and link dynamically.">
-		<apply executable="gcj" dest="." parallel="true" skipemptyfilesets="true" force="yes">
-			<fileset file="${dist}/${jarfile-osmrm}" />
-			<fileset file="${cmdargs}/libcmdargs.so.0" />
-			<fileset file="${sqlite}/sqlite-jdbc.so" />
-			<fileset file="${dist}/${sofile}" />
-			<mapper type="merge" to="osmrm" />
-			
-			<arg value="--classpath" />
-			<arg pathref="classpath-lib" />
-			<arg value="--main=de.cdauth.osm.routemanager.Main" />
-			<arg value="-o" />
-			<targetfile />
-			<srcfile />
-		</apply>
-	</target>
 		
 	<target name="gcj-osmhv-static" depends="gcj-lib-static,jar-osmhv" description="Statically compile History Viewer with GCJ.">
 		<apply executable="gcj" dest="." parallel="true" skipemptyfilesets="true" force="yes">
@@ -181,9 +136,9 @@
 		</apply>
 	</target>
 	
-	<target name="gcj-static" depends="gcj-osmrm-static,gcj-osmhv-static" description="Build static binaries with GCJ." />
+	<target name="gcj-static" depends="gcj-osmhv-static" description="Build static binaries with GCJ." />
 	
-	<target name="gcj-shared" depends="gcj-osmrm-shared,gcj-osmhv-shared" description="Build dynamically linked binaries with GCJ." />
+	<target name="gcj-shared" depends="gcj-osmhv-shared" description="Build dynamically linked binaries with GCJ." />
 	
 	<target name="dist" depends="jar,war,gcj-lib,doc" description="Create JAR files, WAR files, Javadocs and GCJ-compiled library objects." />
 
@@ -197,7 +152,6 @@
 			<fileset file="${dist}/${afile}" />
 			<fileset file="${dist}/${sofile}" />
 			<fileset file="${dist}/${jarfile}" />
-			<fileset file="${dist}/${jarfile-osmrm}" />
 			<fileset file="${dist}/${jarfile-osmhv}" />
 			<dirset dir="${webapp}" />
 			<fileset file="${warfile}" />
