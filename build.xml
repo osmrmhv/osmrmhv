@@ -8,10 +8,7 @@
 	<property name="ofile" location="osmrmhv.o" />
 	<property name="afile" value="libosmrmhv.a" />
 	<property name="sofile" value="libosmrmhv.so.0" />
-	<property name="jarfile-osmhv" value="osmhv.jar" />
 	<property name="doc" location="doc/" />
-	<property name="webapp" location="dist/webapp/" />
-	<property name="warfile" location="dist/osmrmhv.war" />
 	<property name="cmdargs" location="lib/cmdargs/dist" />
 	<property name="sqlite" location="lib/sqlite-jdbc" />
 	
@@ -29,11 +26,7 @@
 		<pathelement location="${dist}/${jarfile}" />
 	</path>
 
-	<target name="init">
-		<tstamp />
-	</target>
-
-	<target name="compile" depends="init" description="Compile the source.">
+	<target name="compile" description="Compile the source.">
 		<mkdir dir="${build}" />
 		<javac srcdir="${src}" destdir="${build}" debug="true">
 			<classpath>
@@ -47,17 +40,8 @@
 			<include name="de/cdauth/osm/basic/**/*" />
 		</jar>
 	</target>
-	
-	<target name="jar-osmhv" depends="compile" description="Build the JAR file for the History Viewer.">
-		<jar jarfile="${dist}/${jarfile-osmhv}" basedir="${build}">
-			<include name="de/cdauth/osm/historyviewer/**/*" />
-			<manifest>
-				<attribute name="Main-Class" value="de.cdauth.osm.historyviewer.Main"/>
-			</manifest>
-		</jar>
-	</target>
 
-	<target name="jar" depends="jar-lib,jar-osmhv" description="Create JAR files." />
+	<target name="jar" depends="jar-lib" description="Create JAR files." />
 	
 	<target name="gcj-lib-compile" depends="jar-lib">
 		<apply executable="gcj" dest="." parallel="true" skipemptyfilesets="true">
@@ -100,47 +84,8 @@
 	</target>
 	
 	<target name="gcj-lib" depends="gcj-lib-static,gcj-lib-shared" description="Compile the library with GCJ and build a shared and a static object." />
-		
-	<target name="gcj-osmhv-static" depends="gcj-lib-static,jar-osmhv" description="Statically compile History Viewer with GCJ.">
-		<apply executable="gcj" dest="." parallel="true" skipemptyfilesets="true" force="yes">
-			<fileset file="${dist}/${jarfile-osmhv}" />
-			<fileset file="${cmdargs}/libcmdargs.a" />
-			<fileset file="${sqlite}/sqlite-jdbc.a" />
-			<fileset file="${dist}/${afile}" />
-			<mapper type="merge" to="osmhv" />
-			
-			<arg value="--classpath" />
-			<arg pathref="classpath-lib" />
-			<arg value="--static" />
-			<arg value="--main=de.cdauth.osm.historyviewer.Main" />
-			<arg value="-o" />
-			<targetfile />
-			<srcfile />
-		</apply>
-	</target>
 	
-	<target name="gcj-osmhv-shared" depends="gcj-lib-shared,jar-osmhv" description="Compile History Viewer with GCJ and link dynamically.">
-		<apply executable="gcj" dest="." parallel="true" skipemptyfilesets="true" force="yes">
-			<fileset file="${dist}/${jarfile-osmhv}" />
-			<fileset file="${cmdargs}/libcmdargs.so.0" />
-			<fileset file="${sqlite}/sqlite-jdbc.so" />
-			<fileset file="${dist}/${sofile}" />
-			<mapper type="merge" to="osmhv" />
-			
-			<arg value="--classpath" />
-			<arg pathref="classpath-lib" />
-			<arg value="--main=de.cdauth.osm.historyviewer.Main" />
-			<arg value="-o" />
-			<targetfile />
-			<srcfile />
-		</apply>
-	</target>
-	
-	<target name="gcj-static" depends="gcj-osmhv-static" description="Build static binaries with GCJ." />
-	
-	<target name="gcj-shared" depends="gcj-osmhv-shared" description="Build dynamically linked binaries with GCJ." />
-	
-	<target name="dist" depends="jar,war,gcj-lib,doc" description="Create JAR files, WAR files, Javadocs and GCJ-compiled library objects." />
+	<target name="dist" depends="jar,gcj-lib,doc" description="Create JAR files, Javadocs and GCJ-compiled library objects." />
 
 	<target name="clean" description="Delete compiled files.">
 		<delete dir="${build}" />
@@ -152,9 +97,6 @@
 			<fileset file="${dist}/${afile}" />
 			<fileset file="${dist}/${sofile}" />
 			<fileset file="${dist}/${jarfile}" />
-			<fileset file="${dist}/${jarfile-osmhv}" />
-			<dirset dir="${webapp}" />
-			<fileset file="${warfile}" />
 		</delete>
 	</target>
 	
@@ -164,26 +106,5 @@
 				<path refid="classpath" />
 			</classpath>
 		</javadoc>
-	</target>
-	
-	<target name="webapp" depends="jar" description="Build web application directory.">
-		<delete dir="${webapp}" />
-		<mkdir dir="${webapp}" />
-		<copy todir="${webapp}">
-			<fileset dir="jsp" />
-		</copy>
-		<mkdir dir="${webapp}/WEB-INF" />
-		<copy todir="${webapp}/WEB-INF/">
-			<fileset dir="etc/WEB-INF/" includes="**/*" />
-		</copy>
-		<mkdir dir="${webapp}/WEB-INF/lib" />
-		<copy todir="${webapp}/WEB-INF/lib/" flatten="true">
-			<path refid="classpath.jars" />
-			<fileset file="${dist}/${jarfile}" />
-		</copy>
-	</target>
-	
-	<target name="war" depends="webapp" description="Build WAR file.">
-		<war basedir="${webapp}" destfile="${warfile}" />
 	</target>
 </project>
