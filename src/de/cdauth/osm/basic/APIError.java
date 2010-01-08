@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 
 /**
- * An error has occured while talking to the OSM API.
+ * An error has occurred while talking to the OSM API.
  */
 public class APIError extends Exception
 {
@@ -29,7 +29,7 @@ public class APIError extends Exception
 	private String m_message;
 
 	/**
-	 * An error has occured with the HTTP connection to the API.
+	 * An error has occurred with the HTTP connection to the API.
 	 * @param a_connection
 	 */
 	public APIError(HttpURLConnection a_connection)
