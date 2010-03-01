@@ -15,9 +15,35 @@
     along with osmrmhv. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package de.cdauth.osm.basic;
+package de.cdauth.osm.basic.api06;
 
-public interface Changeset extends Object
+import org.w3c.dom.Element;
+
+import de.cdauth.osm.basic.APIError;
+import de.cdauth.osm.basic.LonLat;
+import de.cdauth.osm.basic.Node;
+import de.cdauth.osm.basic.Way;
+
+/**
+ * Represents a Node in OpenStreetMap.
+ */
+
+public class API06Node extends API06GeographicalObject implements Node
 {
-	public ChangesetContent getContent() throws APIError;
+	protected API06Node(Element a_dom, API06API a_api)
+	{
+		super(a_dom, a_api);
+	}
+
+	@Override
+	public LonLat getLonLat()
+	{
+		return new LonLat(Float.parseFloat(getDOM().getAttribute("lon")), Float.parseFloat(getDOM().getAttribute("lat")));
+	}
+
+	@Override
+	public Way[] getContainingWays() throws APIError
+	{
+		return (Way[])getAPI().get("/node/"+getID()+"/ways");
+	}
 }

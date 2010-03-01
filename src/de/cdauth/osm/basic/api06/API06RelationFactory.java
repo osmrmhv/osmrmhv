@@ -15,9 +15,17 @@
     along with osmrmhv. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package de.cdauth.osm.basic;
+package de.cdauth.osm.basic.api06;
 
-public interface Changeset extends Object
+import de.cdauth.osm.basic.Relation;
+import de.cdauth.osm.basic.RelationFactory;
+
+public class API06RelationFactory extends API06GeographicalObjectFactory<Relation> implements RelationFactory
 {
-	public ChangesetContent getContent() throws APIError;
+	protected static final String TYPE = "relation";
+
+	protected API06RelationFactory(API06API a_api)
+	{
+		super(a_api, TYPE);
+	}
 }

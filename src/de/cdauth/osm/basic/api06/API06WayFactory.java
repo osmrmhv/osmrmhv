@@ -15,9 +15,17 @@
     along with osmrmhv. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package de.cdauth.osm.basic;
+package de.cdauth.osm.basic.api06;
 
-public interface Changeset extends Object
+import de.cdauth.osm.basic.WayFactory;
+import de.cdauth.osm.basic.Way;
+
+public class API06WayFactory extends API06GeographicalObjectFactory<Way> implements WayFactory
 {
-	public ChangesetContent getContent() throws APIError;
+	protected static final String TYPE = "way";
+
+	protected API06WayFactory(API06API a_api)
+	{
+		super(a_api, TYPE);
+	}
 }

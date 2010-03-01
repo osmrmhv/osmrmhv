@@ -17,7 +17,24 @@
 
 package de.cdauth.osm.basic;
 
-public interface Changeset extends Object
+import java.util.Map;
+
+public interface ObjectFactory<T extends Object>
 {
-	public ChangesetContent getContent() throws APIError;
+	/**
+	 * Internal function to fetch objects of type T with the IDs a_ids if they do not already exist in a_cache.
+	 * @param <T>
+	 * @param a_ids
+	 * @return
+	 * @throws APIError
+	 */
+	public Map<Long,T> fetch(long[] a_ids) throws APIError;
+	
+	/**
+	 * Returns an OSM Object; fetches it from the API if it isn’t cached already.
+	 * @param a_id
+	 * @return
+	 * @throws APIError
+	 */
+	public T fetch(long a_id) throws APIError;
 }

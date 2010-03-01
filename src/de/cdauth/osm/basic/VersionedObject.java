@@ -17,7 +17,13 @@
 
 package de.cdauth.osm.basic;
 
-public interface Changeset extends Object
+import java.util.Date;
+
+public interface VersionedObject extends Object
 {
-	public ChangesetContent getContent() throws APIError;
+	public Date getTimestamp();
+	
+	public Long getVersion();
+	
+	public Long getChangeset();
 }

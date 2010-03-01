@@ -15,9 +15,26 @@
     along with osmrmhv. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package de.cdauth.osm.basic;
+package de.cdauth.osm.basic.api06;
 
-public interface Changeset extends Object
+import org.w3c.dom.Element;
+
+import de.cdauth.osm.basic.Relation;
+import de.cdauth.osm.basic.RelationMember;
+
+public class API06RelationMember extends API06XMLObject implements RelationMember
 {
-	public ChangesetContent getContent() throws APIError;
+	private final Relation m_relation;
+	
+	protected API06RelationMember(Element a_dom, API06API a_api, Relation a_relation)
+	{
+		super(a_dom, a_api);
+		m_relation = a_relation;
+	}
+
+	@Override
+	public Relation getRelation()
+	{
+		return m_relation;
+	}
 }

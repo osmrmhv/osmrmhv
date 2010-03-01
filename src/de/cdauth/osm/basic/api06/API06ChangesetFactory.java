@@ -15,9 +15,17 @@
     along with osmrmhv. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package de.cdauth.osm.basic;
+package de.cdauth.osm.basic.api06;
 
-public interface Changeset extends Object
+import de.cdauth.osm.basic.Changeset;
+import de.cdauth.osm.basic.ChangesetFactory;
+
+public class API06ChangesetFactory extends API06ObjectFactory<Changeset> implements ChangesetFactory
 {
-	public ChangesetContent getContent() throws APIError;
+	protected static final String TYPE = "changeset";
+	
+	protected API06ChangesetFactory(API06API a_api)
+	{
+		super(a_api, TYPE);
+	}
 }

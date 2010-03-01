@@ -17,7 +17,7 @@
 
 package de.cdauth.osm.basic;
 
-public interface Changeset extends Object
+public interface ChangesetFactory extends ObjectFactory<Changeset>
 {
-	public ChangesetContent getContent() throws APIError;
+
 }
