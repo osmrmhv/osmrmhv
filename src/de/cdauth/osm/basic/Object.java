@@ -21,7 +21,7 @@ import java.util.Map;
 
 public interface Object extends Comparable<Object>
 {
-	public Long getID();
+	public ID getID();
 	
 	public String getTag(String a_tagName);
 	

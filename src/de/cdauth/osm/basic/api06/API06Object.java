@@ -23,6 +23,7 @@ import java.util.Map;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import de.cdauth.osm.basic.ID;
 import de.cdauth.osm.basic.Object;
 
 /**
@@ -56,7 +57,7 @@ abstract public class API06Object extends API06XMLObject implements Object
 	@Override
 	public int hashCode()
 	{
-		return new Long(getID()).hashCode();
+		return getID().hashCode();
 	}
 	
 	@Override
@@ -66,9 +67,9 @@ abstract public class API06Object extends API06XMLObject implements Object
 	}
 	
 	@Override
-	public Long getID()
+	public ID getID()
 	{
-		return new Long(getDOM().getAttribute("id"));
+		return new ID(getDOM().getAttribute("id"));
 	}
 	
 	/**

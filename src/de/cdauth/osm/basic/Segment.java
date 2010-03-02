@@ -17,23 +17,22 @@
 
 package de.cdauth.osm.basic;
 
-import de.cdauth.osm.basic.api06.API06Node;
-
 /**
  * Represents a connection between two nodes.
  */
 
 public class Segment
 {
-	private API06Node m_node1;
-	private API06Node m_node2;
+	private Node m_node1;
+	private Node m_node2;
 	
-	public Segment(API06Node a_node1, API06Node a_node2)
+	public Segment(Node a_node1, Node a_node2)
 	{
 		m_node1 = a_node1;
 		m_node2 = a_node2;
 	}
 	
+	@Override
 	public boolean equals(java.lang.Object obj)
 	{
 		if(obj instanceof Segment)
@@ -44,17 +43,18 @@ public class Segment
 		return false;
 	}
 
+	@Override
 	public int hashCode()
 	{
 		return getNode1().hashCode() ^ getNode2().hashCode();
 	}
 	
-	public API06Node getNode1()
+	public Node getNode1()
 	{
 		return m_node1;
 	}
 	
-	public API06Node getNode2()
+	public Node getNode2()
 	{
 		return m_node2;
 	}

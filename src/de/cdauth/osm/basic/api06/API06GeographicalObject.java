@@ -25,6 +25,8 @@ import org.w3c.dom.Element;
 
 import de.cdauth.osm.basic.APIError;
 import de.cdauth.osm.basic.GeographicalObject;
+import de.cdauth.osm.basic.ID;
+import de.cdauth.osm.basic.Version;
 import de.cdauth.osm.basic.VersionedObject;
 import de.cdauth.osm.basic.Node;
 import de.cdauth.osm.basic.Object;
@@ -72,18 +74,18 @@ abstract public class API06GeographicalObject extends API06Object implements Ver
 	 * @return The version of this object. {@link Long#MIN_VALUE} if no version attribute is present.
 	 */
 	@Override
-	public Long getVersion()
+	public Version getVersion()
 	{
 		String version = getDOM().getAttribute("version");
 		if(version.equals(""))
-			return Long.MIN_VALUE;
-		return Long.parseLong(version);
+			return null;
+		return new Version(version);
 	}
 	
 	@Override
-	public Long getChangeset()
+	public ID getChangeset()
 	{
-		return new Long(getDOM().getAttribute("changeset"));
+		return new ID(getDOM().getAttribute("changeset"));
 	}
 
 	@Override

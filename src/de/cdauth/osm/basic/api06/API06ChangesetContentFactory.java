@@ -21,6 +21,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import de.cdauth.osm.basic.APIError;
+import de.cdauth.osm.basic.ID;
 
 public class API06ChangesetContentFactory extends API06ObjectFactory<API06ChangesetContent>
 {
@@ -32,7 +33,7 @@ public class API06ChangesetContentFactory extends API06ObjectFactory<API06Change
 	}
 
 	@Override
-	protected String makeFetchURL(Long[] a_ids)
+	protected String makeFetchURL(ID[] a_ids)
 	{
 		if(a_ids.length != 1)
 			throw new IllegalArgumentException("Can only fetch one changeset content at a time.");
@@ -40,17 +41,17 @@ public class API06ChangesetContentFactory extends API06ObjectFactory<API06Change
 	}
 	
 	@Override
-	public Map<Long,API06ChangesetContent> fetch(long[] a_ids) throws APIError
+	public Map<ID,API06ChangesetContent> fetch(ID[] a_ids) throws APIError
 	{
-		Map<Long,API06ChangesetContent> ret = new Hashtable<Long,API06ChangesetContent>();
-		for(long id : a_ids)
+		Map<ID,API06ChangesetContent> ret = new Hashtable<ID,API06ChangesetContent>();
+		for(ID id : a_ids)
 			ret.put(id, fetch(id));
 		return ret;
 	}
 	
 	@Override
-	public API06ChangesetContent fetch(long a_id) throws APIError
+	public API06ChangesetContent fetch(ID a_id) throws APIError
 	{
-		return super.fetch(new long[]{ a_id }).get(a_id);
+		return super.fetch(new ID[]{ a_id }).get(a_id);
 	}
 }

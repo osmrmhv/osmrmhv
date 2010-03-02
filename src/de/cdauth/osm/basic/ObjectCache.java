@@ -32,14 +32,14 @@ import java.util.Hashtable;
 
 public class ObjectCache<T extends Object>
 {
-	private Hashtable<Long,T> m_newest = new Hashtable<Long,T>();
+	private Hashtable<ID,T> m_newest = new Hashtable<ID,T>();
 	
 	/**
 	 * Returns the most current version of the object with the ID a_id.
 	 * @param a_id
 	 * @return null if the object is not cached yet
 	 */
-	public T getCurrent(long a_id)
+	public T getCurrent(ID a_id)
 	{
 		return m_newest.get(a_id);
 	}

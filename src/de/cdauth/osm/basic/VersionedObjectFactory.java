@@ -30,7 +30,7 @@ public interface VersionedObjectFactory<T extends VersionedObject> extends Objec
 	 * @return null if the element did not exist at the given point of time 
 	 * @throws APIError
 	 */
-	public T fetch(long a_id, Date a_date) throws APIError;
+	public T fetch(ID a_id, Date a_date) throws APIError;
 	
 	/**
 	 * Fetches the version of an object that has been changed in a changeset with a number smaller than that of a_changeset.
@@ -40,9 +40,9 @@ public interface VersionedObjectFactory<T extends VersionedObject> extends Objec
 	 * @return null if the element did not exist before this changeset
 	 * @throws APIError
 	 */
-	public T fetch(long a_id, Changeset a_changeset) throws APIError;
+	public T fetch(ID a_id, Changeset a_changeset) throws APIError;
 	
-	public T fetch(long a_id, long a_version) throws APIError;
+	public T fetch(ID a_id, Version a_version) throws APIError;
 
 	/**
 	 * Returns a TreeMap of all versions of the element. The versions are ordered from the oldest to the newest. The indexes of the TreeMap match the version number.
@@ -51,5 +51,5 @@ public interface VersionedObjectFactory<T extends VersionedObject> extends Objec
 	 * @return
 	 * @throws APIError  
 	 */
-	public NavigableMap<Long,T> fetchHistory(long a_id) throws APIError;
+	public NavigableMap<Version,T> fetchHistory(ID a_id) throws APIError;
 }

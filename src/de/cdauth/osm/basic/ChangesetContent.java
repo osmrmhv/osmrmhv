@@ -28,9 +28,9 @@ public interface ChangesetContent
 
 	public Changeset getChangeset();
 	
-	public Object[] getMemberObjects();
+	public VersionedObject[] getMemberObjects() throws APIError;
 	
-	public Object[] getMemberObjects(ChangeType a_type);
+	public VersionedObject[] getMemberObjects(ChangeType a_type) throws APIError;
 	
-	public Map<Object,Object> getPreviousVersions(boolean a_onlyWithTagChanges);
+	public Map<VersionedObject,VersionedObject> getPreviousVersions(boolean a_onlyWithTagChanges) throws APIError;
 }

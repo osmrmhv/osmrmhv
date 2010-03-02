@@ -18,6 +18,8 @@
 package de.cdauth.osm.basic.api06;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.Date;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -55,5 +57,18 @@ public class API06Changeset extends API06Object implements Changeset
 		API06ChangesetContent ret = getAPI().getChangesetContentFactory().fetch(getID());
 		ret.setChangeset(this);
 		return ret;
+	}
+
+	@Override
+	public Date getCreationDate()
+	{
+		try
+		{
+			return API06GeographicalObject.getDateFormat().parse(getDOM().getAttribute("created_at"));
+		}
+		catch(ParseException e)
+		{
+			return null;
+		}
 	}
 }

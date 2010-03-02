@@ -17,7 +17,11 @@
 
 package de.cdauth.osm.basic;
 
+import java.util.Date;
+
 public interface Changeset extends Object
 {
 	public ChangesetContent getContent() throws APIError;
+	
+	public Date getCreationDate();
 }

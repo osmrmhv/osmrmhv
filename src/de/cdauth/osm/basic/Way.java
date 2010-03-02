@@ -21,7 +21,7 @@ import java.util.Date;
 
 public interface Way extends GeographicalObject,VersionedObject
 {
-	public long[] getMembers() throws APIError;
+	public ID[] getMembers() throws APIError;
 	
 	public Node[] getMemberNodes(Date a_date) throws APIError;
 	

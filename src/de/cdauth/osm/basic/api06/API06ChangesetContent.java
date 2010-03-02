@@ -19,7 +19,6 @@ package de.cdauth.osm.basic.api06;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -27,8 +26,10 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.NavigableMap;
+
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -36,8 +37,14 @@ import org.xml.sax.SAXException;
 import de.cdauth.osm.basic.APIError;
 import de.cdauth.osm.basic.Changeset;
 import de.cdauth.osm.basic.ChangesetContent;
-import de.cdauth.osm.basic.Segment;
+import de.cdauth.osm.basic.ID;
+import de.cdauth.osm.basic.Node;
 import de.cdauth.osm.basic.Object;
+import de.cdauth.osm.basic.Relation;
+import de.cdauth.osm.basic.Segment;
+import de.cdauth.osm.basic.Version;
+import de.cdauth.osm.basic.VersionedObject;
+import de.cdauth.osm.basic.Way;
 
 /**
  * Represents the content (the modified elements) of a changeset.
@@ -47,7 +54,7 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 {
 	private Changeset m_changeset;
 	
-	private Hashtable<ChangeType,API06Object[]> m_content = null;
+	private Hashtable<ChangeType,VersionedObject[]> m_content = null;
 	
 	protected API06ChangesetContent(Element a_dom, API06API a_api)
 	{
@@ -65,8 +72,8 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 	 * @param a_type
 	 * @return For created and modified objects, their new version. For deleted objects, their old version. 
 	 */
-	
-	public API06Object[] getMemberObjects(ChangeType a_type)
+	@Override
+	public VersionedObject[] getMemberObjects(ChangeType a_type)
 	{
 		if(m_content == null)
 			fixMemberObjects();
@@ -79,23 +86,21 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 	 * @param a_type
 	 * @return
 	 */
-	
-	private API06Object[] getMemberObjectsUnfixed(ChangeType a_type)
+	private VersionedObject[] getMemberObjectsUnfixed(ChangeType a_type)
 	{
-		ArrayList<API06Object> ret = new ArrayList<API06Object>();
+		ArrayList<Object> ret = new ArrayList<Object>();
 		NodeList nodes = getDOM().getElementsByTagName(a_type.toString());
 		for(int i=0; i<nodes.getLength(); i++)
-			ret.addAll(API06API.makeObjects((Element) nodes.item(i)));
-		API06Object[] retArr = ret.toArray(new API06Object[0]);
-		for(API06Object object : retArr)
+			ret.addAll(getAPI().makeObjects((Element) nodes.item(i)));
+		VersionedObject[] retArr = ret.toArray(new VersionedObject[0]);
+		for(VersionedObject object : retArr)
 		{
-			String type = object.getDOM().getTagName();
-			if(type.equals("node"))
-				API06Node.getCache().cacheVersion((API06Node)object);
-			else if(type.equals("way"))
-				API06Way.getCache().cacheVersion((API06Way)object);
-			else if(type.equals("relation"))
-				API06Relation.getCache().cacheVersion((API06Relation)object);
+			if(object instanceof Node)
+				((API06NodeFactory)getAPI().getNodeFactory()).getCache().cacheVersion((Node)object);
+			else if(object instanceof Way)
+				((API06WayFactory)getAPI().getWayFactory()).getCache().cacheVersion((Way)object);
+			else if(object instanceof Relation)
+				((API06RelationFactory)getAPI().getRelationFactory()).getCache().cacheVersion((Relation)object);
 		}
 		return retArr;
 	}
@@ -111,71 +116,57 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 	 * 3. If an object has been modified and later removed in one changeset, remove the part from the “modify” block
 	 * 4. If an object has been created and later removed in one changset, remove it from both the “create” and the “delete” part
 	 */
-	
 	private void fixMemberObjects()
 	{
-		Hashtable<Long,API06Object> created = new Hashtable<Long,API06Object>();
-		Hashtable<Long,API06Object> modified = new Hashtable<Long,API06Object>();
-		Hashtable<Long,API06Object> deleted = new Hashtable<Long,API06Object>();
+		Hashtable<Long,VersionedObject> created = new Hashtable<Long,VersionedObject>();
+		Hashtable<Long,VersionedObject> modified = new Hashtable<Long,VersionedObject>();
+		Hashtable<Long,VersionedObject> deleted = new Hashtable<Long,VersionedObject>();
 		
-		for(API06Object it : getMemberObjectsUnfixed(ChangeType.create))
+		for(VersionedObject it : getMemberObjectsUnfixed(ChangeType.create))
 		{
-			String type = it.getDOM().getTagName();
-			long id = Long.parseLong(it.getDOM().getAttribute("id")) * 4;
-			if(type.equals("node"))
+			long id = it.getID().asLong() * 4;
+			if(it instanceof Node)
 				id += 1;
-			else if(type.equals("way"))
+			else if(it instanceof Way)
 				id += 2;
-			else if(type.equals("relation"))
+			else if(it instanceof Relation)
 				id += 3;
-			created.put(new Long(id), it);
+			created.put(id, it);
 		}
 		
-		for(API06Object it : getMemberObjectsUnfixed(ChangeType.modify))
+		for(VersionedObject it : getMemberObjectsUnfixed(ChangeType.modify))
 		{
-			String type = it.getDOM().getTagName();
-			long id = Long.parseLong(it.getDOM().getAttribute("id")) * 4;
-			if(type.equals("node"))
+			long id = it.getID().asLong() * 4;
+			if(it instanceof Node)
 				id += 1;
-			else if(type.equals("way"))
+			else if(it instanceof Way)
 				id += 2;
-			else if(type.equals("relation"))
+			else if(it instanceof Relation)
 				id += 3;
 			Long idObj = new Long(id);
 			
 			// If an object has been created and then modified in one changeset, move the modified one to the “create” block
-			if(created.containsKey(idObj))
+			if(created.containsKey(idObj) && it.getVersion().compareTo(created.get(idObj).getVersion()) > 0)
 			{
-				long thisVersion = Long.parseLong(it.getDOM().getAttribute("version"));
-				long thatVersion = Long.parseLong(created.get(idObj).getDOM().getAttribute("version"));
-				if(thisVersion > thatVersion)
-				{
-					created.put(idObj, it);
-					continue;
-				}
+				created.put(idObj, it);
+				continue;
 			}
 
 			// If an object has been modified multiple times in one changeset, only keep the newest one
-			if(modified.containsKey(idObj))
-			{
-				long thisVersion = Long.parseLong(it.getDOM().getAttribute("version"));
-				long thatVersion = Long.parseLong(modified.get(idObj).getDOM().getAttribute("version"));
-				if(thisVersion <= thatVersion)
-					continue;
-			}
+			if(modified.containsKey(idObj) && it.getVersion().compareTo(modified.get(idObj).getVersion()) <= 0)
+				continue;
 			
 			modified.put(idObj, it);
 		}
 		
-		for(API06Object it : getMemberObjectsUnfixed(ChangeType.delete))
+		for(VersionedObject it : getMemberObjectsUnfixed(ChangeType.delete))
 		{
-			String type = it.getDOM().getTagName();
-			long id = Long.parseLong(it.getDOM().getAttribute("id")) * 4;
-			if(type.equals("node"))
+			long id = it.getID().asLong() * 4;
+			if(it instanceof Node)
 				id += 1;
-			else if(type.equals("way"))
+			else if(it instanceof Way)
 				id += 2;
-			else if(type.equals("relation"))
+			else if(it instanceof Relation)
 				id += 3;
 			Long idObj = new Long(id);
 			
@@ -193,10 +184,10 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 			deleted.put(new Long(id), it);
 		}
 		
-		Hashtable<ChangeType,API06Object[]> ret = new Hashtable<ChangeType,API06Object[]>();
-		ret.put(ChangeType.create, created.values().toArray(new API06Object[0]));
-		ret.put(ChangeType.modify, modified.values().toArray(new API06Object[0]));
-		ret.put(ChangeType.delete, deleted.values().toArray(new API06Object[0]));
+		Hashtable<ChangeType,VersionedObject[]> ret = new Hashtable<ChangeType,VersionedObject[]>();
+		ret.put(ChangeType.create, created.values().toArray(new VersionedObject[0]));
+		ret.put(ChangeType.modify, modified.values().toArray(new VersionedObject[0]));
+		ret.put(ChangeType.delete, deleted.values().toArray(new VersionedObject[0]));
 		
 		m_content = ret;
 	}
@@ -205,27 +196,14 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 	 * Returns all objects that are part of this changeset.
 	 * @return For created and modified objects, their new version. For deleted objects, their old version. 
 	 */
-	
-	public API06Object[] getMemberObjects()
+	@Override
+	public VersionedObject[] getMemberObjects()
 	{
-		ArrayList<API06Object> ret = new ArrayList<API06Object>();
+		ArrayList<VersionedObject> ret = new ArrayList<VersionedObject>();
 		ret.addAll(Arrays.asList(getMemberObjects(ChangeType.create)));
 		ret.addAll(Arrays.asList(getMemberObjects(ChangeType.modify)));
 		ret.addAll(Arrays.asList(getMemberObjects(ChangeType.delete)));
-		return ret.toArray(new API06Object[0]);
-	}
-	
-	/**
-	 * Fetches the previous version of all objects that were modified in this changeset.
-	 * @return A hashtable with the new version of an object in the key and the old version in the value 
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws APIError
-	 */
-	public Hashtable<API06Object,API06Object> getPreviousVersions() throws IOException, SAXException, ParserConfigurationException, APIError
-	{
-		return getPreviousVersions(false);
+		return ret.toArray(new VersionedObject[0]);
 	}
 	
 	/**
@@ -237,26 +215,26 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 	 * @throws ParserConfigurationException
 	 * @throws APIError
 	 */
-	public Hashtable<API06Object,API06Object> getPreviousVersions(boolean a_onlyWithTagChanges) throws IOException, SAXException, ParserConfigurationException, APIError
+	@Override
+	public Map<VersionedObject,VersionedObject> getPreviousVersions(boolean a_onlyWithTagChanges) throws APIError
 	{
-		API06Object[] newVersions = getMemberObjects(ChangeType.modify);
-		Hashtable<API06Object,API06Object> ret = new Hashtable<API06Object,API06Object>();
+		VersionedObject[] newVersions = getMemberObjects(ChangeType.modify);
+		Hashtable<VersionedObject,VersionedObject> ret = new Hashtable<VersionedObject,VersionedObject>();
 		for(int i=0; i<newVersions.length; i++)
 		{
-			API06Object last = null;
-			String tagName = newVersions[i].getDOM().getTagName();
-			long version = Long.parseLong(newVersions[i].getDOM().getAttribute("version"))-1;
+			VersionedObject last = null;
+			long version = newVersions[i].getVersion().asLong()-1;
 			do
 			{
-				if(tagName.equals("node"))
-					last = API06Node.fetch(newVersions[i].getDOM().getAttribute("id"), ""+version);
-				else if(tagName.equals("way"))
-					last = API06Way.fetch(newVersions[i].getDOM().getAttribute("id"), ""+version);
-				else if(tagName.equals("relation"))
-					last = API06Relation.fetch(newVersions[i].getDOM().getAttribute("id"), ""+version);
+				if(newVersions[i] instanceof Node)
+					last = getAPI().getNodeFactory().fetch(newVersions[i].getID(), new Version(version));
+				else if(newVersions[i] instanceof Way)
+					last = getAPI().getWayFactory().fetch(newVersions[i].getID(), new Version(version));
+				else if(newVersions[i] instanceof Relation)
+					last = getAPI().getRelationFactory().fetch(newVersions[i].getID(), new Version(version));
 				version--;
 			}
-			while(last.getDOM().getAttribute("changeset").equals(m_id) && version >= 1);
+			while(last.getChangeset() == getChangeset().getID() && version >= 1);
 
 			if(last != null && (!a_onlyWithTagChanges || !last.getTags().equals(newVersions[i].getTags())))
 				ret.put(newVersions[i], last);
@@ -284,61 +262,61 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 	
 	public Segment[][] getNodeChanges() throws IOException, SAXException, ParserConfigurationException, APIError, ParseException
 	{
-		Hashtable<API06Object,API06Object> old = getPreviousVersions();
+		Map<VersionedObject,VersionedObject> old = getPreviousVersions(false);
 		
-		Hashtable<String,API06Node> nodesRemoved = new Hashtable<String,API06Node>(); // All removed nodes and the old versions of all moved nodes
-		Hashtable<String,API06Node> nodesAdded = new Hashtable<String,API06Node>(); // All created nodes and the new versions of all moved nodes
-		Hashtable<String,API06Node> nodesChanged = new Hashtable<String,API06Node>(); // Only the new versions of all moved nodes
+		Hashtable<ID,Node> nodesRemoved = new Hashtable<ID,Node>(); // All removed nodes and the old versions of all moved nodes
+		Hashtable<ID,Node> nodesAdded = new Hashtable<ID,Node>(); // All created nodes and the new versions of all moved nodes
+		Hashtable<ID,Node> nodesChanged = new Hashtable<ID,Node>(); // Only the new versions of all moved nodes
 		
-		for(API06Object obj : getMemberObjects(ChangeType.delete))
+		for(VersionedObject obj : getMemberObjects(ChangeType.delete))
 		{
-			if(obj.getDOM().getTagName().equals("node"))
-				nodesRemoved.put(obj.getDOM().getAttribute("id"), (API06Node) obj);
+			if(obj instanceof Node)
+				nodesRemoved.put(obj.getID(), (Node) obj);
 		}
 		
-		for(API06Object obj : getMemberObjects(ChangeType.create))
+		for(VersionedObject obj : getMemberObjects(ChangeType.create))
 		{
-			if(obj.getDOM().getTagName().equals("node"))
-				nodesAdded.put(obj.getDOM().getAttribute("id"), (API06Node) obj);
+			if(obj instanceof Node)
+				nodesAdded.put(obj.getID(), (Node) obj);
 		}
 		
-		for(API06Object obj : getMemberObjects(ChangeType.modify))
+		for(VersionedObject obj : getMemberObjects(ChangeType.modify))
 		{
-			if(!obj.getDOM().getTagName().equals("node"))
+			if(!(obj instanceof Node))
 				continue;
-			API06Node newVersion = (API06Node)obj;
+			Node newVersion = (Node)obj;
 			
-			API06Node oldVersion = (API06Node)old.get(obj);
+			Node oldVersion = (Node)old.get(obj);
 			if(oldVersion == null)
 				continue;
 			
-			nodesRemoved.put(oldVersion.getDOM().getAttribute("id"), oldVersion);
-			nodesAdded.put(newVersion.getDOM().getAttribute("id"), newVersion);
+			nodesRemoved.put(oldVersion.getID(), oldVersion);
+			nodesAdded.put(newVersion.getID(), newVersion);
 			if(!oldVersion.getLonLat().equals(newVersion.getLonLat()))
-				nodesChanged.put(newVersion.getDOM().getAttribute("id"), newVersion);
+				nodesChanged.put(newVersion.getID(), newVersion);
 		}
 		
-		Hashtable<API06Way,List<String>> containedWays = new Hashtable<API06Way,List<String>>();
-		Hashtable<String,API06Way> previousWays = new Hashtable<String,API06Way>();
-		for(API06Object obj : getMemberObjects(ChangeType.modify))
+		Hashtable<Way,List<ID>> containedWays = new Hashtable<Way,List<ID>>();
+		Hashtable<ID,Way> previousWays = new Hashtable<ID,Way>();
+		for(VersionedObject obj : getMemberObjects(ChangeType.modify))
 		{
-			if(!obj.getDOM().getTagName().equals("way"))
+			if(!(obj instanceof Way))
 				continue;
-			API06Way way = (API06Way) obj;
+			Way way = (Way) obj;
 			containedWays.put(way, Arrays.asList(way.getMembers()));
-			previousWays.put(way.getDOM().getAttribute("id"), (API06Way)old.get(way));
+			previousWays.put(way.getID(), (Way)old.get(way));
 		}
 
 		// If only one node is moved in a changeset, that node might be a member of one or more
 		// ways and thus change these. As there is no real way to find out the parent ways
 		// of a node at the time of the changeset, we have to guess them.
-		SimpleDateFormat dateFormat = API06Object.getDateFormat();
-		Date changesetDate = new Date(dateFormat.parse(API06Changeset.fetch(m_id).getDOM().getAttribute("created_at")).getTime()-1000);
+		Date changesetDate = getChangeset().getCreationDate();
+		changesetDate.setTime(changesetDate.getTime()-1000);;
 
-		Hashtable<String,API06Way> waysChanged = new Hashtable<String,API06Way>();
-		for(API06Node node : nodesChanged.values())
+		Hashtable<ID,Way> waysChanged = new Hashtable<ID,Way>();
+		for(Node node : nodesChanged.values())
 		{
-			String nodeID = node.getDOM().getAttribute("id");
+			ID nodeID = node.getID();
 			// First guess: Ways that have been changed in the changeset
 			/*for(Map.Entry<Way,List<String>> entry : containedWays.entrySet())
 			{
@@ -350,22 +328,19 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 			}*/
 			
 			// Second guess: Current parent nodes of the node
-			for(API06Object obj : API06API.get("/node/"+node.getDOM().getAttribute("id")+"/ways"))
+			for(Way obj : node.getContainingWays())
 			{
-				if(!obj.getDOM().getTagName().equals("way"))
-					continue;
-				if(waysChanged.containsKey(obj.getDOM().getAttribute("id")))
+				if(waysChanged.containsKey(obj.getID()))
 					continue;
 				if(containedWays.containsKey(obj))
 					continue;
-				TreeMap<Long,API06Way> history = API06Way.getHistory(obj.getDOM().getAttribute("id"));
-				for(API06Way historyEntry : history.descendingMap().values())
+				NavigableMap<Version,Way> history = getAPI().getWayFactory().fetchHistory(obj.getID());
+				for(Way historyEntry : history.descendingMap().values())
 				{
-					Date historyDate = dateFormat.parse(historyEntry.getDOM().getAttribute("timestamp"));
-					if(historyDate.compareTo(changesetDate) < 0)
+					if(historyEntry.getTimestamp().compareTo(changesetDate) < 0)
 					{
 						if(Arrays.asList(historyEntry.getMembers()).contains(nodeID))
-							waysChanged.put(historyEntry.getDOM().getAttribute("id"), historyEntry);
+							waysChanged.put(historyEntry.getID(), historyEntry);
 						break;
 					}
 				}
@@ -373,24 +348,24 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 		}
 		
 		// Now make an array of node arrays to represent the old and the new form of the changed ways
-		Hashtable<String,API06Node> nodesCache = new Hashtable<String,API06Node>();
+		Hashtable<ID,Node> nodesCache = new Hashtable<ID,Node>();
 		HashSet<Segment> segmentsOld = new HashSet<Segment>();
 		HashSet<Segment> segmentsNew = new HashSet<Segment>();
 		
-		for(API06Object obj : getMemberObjects(ChangeType.create))
+		for(VersionedObject obj : getMemberObjects(ChangeType.create))
 		{
-			if(!obj.getDOM().getTagName().equals("way"))
+			if(!(obj instanceof Way))
 				continue;
-			API06Node lastNode = null;
-			for(String id : ((API06Way)obj).getMembers())
+			Node lastNode = null;
+			for(ID id : ((Way)obj).getMembers())
 			{
-				API06Node thisNode = null;
+				Node thisNode = null;
 				if(nodesAdded.containsKey(id))
 					thisNode = nodesAdded.get(id);
 				else
 				{
 					if(!nodesCache.containsKey(id))
-						nodesCache.put(id, API06Node.fetch(id, changesetDate));
+						nodesCache.put(id, getAPI().getNodeFactory().fetch(id, changesetDate));
 					thisNode = nodesCache.get(id);
 				}
 				
@@ -400,20 +375,20 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 			}
 		}
 		
-		for(API06Object obj : getMemberObjects(ChangeType.delete))
+		for(VersionedObject obj : getMemberObjects(ChangeType.delete))
 		{
-			if(!obj.getDOM().getTagName().equals("way"))
+			if(!(obj instanceof Way))
 				continue;
-			API06Node lastNode = null;
-			for(String id : ((API06Way)obj).getMembers())
+			Node lastNode = null;
+			for(ID id : ((Way)obj).getMembers())
 			{
-				API06Node thisNode = null;
+				Node thisNode = null;
 				if(nodesRemoved.containsKey(id))
 					thisNode = nodesRemoved.get(id);
 				else
 				{
 					if(!nodesCache.containsKey(id))
-						nodesCache.put(id, API06Node.fetch(id, changesetDate));
+						nodesCache.put(id, getAPI().getNodeFactory().fetch(id, changesetDate));
 					thisNode = nodesCache.get(id);
 				}
 				
@@ -423,21 +398,21 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 			}
 		}
 		
-		for(API06Object obj : getMemberObjects(ChangeType.modify))
+		for(Object obj : getMemberObjects(ChangeType.modify))
 		{
-			if(!obj.getDOM().getTagName().equals("way"))
+			if(!(obj instanceof Way))
 				continue;
 			
-			API06Node lastNode = null;
-			for(String id : ((API06Way)old.get(obj)).getMembers())
+			Node lastNode = null;
+			for(ID id : ((Way)old.get(obj)).getMembers())
 			{
-				API06Node thisNode = null;
+				Node thisNode = null;
 				if(nodesRemoved.containsKey(id))
 					thisNode = nodesRemoved.get(id);
 				else
 				{
 					if(!nodesCache.containsKey(id))
-						nodesCache.put(id, API06Node.fetch(id, changesetDate));
+						nodesCache.put(id, getAPI().getNodeFactory().fetch(id, changesetDate));
 					thisNode = nodesCache.get(id);
 				}
 				
@@ -447,15 +422,15 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 			}
 			
 			lastNode = null;
-			for(String id : ((API06Way)obj).getMembers())
+			for(ID id : ((Way)obj).getMembers())
 			{
-				API06Node thisNode = null;
+				Node thisNode = null;
 				if(nodesAdded.containsKey(id))
 					thisNode = nodesAdded.get(id);
 				else
 				{
 					if(!nodesCache.containsKey(id))
-						nodesCache.put(id, API06Node.fetch(id, changesetDate));
+						nodesCache.put(id, getAPI().getNodeFactory().fetch(id, changesetDate));
 					thisNode = nodesCache.get(id);
 				}
 				
@@ -465,14 +440,14 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 			}
 		}
 		
-		for(API06Way way : waysChanged.values())
+		for(Way way : waysChanged.values())
 		{
-			API06Node lastNodeOld = null;
-			API06Node lastNodeNew = null;
-			for(String id : way.getMembers())
+			Node lastNodeOld = null;
+			Node lastNodeNew = null;
+			for(ID id : way.getMembers())
 			{
-				API06Node thisNodeOld = null;
-				API06Node thisNodeNew = null;
+				Node thisNodeOld = null;
+				Node thisNodeNew = null;
 				if(nodesAdded.containsKey(id))
 					thisNodeNew = nodesAdded.get(id);
 				if(nodesRemoved.containsKey(id))
@@ -481,7 +456,7 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 				if(thisNodeOld == null || thisNodeNew == null)
 				{
 					if(!nodesCache.containsKey(id))
-						nodesCache.put(id, API06Node.fetch(id, changesetDate));
+						nodesCache.put(id, getAPI().getNodeFactory().fetch(id, changesetDate));
 					if(thisNodeOld == null)
 						thisNodeOld = nodesCache.get(id);
 					if(thisNodeNew == null)
@@ -499,9 +474,9 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 		}
 		
 		// Create one-node entries for node changes
-		for(API06Node node : nodesRemoved.values())
+		for(Node node : nodesRemoved.values())
 			segmentsOld.add(new Segment(node, node));
-		for(API06Node node : nodesAdded.values())
+		for(Node node : nodesAdded.values())
 			segmentsNew.add(new Segment(node, node));
 		
 		HashSet<Segment> segmentsUnchanged = new HashSet<Segment>();
@@ -516,7 +491,7 @@ public class API06ChangesetContent extends API06XMLObject implements Object,Chan
 	}
 
 	@Override
-	public Long getID()
+	public ID getID()
 	{
 		return getChangeset().getID();
 	}

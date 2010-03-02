@@ -23,6 +23,8 @@ import java.util.TreeMap;
 
 import de.cdauth.osm.basic.APIError;
 import de.cdauth.osm.basic.Changeset;
+import de.cdauth.osm.basic.ID;
+import de.cdauth.osm.basic.Version;
 import de.cdauth.osm.basic.VersionedObject;
 import de.cdauth.osm.basic.VersionedObjectCache;
 import de.cdauth.osm.basic.VersionedObjectFactory;
@@ -43,9 +45,9 @@ abstract public class API06GeographicalObjectFactory<T extends VersionedObject> 
 	}
 
 	@Override
-	public T fetch(long a_id, Date a_date) throws APIError
+	public T fetch(ID a_id, Date a_date) throws APIError
 	{
-		NavigableMap<Long,T> history = fetchHistory(a_id);
+		NavigableMap<Version,T> history = fetchHistory(a_id);
 		for(T historyEntry : history.descendingMap().values())
 		{
 			Date historyDate = historyEntry.getTimestamp();
@@ -56,28 +58,28 @@ abstract public class API06GeographicalObjectFactory<T extends VersionedObject> 
 	}
 
 	@Override
-	public T fetch(long a_id, Changeset a_changeset) throws APIError
+	public T fetch(ID a_id, Changeset a_changeset) throws APIError
 	{
-		Long changeset = a_changeset.getID();
-		NavigableMap<Long,T> history = fetchHistory(a_id);
+		ID changeset = a_changeset.getID();
+		NavigableMap<Version,T> history = fetchHistory(a_id);
 		for(T historyEntry : history.descendingMap().values())
 		{
-			Long entryChangeset = historyEntry.getChangeset();
-			if(entryChangeset < changeset)
+			ID entryChangeset = historyEntry.getChangeset();
+			if(entryChangeset.compareTo(changeset) < 0)
 				return historyEntry;
 		}
 		return null;
 	}
 	
 	@Override
-	public NavigableMap<Long,T> fetchHistory(long a_id) throws APIError
+	public NavigableMap<Version,T> fetchHistory(ID a_id) throws APIError
 	{
-		TreeMap<Long,T> cached = getCache().getHistory(a_id);
+		TreeMap<Version,T> cached = getCache().getHistory(a_id);
 		if(cached != null)
 			return cached;
 
 		Object[] historyElements = getAPI().get("/"+getType()+"/"+a_id+"/history");
-		TreeMap<Long,T> ordered = new TreeMap<Long,T>();
+		TreeMap<Version,T> ordered = new TreeMap<Version,T>();
 		for(Object element : historyElements)
 			ordered.put(((VersionedObject)element).getVersion(), (T)element);
 		getCache().cacheHistory(ordered);
@@ -85,7 +87,7 @@ abstract public class API06GeographicalObjectFactory<T extends VersionedObject> 
 	}
 
 	@Override
-	public T fetch(long a_id, long a_version) throws APIError
+	public T fetch(ID a_id, Version a_version) throws APIError
 	{
 		T cached = getCache().getVersion(a_id, a_version);
 		if(cached != null)

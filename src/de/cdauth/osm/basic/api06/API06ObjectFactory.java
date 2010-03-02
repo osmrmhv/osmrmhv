@@ -22,6 +22,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import de.cdauth.osm.basic.APIError;
+import de.cdauth.osm.basic.ID;
 import de.cdauth.osm.basic.Object;
 import de.cdauth.osm.basic.ObjectCache;
 import de.cdauth.osm.basic.ObjectFactory;
@@ -53,7 +54,7 @@ abstract public class API06ObjectFactory<T extends Object> implements ObjectFact
 		return m_api;
 	}
 	
-	protected String makeFetchURL(Long[] a_ids)
+	protected String makeFetchURL(ID[] a_ids)
 	{
 		if(a_ids.length == 1)
 			return "/"+getType()+"/"+a_ids[0];
@@ -70,11 +71,11 @@ abstract public class API06ObjectFactory<T extends Object> implements ObjectFact
 	}
 
 	@Override
-	public Map<Long,T> fetch(long[] a_ids) throws APIError
+	public Map<ID,T> fetch(ID[] a_ids) throws APIError
 	{
-		Hashtable<Long,T> ret = new Hashtable<Long,T>();
-		ArrayList<Long> toFetch = new ArrayList<Long>();
-		for(long id : a_ids)
+		Hashtable<ID,T> ret = new Hashtable<ID,T>();
+		ArrayList<ID> toFetch = new ArrayList<ID>();
+		for(ID id : a_ids)
 		{
 			T cached = getCache().getCurrent(id);
 			if(cached == null)
@@ -87,7 +88,7 @@ abstract public class API06ObjectFactory<T extends Object> implements ObjectFact
 		
 		if(toFetch.size() > 0)
 		{
-			Object[] fetched = getAPI().get(makeFetchURL(toFetch.toArray(new Long[0])));
+			Object[] fetched = getAPI().get(makeFetchURL(toFetch.toArray(new ID[0])));
 			for(int i=0; i<fetched.length; i++)
 			{
 				ret.put(fetched[i].getID(), (T)fetched[i]);
@@ -99,8 +100,8 @@ abstract public class API06ObjectFactory<T extends Object> implements ObjectFact
 	}
 
 	@Override
-	public T fetch(long a_id) throws APIError
+	public T fetch(ID a_id) throws APIError
 	{
-		return fetch(new long[] { a_id }).get(a_id);
+		return fetch(new ID[] { a_id }).get(a_id);
 	}
 }

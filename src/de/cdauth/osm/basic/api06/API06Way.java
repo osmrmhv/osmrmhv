@@ -28,7 +28,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import de.cdauth.osm.basic.APIError;
+import de.cdauth.osm.basic.ID;
 import de.cdauth.osm.basic.LonLat;
+import de.cdauth.osm.basic.Node;
 import de.cdauth.osm.basic.ObjectCache;
 import de.cdauth.osm.basic.Way;
 
@@ -48,7 +50,7 @@ public class API06Way extends API06GeographicalObject implements Way
 	 * @throws IOException 
 	 */
 	
-	public static void downloadFull(String a_id) throws IOException, APIError, SAXException, ParserConfigurationException
+	public static void downloadFull(String a_id) throws APIError
 	{
 		boolean downloadNecessary = true;
 		if(getCache().getCurrent(a_id) != null)
@@ -81,52 +83,31 @@ public class API06Way extends API06GeographicalObject implements Way
 	 * Returns an array of the IDs of all nodes that are part of this way.
 	 * @return
 	 */
-	
-	public String[] getMembers()
+	@Override
+	public ID[] getMembers()
 	{
 		NodeList members = getDOM().getElementsByTagName("nd");
-		String[] ret = new String[members.getLength()];
+		ID[] ret = new ID[members.getLength()];
 		for(int i=0; i<members.getLength(); i++)
-			ret[i] = ((Element)members.item(i)).getAttribute("ref");
+			ret[i] = new ID(((Element)members.item(i)).getAttribute("ref"));
 		return ret;
-	}
-	
-	/**
-	 * Downloads all member nodes of this way (if necessary) and returns an array of them.
-	 * @return
-	 * @throws IOException
-	 * @throws APIError
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 */
-	
-	public Node[] getMemberNodes() throws IOException, APIError, SAXException, ParserConfigurationException
-	{
-		try
-		{
-			return getMemberNodes(null);
-		}
-		catch(ParseException e)
-		{ // Cannot occur as no date has to be parsed
-			return new API06Node[0];
-		}
 	}
 	
 	public Node[] getMemberNodes(Date a_date) throws APIError
 	{
 		if(a_date != null)
 			downloadFull(getDOM().getAttribute("id"));
-		String[] members = getMembers();
-		API06Node[] ret = new API06Node[members.length];
+		ID[] members = getMembers();
+		Node[] ret = new Node[members.length];
 		for(int i=0; i<members.length; i++)
-			ret[i] = (a_date == null ? API06Node.fetch(members[i]) : API06Node.fetch(members[i], a_date));
+			ret[i] = (a_date == null ? getAPI().getNodeFactory().fetch(members[i]) : getAPI().getNodeFactory().fetch(members[i], a_date));
 		return ret;
 	}
 	
 	@Override
 	public LonLat getRoundaboutCentre() throws APIError
 	{
-		API06Node[] nodes = getMemberNodes();
+		Node[] nodes = getMemberNodes(null);
 		
 		if(nodes.length == 1)
 			return nodes[0].getLonLat();

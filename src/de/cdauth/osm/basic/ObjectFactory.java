@@ -28,7 +28,7 @@ public interface ObjectFactory<T extends Object>
 	 * @return
 	 * @throws APIError
 	 */
-	public Map<Long,T> fetch(long[] a_ids) throws APIError;
+	public Map<ID,T> fetch(ID[] a_ids) throws APIError;
 	
 	/**
 	 * Returns an OSM Object; fetches it from the API if it isn’t cached already.
@@ -36,5 +36,5 @@ public interface ObjectFactory<T extends Object>
 	 * @return
 	 * @throws APIError
 	 */
-	public T fetch(long a_id) throws APIError;
+	public T fetch(ID a_id) throws APIError;
 }

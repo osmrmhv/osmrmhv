@@ -32,11 +32,15 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import de.cdauth.osm.basic.APIError;
+import de.cdauth.osm.basic.GeographicalObject;
+import de.cdauth.osm.basic.ID;
 import de.cdauth.osm.basic.LonLat;
+import de.cdauth.osm.basic.Node;
 import de.cdauth.osm.basic.ObjectCache;
 import de.cdauth.osm.basic.Relation;
 import de.cdauth.osm.basic.RelationSegment;
 import de.cdauth.osm.basic.Segment;
+import de.cdauth.osm.basic.Way;
 
 public class API06Relation extends API06GeographicalObject implements Relation
 {
@@ -55,7 +59,7 @@ public class API06Relation extends API06GeographicalObject implements Relation
 		NodeList members = getDOM().getElementsByTagName("member");
 		API06RelationMember[] ret = new API06RelationMember[members.getLength()];
 		for(int i=0; i<members.getLength(); i++)
-			ret[i] = new API06RelationMember((Element) members.item(i));
+			ret[i] = new API06RelationMember((Element) members.item(i), getAPI(), this);
 		return ret;
 	}
 	
@@ -68,7 +72,7 @@ public class API06Relation extends API06GeographicalObject implements Relation
 	 * @throws IOException 
 	 */
 	
-	public static void downloadFull(String a_id) throws IOException, APIError, SAXException, ParserConfigurationException
+	public static void downloadFull(ID a_id) throws IOException, APIError, SAXException, ParserConfigurationException
 	{
 		boolean downloadNecessary = true;
 		if(getCache().getCurrent(a_id) != null)
@@ -113,13 +117,10 @@ public class API06Relation extends API06GeographicalObject implements Relation
 	 * Downloads all members of this relation and its sub-relations. Acts like a full download, but recursive. The number of API requests is optimised for the case of many sub-relations: as many relations as possible are downloaded in each API request, all ways and all nodes are downloaded in one additional request for both.
 	 * As the OSM API seems to be optimised for full fetches and takes quite a time to respond to the Way and Node request, this function may save requests but not time (at least with the current speed of the API).
 	 * @param a_id
-	 * @throws IOException
 	 * @throws APIError
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
 	 */
 	
-	public static void downloadRecursive(String a_id) throws IOException, APIError, SAXException, ParserConfigurationException
+	public static void downloadRecursive(ID a_id) throws APIError
 	{
 		HashSet<String> checkRelations = new HashSet<String>();
 		HashSet<String> downloadRelations = new HashSet<String>();
@@ -176,54 +177,60 @@ public class API06Relation extends API06GeographicalObject implements Relation
 	 * sub-relations. You may want to call downloadRecursive() first.
 	 * @param a_ignore_relations
 	 * @return
-	 * @throws IOException
-	 * @throws APIError
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws ParseException 
-	 * @throws ParseException 
+	 * @throws APIError 
 	 */
-	private HashSet<API06Object> getMembersRecursive(ArrayList<String> a_ignoreRelations, Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	private HashSet<GeographicalObject> getMembersRecursive(ArrayList<ID> a_ignoreRelations, Date a_date) throws APIError
 	{
-		a_ignoreRelations.add(this.getDOM().getAttribute("id"));
-		
-		if(a_date == null)
-			downloadFull(this.getDOM().getAttribute("id"));
-
-		HashSet<API06Object> ret = new HashSet<API06Object>();
-		for(API06RelationMember it : getMembers())
+		try
 		{
-			String type = it.getDOM().getAttribute("type");
-			String id = it.getDOM().getAttribute("ref");
-			if(type.equals("way"))
+			a_ignoreRelations.add(getID());
+			
+			if(a_date == null)
+				downloadFull(getID());
+	
+			HashSet<GeographicalObject> ret = new HashSet<GeographicalObject>();
+			for(API06RelationMember it : getMembers())
 			{
-				API06Way obj = (a_date == null ? API06Way.fetch(id) : API06Way.fetch(id, a_date));
-				if(!ret.add(obj))
-					System.out.println("Double");
+				String type = it.getDOM().getAttribute("type");
+				ID id = new ID(it.getDOM().getAttribute("ref"));
+				if(type.equals("way"))
+				{
+					Way obj = (a_date == null ? getAPI().getWayFactory().fetch(id) : getAPI().getWayFactory().fetch(id, a_date));
+					if(!ret.add(obj))
+						System.out.println("Double");
+				}
+				else if(type.equals("node"))
+				{
+					Node obj = (a_date == null ? getAPI().getNodeFactory().fetch(id) : getAPI().getNodeFactory().fetch(id, a_date));
+					if(!ret.add(obj))
+						System.out.println("Double");
+				}
+				else if(type.equals("relation") && !a_ignoreRelations.contains(id))
+				{
+					ret.add(a_date == null ? getAPI().getRelationFactory().fetch(id) : getAPI().getRelationFactory().fetch(id, a_date));
+					ret.addAll(a_date == null ? ((API06Relation)getAPI().getRelationFactory().fetch(id)).getMembersRecursive(a_ignoreRelations, a_date) : ((API06Relation)getAPI().getRelationFactory().fetch(id, a_date)).getMembersRecursive(a_ignoreRelations, a_date));
+				}
 			}
-			else if(type.equals("node"))
-			{
-				API06Node obj = (a_date == null ? API06Node.fetch(id) : API06Node.fetch(id, a_date));
-				if(!ret.add(obj))
-					System.out.println("Double");
-			}
-			else if(type.equals("relation") && !a_ignoreRelations.contains(id))
-			{
-				ret.add(a_date == null ? API06Relation.fetch(id) : API06Relation.fetch(id, a_date));
-				ret.addAll(a_date == null ? API06Relation.fetch(id).getMembersRecursive(a_ignoreRelations, a_date) : API06Relation.fetch(id, a_date).getMembersRecursive(a_ignoreRelations, a_date));
-			}
+			return ret;
 		}
-		return ret;
+		catch(IOException e)
+		{
+			throw new APIError("Could not download members.", e);
+		}
+		catch(SAXException e)
+		{
+			throw new APIError("Could not download members.", e);
+		}
+		catch(ParserConfigurationException e)
+		{
+			throw new APIError("Could not download members.", e);
+		}
 	}
 	
-	public API06Object[] getMembersRecursive(Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	@Override
+	public GeographicalObject[] getMembersRecursive(Date a_date) throws APIError
 	{
-		return getMembersRecursive(new ArrayList<String>(), a_date).toArray(new API06Object[0]);
-	}
-	
-	public API06Object[] getMembersRecursive() throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
-	{
-		return getMembersRecursive(null);
+		return getMembersRecursive(new ArrayList<ID>(), a_date).toArray(new GeographicalObject[0]);
 	}
 	
 	/**
@@ -235,81 +242,62 @@ public class API06Relation extends API06GeographicalObject implements Relation
 	 * @throws APIError 
 	 * @throws IOException
 	 */
-	
-	public API06Way[] getWaysRecursive() throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	public Way[] getWaysRecursive(Date a_date) throws APIError
 	{
-		return getWaysRecursive(null);
-	}
-	
-	public API06Way[] getWaysRecursive(Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
-	{
-		HashSet<API06Object> members = getMembersRecursive(new ArrayList<String>(), a_date);
-		ArrayList<API06Way> ret = new ArrayList<API06Way>();
-		for(API06Object member : members)
+		HashSet<GeographicalObject> members = getMembersRecursive(new ArrayList<ID>(), a_date);
+		ArrayList<Way> ret = new ArrayList<Way>();
+		for(GeographicalObject member : members)
 		{
-			if(member.getDOM().getTagName().equals("way"))
-				ret.add((API06Way) member);
+			if(member instanceof Way)
+				ret.add((Way) member);
 		}
-		return ret.toArray(new API06Way[0]);
+		return ret.toArray(new Way[0]);
 	}
 	
 	/**
 	 * Returns an array of all nodes that are contained in this relation and all of its sub-relations. You may want to call downloadRecursive() first.
 	 * @return
-	 * @throws IOException
-	 * @throws APIError
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws ParseException 
+	 * @throws APIError 
 	 */
-	
-	public API06Node[] getNodesRecursive() throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	@Override
+	public Node[] getNodesRecursive(Date a_date) throws APIError
 	{
-		return getNodesRecursive(null);
-	}
-	
-	public API06Node[] getNodesRecursive(Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
-	{
-		HashSet<API06Object> members = getMembersRecursive(new ArrayList<String>(), a_date);
-		ArrayList<API06Node> ret = new ArrayList<API06Node>();
-		for(API06Object member : members)
+		HashSet<GeographicalObject> members = getMembersRecursive(new ArrayList<ID>(), a_date);
+		ArrayList<Node> ret = new ArrayList<Node>();
+		for(GeographicalObject member : members)
 		{
-			if(member.getDOM().getTagName().equals("node"))
-				ret.add((API06Node) member);
+			if(member instanceof Node)
+				ret.add((Node) member);
 		}
-		return ret.toArray(new API06Node[0]);
+		return ret.toArray(new Node[0]);
 	}
 	
-	public API06Relation[] getRelationsRecursive() throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	public Relation[] getRelationsRecursive(Date a_date) throws APIError
 	{
-		return getRelationsRecursive(null);
-	}
-	
-	public API06Relation[] getRelationsRecursive(Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
-	{
-		HashSet<API06Object> members = getMembersRecursive(new ArrayList<String>(), a_date);
-		ArrayList<API06Relation> ret = new ArrayList<API06Relation>();
-		for(API06Object member : members)
+		HashSet<GeographicalObject> members = getMembersRecursive(new ArrayList<ID>(), a_date);
+		ArrayList<Relation> ret = new ArrayList<Relation>();
+		for(GeographicalObject member : members)
 		{
-			if(member.getDOM().getTagName().equals("relation"))
-				ret.add((API06Relation) member);
+			if(member instanceof Relation)
+				ret.add((Relation) member);
 		}
-		return ret.toArray(new API06Relation[0]);
+		return ret.toArray(new Relation[0]);
 	}
-	
-	public HashSet<Segment> getSegmentsRecursive(Date a_date) throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+
+	@Override
+	public Segment[] getSegmentsRecursive(Date a_date) throws APIError
 	{
 		HashSet<Segment> ret = new HashSet<Segment>();
 
-		API06Node[] nodes = getNodesRecursive(a_date);
+		Node[] nodes = getNodesRecursive(a_date);
 		for(int i=0; i<nodes.length; i++)
 			ret.add(new Segment(nodes[i], nodes[i]));
 		
-		API06Way[] ways = getWaysRecursive(a_date);
+		Way[] ways = getWaysRecursive(a_date);
 		for(int i=0; i<ways.length; i++)
 		{
-			API06Node[] members = ways[i].getMemberNodes(a_date);
-			API06Node lastNode = null;
+			Node[] members = ways[i].getMemberNodes(a_date);
+			Node lastNode = null;
 			for(int j=0; j<members.length; j++)
 			{
 				if(lastNode != null)
@@ -318,7 +306,7 @@ public class API06Relation extends API06GeographicalObject implements Relation
 			}
 		}
 		
-		return ret;
+		return ret.toArray(new Segment[0]);
 	}
 	
 	/**
@@ -332,7 +320,7 @@ public class API06Relation extends API06GeographicalObject implements Relation
 	 */
 	
 	@SuppressWarnings("unchecked")
-	public RelationSegment[] segmentate() throws IOException, APIError, SAXException, ParserConfigurationException, ParseException
+	public RelationSegment[] segmentate() throws APIError
 	{
 		ArrayList<API06Way> waysList = new ArrayList<API06Way>(Arrays.asList(getWaysRecursive()));
 		
@@ -555,7 +543,7 @@ public class API06Relation extends API06GeographicalObject implements Relation
 		return segmentsNodes;
 	}
 	
-	public static Hashtable<Segment,API06Changeset> blame(String a_id) throws IOException, SAXException, ParserConfigurationException, APIError, ParseException
+	public static Hashtable<Segment,API06Changeset> blame(ID a_id) throws IOException, SAXException, ParserConfigurationException, APIError, ParseException
 	{
 		API06Relation currentRelation = API06Relation.getHistory(a_id).lastEntry().getValue();
 		

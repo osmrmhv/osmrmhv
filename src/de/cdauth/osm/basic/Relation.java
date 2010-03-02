@@ -21,15 +21,15 @@ import java.util.Date;
 
 public interface Relation extends GeographicalObject,VersionedObject
 {
-	public RelationMember[] getMembers() throws APIError;
+	public RelationMember<GeographicalObject>[] getMembers() throws APIError;
 	
-	public Object[] getMembersRecursive(Date a_date) throws APIError;
+	public GeographicalObject[] getMembersRecursive(Date a_date) throws APIError;
 	
-	public Object[] getNodesRecursive(Date a_date) throws APIError;
+	public Node[] getNodesRecursive(Date a_date) throws APIError;
 	
-	public Object[] getWaysRecursive(Date a_date) throws APIError;
+	public Way[] getWaysRecursive(Date a_date) throws APIError;
 	
-	public Object[] getRelationsRecursive(Date a_date) throws APIError;
+	public Relation[] getRelationsRecursive(Date a_date) throws APIError;
 	
 	public Segment[] getSegmentsRecursive(Date a_date) throws APIError;
 }

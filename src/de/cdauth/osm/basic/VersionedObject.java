@@ -23,7 +23,7 @@ public interface VersionedObject extends Object
 {
 	public Date getTimestamp();
 	
-	public Long getVersion();
+	public Version getVersion();
 	
-	public Long getChangeset();
+	public ID getChangeset();
 }
