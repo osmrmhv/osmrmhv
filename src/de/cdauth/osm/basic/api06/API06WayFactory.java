@@ -41,7 +41,7 @@ public class API06WayFactory extends API06GeographicalObjectFactory<Way> impleme
 	protected void downloadFull(ID a_id) throws APIError
 	{
 		VersionedObjectCache<Way> wayCache = getCache();
-		VersionedObjectCache<Node> nodeCache = ((API06NodeFactory)getAPI().getNodeFactory()).getCache();
+		VersionedObjectCache<Node> nodeCache = (getAPI().getNodeFactory()).getCache();
 
 		boolean downloadNecessary = true;
 		if(wayCache.getCurrent(a_id) != null)

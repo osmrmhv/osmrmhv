@@ -35,7 +35,7 @@ import de.cdauth.osm.basic.APIError;
 import de.cdauth.osm.basic.Object;
 
 /**
- * Provides static methods to communicate with the OSM API. Handles the HTTP connection
+ * Provides static methods to communicate with the OSM API 0.6. Handles the HTTP connection
  * and parses XML responses.
  */
 
@@ -49,18 +49,26 @@ public class API06API implements API
 	
 	/**
 	 * Sets the User-Agent HTTP request header for all future API requests.
-	 * @param a_userAgent
+	 * @param a_userAgent The user agent to use.
 	 */
 	public void setUserAgent(String a_userAgent)
 	{
 		m_userAgent = a_userAgent;
 	}
 	
+	/**
+	 * Gets the HTTP User-Agent that is currently being used.
+	 * @return The user agent
+	 */
 	public String getUserAgent()
 	{
 		return m_userAgent;
 	}
 	
+	/**
+	 * Returns the full API URL where a request like <code>/node/1</code> can be appended.
+	 * @return The full API URL.
+	 */
 	protected static String getAPIPrefix()
 	{
 		return "http://"+API_SERVER+":"+API_PORT+API_PREFIX;
@@ -70,10 +78,7 @@ public class API06API implements API
 	 * Makes a HTTP request to the API and returns the XML root element of the response.
 	 * @param a_url The URL to be appended to the API prefix, for example "/node/1"
 	 * @return The root DOM Element of the XML response.
-	 * @throws IOException There was an error communicating with the API server.
-	 * @throws APIError The HTTP response code was not 200 or the XML response did not contain a root element.
-	 * @throws SAXException The XML response could not be parsed.
-	 * @throws ParserConfigurationException There was a problem while initialising the XML parser.
+	 * @throws APIError There was a connection problem or the server sent unexpected data.
 	 */
 	protected Element fetch(String a_url) throws APIError
 	{
@@ -87,7 +92,7 @@ public class API06API implements API
 			connection.connect();
 	
 			if(connection.getResponseCode() != 200)
-				throw new APIError(connection);
+				throw new APIError("ResponseCode is "+connection.getResponseCode()+".");
 	
 			Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(connection.getInputStream());
 			Element root = null;
@@ -123,10 +128,7 @@ public class API06API implements API
 	 * Makes OSM objects out of an XML element containing &lt;node&gt;, &lt;way&gt; and
 	 * &lt;relation&gt; elements.
 	 * @param a_root The root element.
-	 * Way.cache() and Relation.cache() methods. You should use this when you aren’t
-	 * working with old versions of objects.
-	 * @return An ArrayList of OSM Objects. They can be cast to the sub-types by checking
-	 * Object.getDOM().getTagName().
+	 * @return An ArrayList of OSM Objects.
 	 */
 	protected ArrayList<Object> makeObjects(Element a_root)
 	{
@@ -158,11 +160,6 @@ public class API06API implements API
 				API06Changeset el = new API06Changeset(element, this);
 				ret.add(el);
 			}
-			else if(element.getTagName().equals("osmChange"))
-			{
-				API06ChangesetContent el = new API06ChangesetContent(element, this);
-				ret.add(el);
-			}
 		}
 
 		return ret;
@@ -172,10 +169,7 @@ public class API06API implements API
 	 * Fetches OSM objects from the given API URL.
 	 * @param a_url For example "/node/1"
 	 * @return An array of OSM Objects. They can be cast to the sub-types checking the Object.getDOM().getTagName() value.
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws APIError
+	 * @throws APIError There was an error communicating with the API.
 	 */
 
 	protected Object[] get(String a_url) throws APIError
@@ -184,6 +178,7 @@ public class API06API implements API
 	}
 
 	private API06ChangesetFactory m_changesetFactory = null;
+	
 	@Override
 	public API06ChangesetFactory getChangesetFactory()
 	{
@@ -193,6 +188,7 @@ public class API06API implements API
 	}
 
 	private API06NodeFactory m_nodeFactory = null;
+	
 	@Override
 	public API06NodeFactory getNodeFactory()
 	{
@@ -202,6 +198,7 @@ public class API06API implements API
 	}
 
 	private API06RelationFactory m_relationFactory = null;
+	
 	@Override
 	public API06RelationFactory getRelationFactory()
 	{
@@ -211,19 +208,12 @@ public class API06API implements API
 	}
 
 	private API06WayFactory m_wayFactory = null;
+	
 	@Override
 	public API06WayFactory getWayFactory()
 	{
 		if(m_wayFactory == null)
 			m_wayFactory = new API06WayFactory(this);
 		return m_wayFactory;
-	}
-	
-	private API06ChangesetContentFactory m_changesetContentFactory = null;
-	public API06ChangesetContentFactory getChangesetContentFactory()
-	{
-		if(m_changesetContentFactory == null)
-			m_changesetContentFactory = new API06ChangesetContentFactory(this);
-		return m_changesetContentFactory;
 	}
 }

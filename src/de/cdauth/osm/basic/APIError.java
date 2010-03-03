@@ -17,45 +17,29 @@
 
 package de.cdauth.osm.basic;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-
 /**
  * An error has occurred while talking to the OSM API.
  */
 public class APIError extends Exception
 {
+	private static final long serialVersionUID = 437977542958386370L;
+
+	/**
+	 * Construct an APIError that was caused by another exception.
+	 * @param a_message An error message.
+	 * @param a_cause The exception that caused the error.
+	 */
 	public APIError(String a_message, Throwable a_cause)
 	{
 		super(a_message, a_cause);
 	}
-
-	private static final long serialVersionUID = 437977542958386370L;
-	private String m_message;
-
-	/**
-	 * An error has occurred with the HTTP connection to the API.
-	 * @param a_connection
-	 */
-	public APIError(HttpURLConnection a_connection)
-	{
-		m_message = "URL: "+a_connection.getURL().toString();
-		try
-		{
-			m_message += "\nStatus: "+a_connection.getResponseCode();
-		}
-		catch(IOException e)
-		{
-		}
-	}
 	
+	/**
+	 * A generic error has occurred talking to the API.
+	 * @param a_message An error message.
+	 */
 	public APIError(String a_message)
 	{
-		m_message = a_message;
-	}
-	
-	public String toString()
-	{
-		return m_message;
+		super(a_message);
 	}
 }
