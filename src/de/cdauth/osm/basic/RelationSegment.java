@@ -24,12 +24,11 @@ public class RelationSegment implements Comparable<RelationSegment>
 	private double m_distance = -1;
 	
 	/**
-	 * Segments are sorted by their distance to this point. Be sure to set this value before using compareTo() and to unset it afterwards, both inside a synchronized block.
+	 * Segments are sorted by their distance to this point. Be sure to set this value before using compareTo() and to unset it afterwards, both inside a block synchronizing this class.
 	 */
-	protected static LonLat sm_sortingReference = null;
-	protected static java.lang.Object sm_sortingReferenceSynchronized = new java.lang.Object();
+	private static LonLat sm_sortingReference = null;
 	
-	protected RelationSegment(LonLat[] a_nodes)
+	public RelationSegment(LonLat[] a_nodes)
 	{
 		if(a_nodes.length < 2)
 			throw new IllegalArgumentException("A segment has to consist of minimum two nodes.");
@@ -39,6 +38,11 @@ public class RelationSegment implements Comparable<RelationSegment>
 	private Double getReferenceDistance()
 	{
 		return new Double(Math.min(m_nodes[0].getDistance(sm_sortingReference), m_nodes[m_nodes.length-1].getDistance(sm_sortingReference)));
+	}
+	
+	public synchronized static void setSortingReference(LonLat m_sortingReference)
+	{
+		sm_sortingReference = m_sortingReference;
 	}
 	
 	/**

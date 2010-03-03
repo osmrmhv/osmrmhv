@@ -19,8 +19,12 @@ package de.cdauth.osm.basic.api06;
 
 import org.w3c.dom.Element;
 
+import de.cdauth.osm.basic.GeographicalObject;
+import de.cdauth.osm.basic.ID;
+import de.cdauth.osm.basic.Node;
 import de.cdauth.osm.basic.Relation;
 import de.cdauth.osm.basic.RelationMember;
+import de.cdauth.osm.basic.Way;
 
 public class API06RelationMember extends API06XMLObject implements RelationMember
 {
@@ -36,5 +40,31 @@ public class API06RelationMember extends API06XMLObject implements RelationMembe
 	public Relation getRelation()
 	{
 		return m_relation;
+	}
+	
+	@Override
+	public Class<? extends GeographicalObject> getType()
+	{
+		String type = getDOM().getAttribute("type");
+		if(type.equals("node"))
+			return Node.class;
+		else if(type.equals("way"))
+			return Way.class;
+		else if(type.equals("relation"))
+			return Relation.class;
+		else
+			throw new RuntimeException("Unknown relation member type "+type+".");
+	}
+
+	@Override
+	public ID getReferenceID()
+	{
+		return new ID(getDOM().getAttribute("ref"));
+	}
+
+	@Override
+	public String getRole()
+	{
+		return getDOM().getAttribute("role");
 	}
 }

@@ -15,21 +15,9 @@
     along with osmrmhv. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package de.cdauth.osm.basic;
+/**
+ * This is an implementation of the {@link de.cdauth.osm.basic} OSM API interface that talks to the
+ * OSM API 0.6 (<a href="http://wiki.openstreetmap.org/wiki/API_0.6">osmwiki</a>) over HTTP.
+ */
 
-import java.util.Date;
-
-public interface Relation extends GeographicalObject,VersionedObject
-{
-	public RelationMember[] getMembers() throws APIError;
-	
-	public GeographicalObject[] getMembersRecursive(Date a_date) throws APIError;
-	
-	public Node[] getNodesRecursive(Date a_date) throws APIError;
-	
-	public Way[] getWaysRecursive(Date a_date) throws APIError;
-	
-	public Relation[] getRelationsRecursive(Date a_date) throws APIError;
-	
-	public Segment[] getSegmentsRecursive(Date a_date) throws APIError;
-}
+package de.cdauth.osm.basic.api06;

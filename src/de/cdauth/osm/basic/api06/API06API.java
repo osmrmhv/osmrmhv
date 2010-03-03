@@ -32,11 +32,7 @@ import org.xml.sax.SAXException;
 
 import de.cdauth.osm.basic.API;
 import de.cdauth.osm.basic.APIError;
-import de.cdauth.osm.basic.ChangesetFactory;
-import de.cdauth.osm.basic.NodeFactory;
 import de.cdauth.osm.basic.Object;
-import de.cdauth.osm.basic.RelationFactory;
-import de.cdauth.osm.basic.WayFactory;
 
 /**
  * Provides static methods to communicate with the OSM API. Handles the HTTP connection
@@ -187,32 +183,47 @@ public class API06API implements API
 		return makeObjects(fetch(a_url)).toArray(new Object[0]);
 	}
 
+	private API06ChangesetFactory m_changesetFactory = null;
 	@Override
-	public ChangesetFactory getChangesetFactory()
+	public API06ChangesetFactory getChangesetFactory()
 	{
-		return new API06ChangesetFactory(this);
+		if(m_changesetFactory == null)
+			m_changesetFactory = new API06ChangesetFactory(this);
+		return m_changesetFactory;
 	}
 
+	private API06NodeFactory m_nodeFactory = null;
 	@Override
-	public NodeFactory getNodeFactory()
+	public API06NodeFactory getNodeFactory()
 	{
-		return new API06NodeFactory(this);
+		if(m_nodeFactory == null)
+			m_nodeFactory = new API06NodeFactory(this);
+		return m_nodeFactory;
 	}
 
+	private API06RelationFactory m_relationFactory = null;
 	@Override
-	public RelationFactory getRelationFactory()
+	public API06RelationFactory getRelationFactory()
 	{
-		return new API06RelationFactory(this);
+		if(m_relationFactory == null)
+			m_relationFactory = new API06RelationFactory(this);
+		return m_relationFactory;
 	}
 
+	private API06WayFactory m_wayFactory = null;
 	@Override
-	public WayFactory getWayFactory()
+	public API06WayFactory getWayFactory()
 	{
-		return new API06WayFactory(this);
+		if(m_wayFactory == null)
+			m_wayFactory = new API06WayFactory(this);
+		return m_wayFactory;
 	}
 	
+	private API06ChangesetContentFactory m_changesetContentFactory = null;
 	public API06ChangesetContentFactory getChangesetContentFactory()
 	{
-		return new API06ChangesetContentFactory(this);
+		if(m_changesetContentFactory == null)
+			m_changesetContentFactory = new API06ChangesetContentFactory(this);
+		return m_changesetContentFactory;
 	}
 }

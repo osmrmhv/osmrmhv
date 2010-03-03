@@ -17,7 +17,13 @@
 
 package de.cdauth.osm.basic;
 
-public interface RelationMember<T extends GeographicalObject>
+public interface RelationMember
 {
 	public Relation getRelation();
+	
+	public Class<? extends GeographicalObject> getType();
+	
+	public ID getReferenceID();
+	
+	public String getRole();
 }

@@ -15,21 +15,9 @@
     along with osmrmhv. If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * This package provides an abstract interface for implementations that talk to the OSM API.
+ * Furthermore, it brings some useful classes such as an Object cache.
+ */
+
 package de.cdauth.osm.basic;
-
-import java.util.Date;
-
-public interface Relation extends GeographicalObject,VersionedObject
-{
-	public RelationMember[] getMembers() throws APIError;
-	
-	public GeographicalObject[] getMembersRecursive(Date a_date) throws APIError;
-	
-	public Node[] getNodesRecursive(Date a_date) throws APIError;
-	
-	public Way[] getWaysRecursive(Date a_date) throws APIError;
-	
-	public Relation[] getRelationsRecursive(Date a_date) throws APIError;
-	
-	public Segment[] getSegmentsRecursive(Date a_date) throws APIError;
-}

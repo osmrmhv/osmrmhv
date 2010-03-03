@@ -17,8 +17,13 @@
 
 package de.cdauth.osm.basic.api06;
 
+import java.util.Hashtable;
+import java.util.Map;
+
+import de.cdauth.osm.basic.APIError;
 import de.cdauth.osm.basic.Changeset;
 import de.cdauth.osm.basic.ChangesetFactory;
+import de.cdauth.osm.basic.ID;
 
 public class API06ChangesetFactory extends API06ObjectFactory<Changeset> implements ChangesetFactory
 {
@@ -27,5 +32,21 @@ public class API06ChangesetFactory extends API06ObjectFactory<Changeset> impleme
 	protected API06ChangesetFactory(API06API a_api)
 	{
 		super(a_api, TYPE);
+	}
+
+	@Override
+	public Map<ID,Changeset> fetch(ID[] a_ids) throws APIError
+	{
+		// We can only fetch one changeset at a time
+		Map<ID,Changeset> ret = new Hashtable<ID,Changeset>();
+		for(ID id : a_ids)
+			ret.put(id, fetch(id));
+		return ret;
+	}
+	
+	@Override
+	public Changeset fetch(ID a_id) throws APIError
+	{
+		return super.fetch(new ID[]{ a_id }).get(a_id);
 	}
 }
