@@ -1,11 +1,23 @@
 package de.cdauth.osm.basic;
 
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache<T>
 {
-	private Hashtable<ID,TreeMap<Version,T>> m_history = new Hashtable<ID,TreeMap<Version,T>>();
+	/**
+	 * How many entries may be in the cache?
+	 */
+	public static final int MAX_CACHED_VALUES = 1000;
+	/**
+	 * How old may the entries in the cache be at most?
+	 */
+	public static final int MAX_AGE = 86400;
+
+	private final Hashtable<ID,TreeMap<Version,T>> m_history = new Hashtable<ID,TreeMap<Version,T>>();
+	private final SortedMap<Long,ID> m_historyTimes = Collections.synchronizedSortedMap(new TreeMap<Long,ID>());
 	
 	/**
 	 * Returns a specific version of the object with the ID a_id.
@@ -18,7 +30,10 @@ public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache
 		TreeMap<Version,T> history = getHistory(a_id);
 		if(history == null)
 			return null;
-		return history.get(a_version);
+		synchronized(history)
+		{
+			return history.get(a_version);
+		}
 	}
 	
 	/**
@@ -30,22 +45,25 @@ public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache
 	 */
 	public TreeMap<Version,T> getHistory(ID a_id)
 	{
-		TreeMap<Version,T> history = m_history.get(a_id);
-		if(history == null)
-			return null;
-		
-		// Check if all versions have been fetched into history
-		T current = getCurrent(a_id);
-		if(current == null)
-			return null;
-		Version currentVersion = current.getVersion();
-		
-		for(long i=1; i<=currentVersion.asLong(); i++)
+		synchronized(m_history)
 		{
-			if(!history.containsKey(new Long(i)))
+			TreeMap<Version,T> history = m_history.get(a_id);
+			if(history == null)
 				return null;
+			
+			// Check if all versions have been fetched into history
+			T current = getCurrent(a_id);
+			if(current == null)
+				return null;
+			Version currentVersion = current.getVersion();
+			
+			for(long i=1; i<=currentVersion.asLong(); i++)
+			{
+				if(!history.containsKey(new Long(i)))
+					return null;
+			}
+			return history;
 		}
-		return history;
 	}
 	
 	@Override
@@ -65,13 +83,25 @@ public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache
 		if(version == null)
 			return;
 		ID id = a_object.getID();
-		TreeMap<Version,T> history = getHistory(id);
-		if(history == null)
+		TreeMap<Version,T> history;
+		synchronized(m_history)
 		{
-			history = new TreeMap<Version,T>();
-			m_history.put(id, history);
+			history = getHistory(id);
+			if(history == null)
+			{
+				history = new TreeMap<Version,T>();
+				m_history.put(id, history);
+			}
+			
+			synchronized(m_historyTimes)
+			{
+				m_historyTimes.put(System.currentTimeMillis(), id);
+			}
 		}
-		history.put(version, a_object);
+		synchronized(history)
+		{
+			history.put(version, a_object);
+		}
 	}
 	
 	/**
@@ -84,6 +114,29 @@ public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache
 			return;
 		T current = a_history.lastEntry().getValue();
 		cacheCurrent(current);
-		m_history.put(current.getID(), a_history);
+		synchronized(m_history)
+		{
+			m_history.put(current.getID(), a_history);
+		}
+	}
+	
+	@Override
+	protected void cleanUp()
+	{
+		super.cleanUp();
+		while(true)
+		{
+			synchronized(m_history)
+			{
+				synchronized(m_historyTimes)
+				{
+					Long oldest = m_historyTimes.firstKey();
+					if(oldest == null || (System.currentTimeMillis()-oldest <= MAX_AGE*1000 && m_historyTimes.size() <= MAX_CACHED_VALUES))
+						break;
+					ID id = m_historyTimes.remove(oldest);
+					m_history.remove(id);
+				}
+			}
+		}
 	}
 }
