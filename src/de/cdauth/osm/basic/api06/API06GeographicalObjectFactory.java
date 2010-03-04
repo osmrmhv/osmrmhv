@@ -18,6 +18,7 @@
 package de.cdauth.osm.basic.api06;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -58,6 +59,28 @@ abstract public class API06GeographicalObjectFactory<T extends VersionedObject> 
 	}
 
 	@Override
+	public T fetch(ID a_id) throws APIError
+	{
+		T ret = super.fetch(a_id);
+		if(ret instanceof API06GeographicalObject) // Should always be true
+			((API06GeographicalObject)ret).markAsCurrent();
+		return ret;
+	}
+
+	@Override
+	public Map<ID, T> fetch(ID[] a_ids) throws APIError
+	{
+		Map<ID,T> ret = super.fetch(a_ids);
+		for(Map.Entry<ID,T> entry : ret.entrySet())
+		{
+			T it = entry.getValue();
+			if(it instanceof API06GeographicalObject) // Should always be true
+				((API06GeographicalObject)it).markAsCurrent();
+		}
+		return ret;
+	}
+
+	@Override
 	public T fetch(ID a_id, Changeset a_changeset) throws APIError
 	{
 		ID changeset = a_changeset.getID();
@@ -82,6 +105,11 @@ abstract public class API06GeographicalObjectFactory<T extends VersionedObject> 
 		TreeMap<Version,T> ordered = new TreeMap<Version,T>();
 		for(Object element : historyElements)
 			ordered.put(((VersionedObject)element).getVersion(), (T)element);
+		
+		T lastEntry = ordered.lastEntry().getValue();
+		if(lastEntry instanceof API06GeographicalObject) // Should always be true
+			((API06GeographicalObject)lastEntry).markAsCurrent();
+
 		getCache().cacheHistory(ordered);
 		return ordered;
 	}
@@ -89,14 +117,14 @@ abstract public class API06GeographicalObjectFactory<T extends VersionedObject> 
 	@Override
 	public T fetch(ID a_id, Version a_version) throws APIError
 	{
-		T cached = getCache().getVersion(a_id, a_version);
+		T cached = getCache().getObject(a_id, a_version);
 		if(cached != null)
 			return cached;
 		
 		Object[] fetched = getAPI().get("/"+getType()+"/"+a_id+"/"+a_version);
 		if(fetched.length < 1)
 			throw new APIError("Server sent no data.");
-		getCache().cacheVersion((T) fetched[0]);
+		getCache().cacheObject((T) fetched[0]);
 		return (T) fetched[0];
 	}
 }

@@ -44,6 +44,7 @@ public class API06Node extends API06GeographicalObject implements Node
 	@Override
 	public Way[] getContainingWays() throws APIError
 	{
+		// FIXME: Cache, mark as current
 		return (Way[])getAPI().get("/node/"+getID()+"/ways");
 	}
 }

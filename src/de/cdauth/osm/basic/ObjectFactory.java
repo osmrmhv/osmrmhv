@@ -19,22 +19,26 @@ package de.cdauth.osm.basic;
 
 import java.util.Map;
 
+/**
+ * The methods of this type are common to all factories that fetch {@link Object}s using an {@link API} implementation.
+ * The sub-types of this interface define which type of object is to be referenced by the IDs used in these methods.
+ * @author cdauth
+ */
 public interface ObjectFactory<T extends Object>
 {
 	/**
-	 * Internal function to fetch objects of type T with the IDs a_ids if they do not already exist in a_cache.
-	 * @param <T>
-	 * @param a_ids
-	 * @return
-	 * @throws APIError
+	 * Fetches multiple objects from the API at once.
+	 * @param a_ids The list of IDs to fetch objects for.
+	 * @return A map that contains the IDs from a_ids as keys and the fetched objects as values.
+	 * @throws APIError At least one object could not be fetched.
 	 */
 	public Map<ID,T> fetch(ID[] a_ids) throws APIError;
 	
 	/**
-	 * Returns an OSM Object; fetches it from the API if it isn’t cached already.
-	 * @param a_id
-	 * @return
-	 * @throws APIError
+	 * Fetches a single object from the API.
+	 * @param a_id The ID of the object to fetch.
+	 * @return The object with the specified ID.
+	 * @throws APIError The object could not be fetched.
 	 */
 	public T fetch(ID a_id) throws APIError;
 }

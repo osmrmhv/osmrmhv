@@ -37,6 +37,8 @@ abstract public class API06GeographicalObject extends API06Object implements Ver
 {
 	private static SimpleDateFormat sm_dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	
+	private boolean m_current = false;
+	
 	protected static SimpleDateFormat getDateFormat()
 	{
 		return sm_dateFormat;
@@ -45,6 +47,14 @@ abstract public class API06GeographicalObject extends API06Object implements Ver
 	protected API06GeographicalObject(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);
+	}
+	
+	/**
+	 * Marks this object to be the current version.
+	 */
+	protected void markAsCurrent()
+	{
+		m_current = true;
 	}
 	
 	@Override
@@ -67,6 +77,12 @@ abstract public class API06GeographicalObject extends API06Object implements Ver
 		{
 			return null;
 		}
+	}
+	
+	@Override
+	public boolean isCurrent()
+	{
+		return m_current;
 	}
 	
 	/**
@@ -101,6 +117,7 @@ abstract public class API06GeographicalObject extends API06Object implements Ver
 		else
 			throw new RuntimeException("Unknown data type.");
 		
+		// FIXME: Cache, mark as current
 		return (Relation[])getAPI().get("/"+urlPart+"/"+getID()+"/relations");
 	}
 }

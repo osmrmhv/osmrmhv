@@ -63,7 +63,7 @@ public class API06RelationFactory extends API06GeographicalObjectFactory<Relatio
 		VersionedObjectCache<Relation> relationCache = getCache();
 		
 		boolean downloadNecessary = true;
-		if(getCache().getCurrent(a_id) != null)
+		if(getCache().getObject(a_id) != null)
 		{
 			downloadNecessary = false;
 			for(RelationMember it : fetch(a_id).getMembers())
@@ -72,11 +72,11 @@ public class API06RelationFactory extends API06GeographicalObjectFactory<Relatio
 				ID id = it.getReferenceID();
 				boolean isCached = true;
 				if(type.equals(Node.class))
-					isCached = (nodeCache.getCurrent(id) != null);
+					isCached = (nodeCache.getObject(id) != null);
 				else if(type.equals(Way.class))
-					isCached = (wayCache.getCurrent(id) != null);
+					isCached = (wayCache.getObject(id) != null);
 				else if(type.equals(Relation.class))
-					isCached = (relationCache.getCurrent(id) != null);
+					isCached = (relationCache.getObject(id) != null);
 				if(!isCached)
 				{
 					downloadNecessary = true;
@@ -90,12 +90,15 @@ public class API06RelationFactory extends API06GeographicalObjectFactory<Relatio
 			Object[] fetched = getAPI().get("/relation/"+a_id+"/full");
 			for(Object object : fetched)
 			{
+				if(object instanceof API06GeographicalObject)
+					((API06GeographicalObject)object).markAsCurrent();
+
 				if(object instanceof Node)
-					nodeCache.cacheCurrent((Node) object);
+					nodeCache.cacheObject((Node) object);
 				else if(object instanceof Way)
-					wayCache.cacheCurrent((Way) object);
+					wayCache.cacheObject((Way) object);
 				else if(object instanceof Relation)
-					relationCache.cacheCurrent((Relation) object);
+					relationCache.cacheObject((Relation) object);
 			}
 		}
 	}
@@ -116,7 +119,7 @@ public class API06RelationFactory extends API06GeographicalObjectFactory<Relatio
 		HashSet<ID> downloadWays = new HashSet<ID>();
 		HashSet<ID> downloadNodes = new HashSet<ID>();
 
-		if(getCache().getCurrent(a_id) == null)
+		if(getCache().getObject(a_id) == null)
 			downloadFull(a_id);
 		
 		checkRelations.add(a_id);
@@ -139,7 +142,7 @@ public class API06RelationFactory extends API06GeographicalObjectFactory<Relatio
 			if(downloadRelations.size() == 1)
 			{
 				ID one = downloadRelations.iterator().next();
-				if(getCache().getCurrent(one) == null)
+				if(getCache().getObject(one) == null)
 					downloadFull(one);
 			}
 			else if(downloadRelations.size() > 1)

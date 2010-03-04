@@ -44,12 +44,12 @@ public class API06WayFactory extends API06GeographicalObjectFactory<Way> impleme
 		VersionedObjectCache<Node> nodeCache = (getAPI().getNodeFactory()).getCache();
 
 		boolean downloadNecessary = true;
-		if(wayCache.getCurrent(a_id) != null)
+		if(wayCache.getObject(a_id) != null)
 		{
 			downloadNecessary = false;
 			for(ID it : fetch(a_id).getMembers())
 			{
-				if(nodeCache.getCurrent(it) == null)
+				if(nodeCache.getObject(it) == null)
 				{
 					downloadNecessary = true;
 					break;
@@ -62,10 +62,13 @@ public class API06WayFactory extends API06GeographicalObjectFactory<Way> impleme
 			Object[] fetched = getAPI().get("/way/"+a_id+"/full");
 			for(Object object : fetched)
 			{
+				if(object instanceof API06GeographicalObject)
+					((API06GeographicalObject)object).markAsCurrent();
+
 				if(object instanceof Way)
-					wayCache.cacheCurrent((Way) object);
+					wayCache.cacheObject((Way) object);
 				else if(object instanceof Node)
-					nodeCache.cacheCurrent((Node) object);
+					nodeCache.cacheObject((Node) object);
 			}
 		}
 	}

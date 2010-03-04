@@ -17,6 +17,11 @@
 
 package de.cdauth.osm.basic;
 
+/**
+ * Fetches {@link Changeset} objects from the {@link API}.
+ * @see API#getChangesetFactory
+ * @author cdauth
+ */
 public interface ChangesetFactory extends ObjectFactory<Changeset>
 {
 

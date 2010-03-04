@@ -107,11 +107,11 @@ public class API06Changeset extends API06Object implements Changeset
 		for(VersionedObject object : retArr)
 		{
 			if(object instanceof Node)
-				(getAPI().getNodeFactory()).getCache().cacheVersion((Node)object);
+				(getAPI().getNodeFactory()).getCache().cacheObject((Node)object);
 			else if(object instanceof Way)
-				(getAPI().getWayFactory()).getCache().cacheVersion((Way)object);
+				(getAPI().getWayFactory()).getCache().cacheObject((Way)object);
 			else if(object instanceof Relation)
-				(getAPI().getRelationFactory()).getCache().cacheVersion((Relation)object);
+				(getAPI().getRelationFactory()).getCache().cacheObject((Relation)object);
 		}
 		return retArr;
 	}

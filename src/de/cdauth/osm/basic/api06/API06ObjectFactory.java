@@ -77,7 +77,7 @@ abstract public class API06ObjectFactory<T extends Object> implements ObjectFact
 		ArrayList<ID> toFetch = new ArrayList<ID>();
 		for(ID id : a_ids)
 		{
-			T cached = getCache().getCurrent(id);
+			T cached = getCache().getObject(id);
 			if(cached == null)
 			{
 				toFetch.add(id);
@@ -92,7 +92,7 @@ abstract public class API06ObjectFactory<T extends Object> implements ObjectFact
 			for(int i=0; i<fetched.length; i++)
 			{
 				ret.put(fetched[i].getID(), (T)fetched[i]);
-				getCache().cacheCurrent((T)fetched[i]);
+				getCache().cacheObject((T)fetched[i]);
 			}
 		}
 		

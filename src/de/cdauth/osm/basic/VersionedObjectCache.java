@@ -5,6 +5,12 @@ import java.util.Hashtable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+/**
+ * This class extends the {@link ObjectCache} class to be able to additionally cache old versions of {@link VersionedObject}s.
+ * As a VersionedObject does not know if it is the current one, you have to use special methods if you fetch
+ * current object versions; if you deal with old versions or whole history trees, use the other methods of this class.
+ * @author cdauth
+ */
 public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache<T>
 {
 	/**
@@ -21,11 +27,11 @@ public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache
 	
 	/**
 	 * Returns a specific version of the object with the ID a_id.
-	 * @param a_id
-	 * @param a_version
-	 * @return null if the object is not cached yet
+	 * @param a_id The ID of the object.
+	 * @param a_version The version to look up in the cache.
+	 * @return The object of the specified version or null if is not in the cache.
 	 */
-	public T getVersion(ID a_id, Version a_version)
+	public T getObject(ID a_id, Version a_version)
 	{
 		TreeMap<Version,T> history = getHistory(a_id);
 		if(history == null)
@@ -40,8 +46,8 @@ public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache
 	 * Returns the whole history of the object. The history is considered to be cached when all versions of it
 	 * are definitely in the cache (which is the case when the current version is saved and all versions from 1 
 	 * to the current one’s version number are existant).
-	 * @param a_id
-	 * @return null if the history of the object is not cached yet
+	 * @param a_id The ID of the object.
+	 * @return The whole history of the object or null if it is not complete in the cache.
 	 */
 	public TreeMap<Version,T> getHistory(ID a_id)
 	{
@@ -52,7 +58,7 @@ public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache
 				return null;
 			
 			// Check if all versions have been fetched into history
-			T current = getCurrent(a_id);
+			T current = getObject(a_id);
 			if(current == null)
 				return null;
 			Version currentVersion = current.getVersion();
@@ -66,19 +72,16 @@ public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache
 		}
 	}
 	
-	@Override
-	public void cacheCurrent(T a_object)
-	{
-		super.cacheCurrent(a_object);
-		cacheVersion(a_object);
-	}
-	
 	/**
-	 * Caches a version of an object that is not (or not for sure) the current one.
-	 * @param a_object
+	 * Caches an specific version ({@link VersionedObject#getVersion}) of an object.
+	 * @param a_object The versioned object to cache.
 	 */
-	public void cacheVersion(T a_object)
+	@Override
+	public void cacheObject(T a_object)
 	{
+		if(a_object.isCurrent())
+			super.cacheObject(a_object);
+
 		Version version = a_object.getVersion();
 		if(version == null)
 			return;
@@ -105,15 +108,18 @@ public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache
 	}
 	
 	/**
-	 * Caches the whole history of an object. The last entry is considered to be the current version.
-	 * @param a_history
+	 * Caches the whole history of an object.
+	 * @param a_history The whole history of an object.
 	 */
 	public void cacheHistory(TreeMap<Version,T> a_history)
 	{
 		if(a_history.size() < 1)
 			return;
+		
 		T current = a_history.lastEntry().getValue();
-		cacheCurrent(current);
+		if(current.isCurrent()) // Should always be true
+			super.cacheObject(current);
+
 		synchronized(m_history)
 		{
 			m_history.put(current.getID(), a_history);

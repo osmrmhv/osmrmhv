@@ -19,11 +19,28 @@ package de.cdauth.osm.basic;
 
 import java.util.Map;
 
+/**
+ * An object in the OSM database that has an ID and tags.
+ * @author cdauth
+ */
 public interface Object extends Comparable<Object>
 {
+	/**
+	 * Get the ID of this object.
+	 * @return The ID of this object.
+	 */
 	public ID getID();
 	
+	/**
+	 * Get the value of a specific tag of this object.
+	 * @param a_tagName The name/key of the tag.
+	 * @return The value of the tag or an emptry string if it is not set.
+	 */
 	public String getTag(String a_tagName);
 	
+	/**
+	 * Returns a Map with all the tags of this object.
+	 * @return A Map with all the tags of this object, an empty map if there are no tags.
+	 */
 	public Map<String,String> getTags();
 }

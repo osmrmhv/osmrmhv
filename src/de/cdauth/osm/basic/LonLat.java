@@ -18,7 +18,7 @@
 package de.cdauth.osm.basic;
 
 /**
- * Represents a pair of coordinates.
+ * Represents a pair of coordinates in WGS 84 / EPSG 4326.
  */
 
 public class LonLat
@@ -28,17 +28,30 @@ public class LonLat
 	
 	private static final short EARTH_RADIUS = 6367;
 	
+	/**
+	 * Creates a pair of coordinates.
+	 * @param a_lon The longitude in degrees, a value greater than or equal -90 and less than or equal +90.
+	 * @param a_lat The latitude in degrees, a value greater than -180 and less than or equal 180.
+	 */
 	public LonLat(double a_lon, double a_lat)
 	{
 		m_lon = a_lon;
 		m_lat = a_lat;
 	}
 	
+	/**
+	 * Returns the longitude.
+	 * @return The longitude in degrees, greater than or equal -90 and less than or equal 90.
+	 */
 	public double getLon()
 	{
 		return m_lon;
 	}
 	
+	/**
+	 * Returns the latitude.
+	 * @return The latitude in degrees, greater than -180 and less than or equal 180.
+	 */
 	public double getLat()
 	{
 		return m_lat;
@@ -46,7 +59,10 @@ public class LonLat
 	
 	/**
 	 * Two LonLat objects are equal if their coordinates are the same.
+	 * 
+	 * <p>{@inheritDoc}
 	 */
+	@Override
 	public boolean equals(java.lang.Object a_other)
 	{
 		if(a_other == null)
@@ -59,6 +75,7 @@ public class LonLat
 		return false;
 	}
 
+	@Override
 	public int hashCode()
 	{
 		return (((int)Math.round(getLat()*128)) << 16) | ((int)Math.round(getLon()*128)); 
@@ -67,10 +84,9 @@ public class LonLat
 	/**
 	 * Calculate the distance from this point to another.
 	 * Formula from {@link "http://mathforum.org/library/drmath/view/51879.html"}.
-	 * @param a_to
+	 * @param a_to The reference point to calculate the distance to.
 	 * @return The distance in km.
 	 */
-	
 	public double getDistance(LonLat a_to)
 	{
 		double lat1 = getLat()*Math.PI/180;
@@ -84,6 +100,7 @@ public class LonLat
 		return EARTH_RADIUS * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 	}
 	
+	@Override
 	public String toString()
 	{
 		return getLat()+","+getLon();

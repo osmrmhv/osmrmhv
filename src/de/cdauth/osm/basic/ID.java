@@ -1,19 +1,37 @@
 package de.cdauth.osm.basic;
 
+/**
+ * All OSM objects have an ID that is a 64-bit integer. This class mainly exist to provide type safety, as other
+ * data types such as {@link Version} are 64-bit integers as well.
+ * @author cdauth
+ */
 public class ID implements Comparable<ID>
 {
 	private final Long m_id;
 
+	/**
+	 * Creates an ID from a long.
+	 * @param a_id The ID.
+	 */
 	public ID(Long a_id)
 	{
 		m_id = a_id;
 	}
-	
+
+	/**
+	 * Creates an ID from a String.
+	 * @see {@link Long#Long(String)}
+	 * @param a_id The ID, usually the value of the XML attribute <code>id</code>.
+	 */
 	public ID(String a_id)
 	{
 		m_id = new Long(a_id);
 	}
 	
+	/**
+	 * Returns the long representation of this ID.
+	 * @return The long representation of this ID.
+	 */
 	public Long asLong()
 	{
 		return m_id;

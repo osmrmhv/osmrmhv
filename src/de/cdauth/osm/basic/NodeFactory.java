@@ -17,6 +17,11 @@
 
 package de.cdauth.osm.basic;
 
+/**
+ * Implentations of this type fetch {@link Node} objects from the {@link API}.
+ * @see {@link API#getNodeFactory()}
+ * @author cdauth
+ */
 public interface NodeFactory extends VersionedObjectFactory<Node>
 {
 

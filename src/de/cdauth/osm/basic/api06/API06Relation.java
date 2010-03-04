@@ -72,7 +72,7 @@ public class API06Relation extends API06GeographicalObject implements Relation
 		if(a_date == null)
 			getAPI().getRelationFactory().downloadFull(getID());
 
-		HashSet<GeographicalObject> ret = new HashSet<GeographicalObject>();
+		HashSet<GeographicalObject> ret = new HashSet<GeographicalObject>(); // TODO: Pass this as a parameter to avoid addAll()
 		for(API06RelationMember it : getMembers())
 		{
 			String type = it.getDOM().getAttribute("type");

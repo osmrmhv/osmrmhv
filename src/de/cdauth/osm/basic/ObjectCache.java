@@ -25,14 +25,14 @@ import java.util.TreeMap;
 import java.util.WeakHashMap;
 
 /**
- * With this class you can easily cache OSM objects you received from the API, including their history.
- * The properties of each OSM object are determined by reading their “id” and “version” XML attribute.
- * For each ID the single versions are cached. The most current version of an object is specially marked, so you
- * have to use the cacheCurrent() method instead of cacheVersion() to cache it. (Or you pass the whole history
- * using cacheHistory().)
+ * With this class you can easily cache OSM objects you retrieved from the API and that are not versioned. There
+ * is a maximum number of cached values {@link #MAX_CACHED_VALUES} and a maximum age {@link #MAX_AGE}. Run
+ * {@link #cleanUpAll} regularly to apply these limits.
+ * 
+ * <p>This class is to be used by the API implementations. These should check if objects are cached before fetching
+ * them from the API. As this class looks up cached objects only by their ID, you need multiple instances for different
+ * object types (ID scopes).
  * @author Candid Dauth
- *
- * @param <T>
  */
 
 public class ObjectCache<T extends Object>
@@ -48,7 +48,7 @@ public class ObjectCache<T extends Object>
 	
 	public static final Map<ObjectCache<? extends Object>, java.lang.Object> sm_instances = Collections.synchronizedMap(new WeakHashMap<ObjectCache<? extends Object>, java.lang.Object>());
 
-	private final Hashtable<ID,T> m_newest = new Hashtable<ID,T>();
+	private final Hashtable<ID,T> m_cache = new Hashtable<ID,T>();
 	
 	public ObjectCache()
 	{
@@ -62,34 +62,35 @@ public class ObjectCache<T extends Object>
 	 * Caches the time stamp ({@link System#currentTimeMillis()}) when an entry is saved to the cache. Needed for
 	 * {@link #cleanUp()}.
 	 */
-	private final SortedMap<Long,ID> m_newestTimes = Collections.synchronizedSortedMap(new TreeMap<Long,ID>());
+	private final SortedMap<Long,ID> m_cacheTimes = Collections.synchronizedSortedMap(new TreeMap<Long,ID>());
 	
 	/**
-	 * Returns the most current version of the object with the ID a_id.
-	 * @param a_id
-	 * @return null if the object is not cached yet
+	 * Returns the object with the ID a_id. For versioned objects returns the version that is known to be the current
+	 * one.
+	 * @param a_id The ID of the object.
+	 * @return The object or null if it is not in the cache.
 	 */
-	public T getCurrent(ID a_id)
+	public T getObject(ID a_id)
 	{
-		synchronized(m_newest)
+		synchronized(m_cache)
 		{
-			return m_newest.get(a_id);
+			return m_cache.get(a_id);
 		}
 	}
 	
 	/**
-	 * Caches a version of an object and marks it as the current one.
-	 * @param a_object
+	 * Caches an object.
+	 * @param a_object The object to cache.
 	 */
-	public void cacheCurrent(T a_object)
+	public void cacheObject(T a_object)
 	{
-		synchronized(m_newest)
+		synchronized(m_cache)
 		{
-			synchronized(m_newestTimes)
+			synchronized(m_cacheTimes)
 			{
 				ID id = a_object.getID();
-				m_newest.put(id, a_object);
-				m_newestTimes.put(System.currentTimeMillis(), id);
+				m_cache.put(id, a_object);
+				m_cacheTimes.put(System.currentTimeMillis(), id);
 			}
 		}
 	}
@@ -97,7 +98,7 @@ public class ObjectCache<T extends Object>
 	/**
 	 * Runs {@link #cleanUp()} on all instances of this class.
 	 */
-	protected static void cleanUpAll(int a_sleepBetween)
+	protected static void cleanUpAll()
 	{
 		ObjectCache<? extends Object>[] instances;
 		synchronized(sm_instances)
@@ -118,15 +119,15 @@ public class ObjectCache<T extends Object>
 	{
 		while(true)
 		{
-			synchronized(m_newest)
+			synchronized(m_cache)
 			{
-				synchronized(m_newestTimes)
+				synchronized(m_cacheTimes)
 				{
-					Long oldest = m_newestTimes.firstKey();
-					if(oldest == null || (System.currentTimeMillis()-oldest <= MAX_AGE*1000 && m_newestTimes.size() <= MAX_CACHED_VALUES))
+					Long oldest = m_cacheTimes.firstKey();
+					if(oldest == null || (System.currentTimeMillis()-oldest <= MAX_AGE*1000 && m_cacheTimes.size() <= MAX_CACHED_VALUES))
 						break;
-					ID id = m_newestTimes.remove(oldest);
-					m_newest.remove(id);
+					ID id = m_cacheTimes.remove(oldest);
+					m_cache.remove(id);
 				}
 			}
 		}

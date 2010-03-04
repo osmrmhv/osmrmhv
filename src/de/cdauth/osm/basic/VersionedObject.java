@@ -19,6 +19,12 @@ package de.cdauth.osm.basic;
 
 import java.util.Date;
 
+/**
+ * An object that can be modified by changeset and thus has a version history. Instances of this type do not know
+ * if they are the current version. With some API implementations though, it makes a huge difference whether to
+ * fetch a specific version of an object or the current version.
+ * @author cdauth
+ */
 public interface VersionedObject extends Object
 {
 	public Date getTimestamp();
@@ -26,4 +32,6 @@ public interface VersionedObject extends Object
 	public Version getVersion();
 	
 	public ID getChangeset();
+	
+	public boolean isCurrent();
 }

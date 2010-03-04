@@ -125,8 +125,9 @@ public class API06API implements API
 	}
 	
 	/**
-	 * Makes OSM objects out of an XML element containing &lt;node&gt;, &lt;way&gt; and
-	 * &lt;relation&gt; elements.
+	 * Makes OSM objects out of an XML element containing &lt;node&gt;, &lt;way&gt;,
+	 * &lt;relation&gt; and &lt;changeset&gt; elements. Do not forget to call {@link API06GeographicalObject#markAsCurrent}
+	 * afterwards if appropriate.
 	 * @param a_root The root element.
 	 * @return An ArrayList of OSM Objects.
 	 */
@@ -166,7 +167,8 @@ public class API06API implements API
 	}
 	
 	/**
-	 * Fetches OSM objects from the given API URL.
+	 * Fetches OSM objects from the given API URL. Do not forget to call {@link API06GeographicalObject#markAsCurrent}
+	 * afterwards if appropriate.
 	 * @param a_url For example "/node/1"
 	 * @return An array of OSM Objects. They can be cast to the sub-types checking the Object.getDOM().getTagName() value.
 	 * @throws APIError There was an error communicating with the API.
