@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>de.cdauth.osm</groupId>
+	<artifactId>lib</artifactId>
+	<version>SNAPSHOT</version>
+	<name>osmrmhv</name>
+	<description>A library to talk to the OpenStreetMap database via different ways.</description>
+	<packaging>pom</packaging>
+	<licenses>
+		<license>
+			<name>GNU Affero General Public License Version 3</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<modules>
+		<module>interface</module>
+		<module>api06</module>
+	</modules>
+	<scm>
+		<connection>git://gitorious.org/osmrmhv/lib.git</connection>
+		<developerConnection>git@gitorious.org:osmrmhv/lib.git</developerConnection>
+		<url>http://gitorious.org/osmrmhv/lib/trees</url>
+	</scm>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	<build>
+		<finalName>osmrmhv-${artifactId}-${version}</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+					<compilerArgument>-g</compilerArgument>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.6.1</version>
+			</plugin>
+		</plugins>
+	</build>
+</project>
