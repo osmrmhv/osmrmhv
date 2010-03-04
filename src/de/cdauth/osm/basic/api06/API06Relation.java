@@ -61,47 +61,53 @@ public class API06Relation extends API06GeographicalObject implements Relation
 	/**
 	 * Returns an array of all ways and nodes that are contained in this relation and all of its
 	 * sub-relations. You may want to call downloadRecursive() first.
-	 * @param a_ignore_relations
-	 * @return
+	 * @param a_date The date to use to fetch the members. Set to null to fetch the current member versions (which is a lot faster).
+	 * @param a_members Set to null. Is filled with the result and passed along the recursive calls of this function.
+	 * @param a_ignoreRelations Set to null. Is passed along the recursive calls to processing a relation twice and thus produce an infinite loop.
+	 * @return A set of the members of this relation.
 	 * @throws APIError 
 	 */
-	private HashSet<GeographicalObject> getMembersRecursive(ArrayList<ID> a_ignoreRelations, Date a_date) throws APIError
+	private HashSet<GeographicalObject> getMembersRecursive(Date a_date, HashSet<GeographicalObject> a_members, HashSet<ID> a_ignoreRelations) throws APIError
 	{
+		if(a_members == null)
+			a_members = new HashSet<GeographicalObject>();
+		if(a_ignoreRelations == null)
+			a_ignoreRelations = new HashSet<ID>();
 		a_ignoreRelations.add(getID());
 		
 		if(a_date == null)
 			getAPI().getRelationFactory().downloadFull(getID());
 
-		HashSet<GeographicalObject> ret = new HashSet<GeographicalObject>(); // TODO: Pass this as a parameter to avoid addAll()
 		for(API06RelationMember it : getMembers())
 		{
-			String type = it.getDOM().getAttribute("type");
-			ID id = new ID(it.getDOM().getAttribute("ref"));
-			if(type.equals("way"))
+			Class<? extends GeographicalObject> type = it.getType();
+			ID id = it.getReferenceID();
+			if(type.equals(Way.class))
 			{
 				Way obj = (a_date == null ? getAPI().getWayFactory().fetch(id) : getAPI().getWayFactory().fetch(id, a_date));
-				if(!ret.add(obj))
-					System.out.println("Double");
+				a_members.add(obj);
 			}
-			else if(type.equals("node"))
+			else if(type.equals(Node.class))
 			{
 				Node obj = (a_date == null ? getAPI().getNodeFactory().fetch(id) : getAPI().getNodeFactory().fetch(id, a_date));
-				if(!ret.add(obj))
-					System.out.println("Double");
+				a_members.add(obj);
 			}
-			else if(type.equals("relation") && !a_ignoreRelations.contains(id))
+			else if(type.equals(Relation.class) && !a_ignoreRelations.contains(id))
 			{
-				ret.add(a_date == null ? getAPI().getRelationFactory().fetch(id) : getAPI().getRelationFactory().fetch(id, a_date));
-				ret.addAll(a_date == null ? ((API06Relation)getAPI().getRelationFactory().fetch(id)).getMembersRecursive(a_ignoreRelations, a_date) : ((API06Relation)getAPI().getRelationFactory().fetch(id, a_date)).getMembersRecursive(a_ignoreRelations, a_date));
+				a_members.add(a_date == null ? getAPI().getRelationFactory().fetch(id) : getAPI().getRelationFactory().fetch(id, a_date));
+				if(a_date == null)
+					((API06Relation)getAPI().getRelationFactory().fetch(id)).getMembersRecursive(a_date, a_members, a_ignoreRelations);
+				else
+					((API06Relation)getAPI().getRelationFactory().fetch(id, a_date)).getMembersRecursive(a_date, a_members, a_ignoreRelations);
 			}
 		}
-		return ret;
+		return a_members;
 	}
 	
 	@Override
 	public GeographicalObject[] getMembersRecursive(Date a_date) throws APIError
 	{
-		return getMembersRecursive(new ArrayList<ID>(), a_date).toArray(new GeographicalObject[0]);
+		return getMembersRecursive(a_date, null, null).toArray(new GeographicalObject[0]);
 	}
 	
 	/**
@@ -111,7 +117,7 @@ public class API06Relation extends API06GeographicalObject implements Relation
 	 */
 	public Way[] getWaysRecursive(Date a_date) throws APIError
 	{
-		HashSet<GeographicalObject> members = getMembersRecursive(new ArrayList<ID>(), a_date);
+		HashSet<GeographicalObject> members = getMembersRecursive(a_date, null, null);
 		ArrayList<Way> ret = new ArrayList<Way>();
 		for(GeographicalObject member : members)
 		{
@@ -129,7 +135,7 @@ public class API06Relation extends API06GeographicalObject implements Relation
 	@Override
 	public Node[] getNodesRecursive(Date a_date) throws APIError
 	{
-		HashSet<GeographicalObject> members = getMembersRecursive(new ArrayList<ID>(), a_date);
+		HashSet<GeographicalObject> members = getMembersRecursive(a_date, null, null);
 		ArrayList<Node> ret = new ArrayList<Node>();
 		for(GeographicalObject member : members)
 		{
@@ -141,7 +147,7 @@ public class API06Relation extends API06GeographicalObject implements Relation
 	
 	public Relation[] getRelationsRecursive(Date a_date) throws APIError
 	{
-		HashSet<GeographicalObject> members = getMembersRecursive(new ArrayList<ID>(), a_date);
+		HashSet<GeographicalObject> members = getMembersRecursive(a_date, null, null);
 		ArrayList<Relation> ret = new ArrayList<Relation>();
 		for(GeographicalObject member : members)
 		{

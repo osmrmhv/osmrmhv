@@ -31,6 +31,7 @@ import de.cdauth.osm.basic.VersionedObject;
 import de.cdauth.osm.basic.Node;
 import de.cdauth.osm.basic.Object;
 import de.cdauth.osm.basic.Relation;
+import de.cdauth.osm.basic.VersionedObjectCache;
 import de.cdauth.osm.basic.Way;
 
 abstract public class API06GeographicalObject extends API06Object implements VersionedObject,GeographicalObject
@@ -117,7 +118,15 @@ abstract public class API06GeographicalObject extends API06Object implements Ver
 		else
 			throw new RuntimeException("Unknown data type.");
 		
-		// FIXME: Cache, mark as current
-		return (Relation[])getAPI().get("/"+urlPart+"/"+getID()+"/relations");
+		Relation[] ret = (Relation[])getAPI().get("/"+urlPart+"/"+getID()+"/relations");
+		VersionedObjectCache<Relation> cache = getAPI().getRelationFactory().getCache();
+		for(Relation it : ret)
+		{
+			((API06Relation)it).markAsCurrent();
+			cache.cacheObject(it);
+		}
+		
+		// FIXME: Cache this result somehow?
+		return ret;
 	}
 }

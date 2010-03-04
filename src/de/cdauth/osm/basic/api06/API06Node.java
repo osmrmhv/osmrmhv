@@ -22,6 +22,7 @@ import org.w3c.dom.Element;
 import de.cdauth.osm.basic.APIError;
 import de.cdauth.osm.basic.LonLat;
 import de.cdauth.osm.basic.Node;
+import de.cdauth.osm.basic.VersionedObjectCache;
 import de.cdauth.osm.basic.Way;
 
 /**
@@ -44,7 +45,15 @@ public class API06Node extends API06GeographicalObject implements Node
 	@Override
 	public Way[] getContainingWays() throws APIError
 	{
-		// FIXME: Cache, mark as current
-		return (Way[])getAPI().get("/node/"+getID()+"/ways");
+		Way[] ret = (Way[])getAPI().get("/node/"+getID()+"/ways");
+		VersionedObjectCache<Way> cache = getAPI().getWayFactory().getCache();
+		for(Way it : ret)
+		{
+			((API06Way)it).markAsCurrent();
+			cache.cacheObject(it);
+		}
+		
+		// FIXME: Cache this result somehow?
+		return ret;
 	}
 }
