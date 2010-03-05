@@ -32,7 +32,12 @@ import org.xml.sax.SAXException;
 
 import de.cdauth.osm.lib.API;
 import de.cdauth.osm.lib.APIError;
+import de.cdauth.osm.lib.BoundingBox;
+import de.cdauth.osm.lib.GeographicalObject;
+import de.cdauth.osm.lib.Node;
 import de.cdauth.osm.lib.Object;
+import de.cdauth.osm.lib.Relation;
+import de.cdauth.osm.lib.Way;
 
 /**
  * Provides static methods to communicate with the OSM API 0.6. Handles the HTTP connection
@@ -217,5 +222,26 @@ public class API06API implements API
 		if(m_wayFactory == null)
 			m_wayFactory = new API06WayFactory(this);
 		return m_wayFactory;
+	}
+
+	@Override
+	public GeographicalObject[] fetchBoundingBox(BoundingBox a_boundingBox)
+			throws APIError
+	{
+		Object[] objects = get("/map?bbox="+a_boundingBox.getLeft()+","+a_boundingBox.getBottom()+","+a_boundingBox.getRight()+","+a_boundingBox.getTop());
+		for(Object it : objects)
+		{
+			if(it instanceof API06GeographicalObject) // should always be true
+				((API06GeographicalObject)it).markAsCurrent();
+
+			if(it instanceof Node)
+				getNodeFactory().getCache().cacheObject((Node)it);
+			else if(it instanceof Way)
+				getWayFactory().getCache().cacheObject((Way)it);
+			else if(it instanceof Relation)
+				getRelationFactory().getCache().cacheObject((Relation)it);
+		}
+		
+		return (GeographicalObject[])objects;
 	}
 }

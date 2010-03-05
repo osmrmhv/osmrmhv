@@ -18,7 +18,7 @@
 package de.cdauth.osm.lib;
 
 /**
- * Represents a pair of coordinates in WGS 84 / EPSG 4326.
+ * Represents a pair of coordinates in WGS 84 / EPSG 4326. This is immutable.
  */
 
 public class LonLat

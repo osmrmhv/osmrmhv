@@ -47,4 +47,12 @@ public interface API
 	 * @return A {@link ChangesetFactory} to fetch {@link Changeset} objects.
 	 */
 	public ChangesetFactory getChangesetFactory();
+	
+	/**
+	 * Returns all geographical objects that exist within the given bounding box.
+	 * @param a_boundingBox The bounding box where the objects shall be.
+	 * @return A list of the geographical elements inside the bounding box.
+	 * @throws APIError An error has occurred, perhaps the API could not process such a large bounding box.
+	 */
+	public GeographicalObject[] fetchBoundingBox(BoundingBox a_boundingBox) throws APIError;
 }
