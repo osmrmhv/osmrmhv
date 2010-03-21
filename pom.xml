@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.cdauth.osm</groupId>
-	<artifactId>lib</artifactId>
+	<groupId>de.cdauth</groupId>
+	<artifactId>osm</artifactId>
 	<version>SNAPSHOT</version>
 	<name>osmrmhv</name>
-	<description>A library to talk to the OpenStreetMap database via different ways.</description>
+	<description>OSM Route Manager and History Viewer.</description>
 	<packaging>pom</packaging>
 	<licenses>
 		<license>
@@ -13,8 +13,7 @@
 		</license>
 	</licenses>
 	<modules>
-		<module>interface</module>
-		<module>api06</module>
+		<module>lib</module>
 	</modules>
 	<scm>
 		<connection>git://gitorious.org/osmrmhv/lib.git</connection>
@@ -25,7 +24,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<build>
-		<finalName>osmrmhv-${artifactId}-${version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -34,6 +32,7 @@
 					<source>1.6</source>
 					<target>1.6</target>
 					<compilerArgument>-g</compilerArgument>
+					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
 			<plugin>

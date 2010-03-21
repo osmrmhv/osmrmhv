@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>de.cdauth.osm</groupId>
+	<artifactId>lib</artifactId>
+	<version>SNAPSHOT</version>
+	<name>osmrmhv lib</name>
+	<description>A library to talk to the OpenStreetMap database via different ways.</description>
+	<packaging>pom</packaging>
+	<licenses>
+		<license>
+			<name>GNU Affero General Public License Version 3</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<parent>
+		<groupId>de.cdauth</groupId>
+		<artifactId>osm</artifactId>
+		<version>SNAPSHOT</version>
+	</parent>
+	<modules>
+		<module>interface</module>
+		<module>api06</module>
+	</modules>
+	<build>
+		<finalName>osmrmhv-${artifactId}-${version}</finalName>
+	</build>
+</project>
