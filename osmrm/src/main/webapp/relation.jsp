@@ -16,7 +16,6 @@
 --%>
 <%@page import="de.cdauth.osm.lib.*"%>
 <%@page import="de.cdauth.osm.osmrm.*"%>
-<%@page import="static de.cdauth.osm.osmrm.I18n.*"%>
 <%@page import="static de.cdauth.osm.osmrm.GUI.*"%>
 <%@page import="java.util.*" %>
 <%@ page import="java.util.regex.Pattern" %>
@@ -31,10 +30,10 @@
 		return;
 	}
 
-	GUI gui = new GUI();
+	GUI gui = new GUI(request, response);
 
 	ID relationId = new ID(request.getParameter("id").trim());
-	gui.setTitle(sprintf(_("Relation %s"), relationId.toString()));
+	gui.setTitle(String.format(gui._("Relation %s"), relationId.toString()));
 
 	boolean render = (request.getParameter("norender") == null);
 	if(!render)
@@ -48,7 +47,7 @@
 			"http://osm.cdauth.de/map/openstreetbugs.js"
 		});
 
-	gui.head(request, response);
+	gui.head();
 
 	Relation relation = api.getRelationFactory().fetch(relationId); // request.getParameter("refresh") != null
 	RelationSegment[] segments = RouteManager.segmentate(relation);
@@ -113,13 +112,13 @@
 	}
 %>
 <ul>
-	<li><a href="./"><%=htmlspecialchars(_("Back to home page"))%></a></li>
-	<li><a href="http://betaplace.emaitie.de/webapps.relation-analyzer/analyze.jsp?relationId=<%=htmlspecialchars(urlencode(relationId.toString()))%>"><%=htmlspecialchars(_("Open this in OSM Relation Analyzer"))%></a></li>
-	<li><a href="http://www.openstreetmap.org/browse/relation/<%=htmlspecialchars(urlencode(relationId.toString()))%>"><%=htmlspecialchars(_("Browse on OpenStreetMap"))%></a></li>
+	<li><a href="./"><%=htmlspecialchars(gui._("Back to home page"))%></a></li>
+	<li><a href="http://betaplace.emaitie.de/webapps.relation-analyzer/analyze.jsp?relationId=<%=htmlspecialchars(urlencode(relationId.toString()))%>"><%=htmlspecialchars(gui._("Open this in OSM Relation Analyzer"))%></a></li>
+	<li><a href="http://www.openstreetmap.org/browse/relation/<%=htmlspecialchars(urlencode(relationId.toString()))%>"><%=htmlspecialchars(gui._("Browse on OpenStreetMap"))%></a></li>
 </ul>
-<noscript><p><strong><%=htmlspecialchars(_("Note that many features of this page will not work without JavaScript."))%></strong></p></noscript>
-<%--<p><%=sprintf(htmlspecialchars(_("The data was last refreshed on %s. The timestamp of the relation is %s. If you think one of the members might have been changed, %sreload the data manually%s.")), gmdate("Y-m-d\\TH:i:s\\Z", $segments[0]), $relation->getDOM()->getAttribute("timestamp"), "<a href=\"?id="+htmlspecialchars(urlencode(relationId.toString())+"&refresh=1")."\">", "</a>")%></p>--%>
-<h2><%=htmlspecialchars(_("Tags"))%></h2>
+<noscript><p><strong><%=htmlspecialchars(gui._("Note that many features of this page will not work without JavaScript."))%></strong></p></noscript>
+<%--<p><%=String.format(htmlspecialchars(gui._("The data was last refreshed on %s. The timestamp of the relation is %s. If you think one of the members might have been changed, %sreload the data manually%s.")), gmdate("Y-m-d\\TH:i:s\\Z", $segments[0]), $relation->getDOM()->getAttribute("timestamp"), "<a href=\"?id="+htmlspecialchars(urlencode(relationId.toString())+"&refresh=1")."\">", "</a>")%></p>--%>
+<h2><%=htmlspecialchars(gui._("Tags"))%></h2>
 <dl>
 <%
 	Map<String,String> tags = relation.getTags();
@@ -142,15 +141,15 @@
 <%
 	User user = api.getChangesetFactory().fetch(relation.getChangeset()).getUser();
 %>
-<h2><%=htmlspecialchars(_("Details"))%></h2>
+<h2><%=htmlspecialchars(gui._("Details"))%></h2>
 <dl>
-	<dt><%=htmlspecialchars(_("Last changed"))%></dt>
-	<dd><%=sprintf(_("%s by %s"), relation.getTimestamp().toString(), "<a href=\"http://www.openstreetmap.org/user/"+urlencode(user.getName())+"\">"+htmlspecialchars(user.getName())+"</a>")%></dd>
+	<dt><%=htmlspecialchars(gui._("Last changed"))%></dt>
+	<dd><%=String.format(gui._("%s by %s"), relation.getTimestamp().toString(), "<a href=\"http://www.openstreetmap.org/user/"+urlencode(user.getName())+"\">"+htmlspecialchars(user.getName())+"</a>")%></dd>
 
-	<dt><%=htmlspecialchars(_("Total length"))%></dt>
-	<dd><%=formatNumber(totalLength, 2)%>&thinsp;km</dd>
+	<dt><%=htmlspecialchars(gui._("Total length"))%></dt>
+	<dd><%=gui.formatNumber(totalLength, 2)%>&thinsp;km</dd>
 
-	<dt><%=htmlspecialchars(_("Sub-relations"))%></dt>
+	<dt><%=htmlspecialchars(gui._("Sub-relations"))%></dt>
 	<dd><ul>
 <%
 	RelationMember[] members = relation.getMembers();
@@ -171,7 +170,7 @@
 %>
 	</ul></dd>
 
-	<dt><%=htmlspecialchars(_("Parent relations"))%></dt>
+	<dt><%=htmlspecialchars(gui._("Parent relations"))%></dt>
 	<dd><ul>
 <%
 	Relation[] parentRelations = relation.getContainingRelations();
@@ -184,12 +183,12 @@
 %>
 	</ul></dd>
 </dl>
-<h2><%=htmlspecialchars(_("Segments"))%></h2>
+<h2><%=htmlspecialchars(gui._("Segments"))%></h2>
 <%
 	if(render)
 	{
 %>
-<p><%=htmlspecialchars(_("Get GPS coordinates by clicking on the map."))%></p>
+<p><%=htmlspecialchars(gui._("Get GPS coordinates by clicking on the map."))%></p>
 <%
 	}
 %>
@@ -197,19 +196,19 @@
 	<table>
 		<thead>
 			<tr>
-				<th><%=htmlspecialchars(_("Segment #"))%></th>
-				<th><%=htmlspecialchars(_("Length"))%></th>
-				<th><%=htmlspecialchars(_("Distance to next segments"))%></th>
+				<th><%=htmlspecialchars(gui._("Segment #"))%></th>
+				<th><%=htmlspecialchars(gui._("Length"))%></th>
+				<th><%=htmlspecialchars(gui._("Distance to next segments"))%></th>
 <%
 	if(render)
 	{
 %>
-				<th><%=htmlspecialchars(_("Visible"))%></th>
-				<th><%=htmlspecialchars(_("Zoom"))%></th>
+				<th><%=htmlspecialchars(gui._("Visible"))%></th>
+				<th><%=htmlspecialchars(gui._("Zoom"))%></th>
 <%
 	}
 %>
-				<th><%=htmlspecialchars(_("Add to personal route"))%></th>
+				<th><%=htmlspecialchars(gui._("Add to personal route"))%></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -219,14 +218,14 @@
 %>
 			<tr<% if(render){%> onmouseover="highlightSegment(<%=i%>);" onmouseout="unhighlightSegment(<%=i%>);"<% }%> id="tr-segment-<%=i%>" class="tr-segment-normal">
 				<td><%=htmlspecialchars(""+(i+1))%></td>
-				<td><%=formatNumber(segments[i].getDistance(), 2)%>&thinsp;km</td>
-				<td><% if(segments.length > 1){%><%=formatNumber(distance1[i], 2)%>&thinsp;km, <%=formatNumber(distance2[i], 2)%>&thinsp;km<% }%></td>
+				<td><%=gui.formatNumber(segments[i].getDistance(), 2)%>&thinsp;km</td>
+				<td><% if(segments.length > 1){%><%=gui.formatNumber(distance1[i], 2)%>&thinsp;km, <%=gui.formatNumber(distance2[i], 2)%>&thinsp;km<% }%></td>
 <%
 		if(render)
 		{
 %>
 				<td><input type="checkbox" name="select-segment[<%=i%>]" id="select-segment-<%=i%>" checked="checked" onclick="refreshSelected()" /></td>
-				<td><a href="javascript:zoomToSegment(<%=i%>);"><%=htmlspecialchars(_("Zoom"))%></a></td>
+				<td><a href="javascript:zoomToSegment(<%=i%>);"><%=htmlspecialchars(gui._("Zoom"))%></a></td>
 <%
 		}
 %>
@@ -237,11 +236,11 @@
 %>
 		</tbody>
 	</table>
-	<h3><%=htmlspecialchars(_("Personal route"))%></h3>
+	<h3><%=htmlspecialchars(gui._("Personal route"))%></h3>
 	<ol id="personal-route"></ol>
 	<ul class="buttons" id="personal-route-buttons" style="display:none;">
 		<li><button id="personal-route-pop" onclick="PRPop()">&minus;</button></li>
-		<li><button onclick="PRDownloadGPX()"><%=htmlspecialchars(_("Download GPX"))%></button></li>
+		<li><button onclick="PRDownloadGPX()"><%=htmlspecialchars(gui._("Download GPX"))%></button></li>
 	</ul>
 </div>
 <%
@@ -277,7 +276,7 @@
 		for(int i=0; i<segments.length; i++)
 		{
 %>
-	segments[<%=i%>] = new OpenLayers.Layer.PointTrack(<%=jsescape(sprintf(_("Segment %s"), i+1))%>, {
+	segments[<%=i%>] = new OpenLayers.Layer.PointTrack(<%=jsescape(String.format(gui._("Segment %s"), i+1))%>, {
 		styleMap: styleMapNormal,
 		projection: new OpenLayers.Projection("EPSG:4326"),
 		displayInLayerSwitcher: false
@@ -299,7 +298,7 @@
 %>
 	map.addLayers(segments);
 
-	var layerMarkers = new OpenLayers.Layer.cdauth.Markers.LonLat(<%=jsescape(_("Markers"))%>, { shortName : "m" });
+	var layerMarkers = new OpenLayers.Layer.cdauth.Markers.LonLat(<%=jsescape(gui._("Markers"))%>, { shortName : "m" });
 	map.addLayer(layerMarkers);
 	var clickControl = new OpenLayers.Control.cdauth.CreateMarker(layerMarkers);
 	map.addControl(clickControl);
@@ -363,7 +362,7 @@
 		li.id = "pr-stack-"+(pr_stack.length-1);
 		li.onmouseover = function(){highlightSegment(i);}
 		li.onmouseout = function(){unhighlightSegment(i);}
-		li.appendChild(document.createTextNode((pr_stack.length >= 2 && pr_stack[pr_stack.length-2][0] == i) ? "<%=sprintf(_("Segment %s (reversed)"), "\"+(i+1)+\"")%>" : "<%=sprintf(_("Segment %s"), "\"+(i+1)+\"")%>"));
+		li.appendChild(document.createTextNode((pr_stack.length >= 2 && pr_stack[pr_stack.length-2][0] == i) ? "<%=String.format(gui._("Segment %s (reversed)"), "\"+(i+1)+\"")%>" : "<%=String.format(gui._("Segment %s"), "\"+(i+1)+\"")%>"));
 		document.getElementById("personal-route").appendChild(li);
 
 		updatePRButtons();
@@ -537,5 +536,5 @@
 // ]]>
 </script>
 <%
-	gui.foot(request, response);
+	gui.foot();
 %>

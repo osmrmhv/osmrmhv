@@ -1,0 +1,248 @@
+# Hungarian translation for OSM Route Manager
+# Copyright (C) 2009 Candid Dauth
+# This file is distributed under the same license as the osmrm package.
+# György Balló <ballogy@freestart.hu>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: osmrm\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-11-02 21:08+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Candid Dauth <webmaster@cdauth.de>\n"
+"Language-Team: Hungarian <hu@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../relation.php:22
+#, php-format
+msgid "Relation %s"
+msgstr "Kapcsolat: %s"
+
+#: ../relation.php:107
+msgid "Back to home page"
+msgstr "Vissza a honlapra"
+
+#: ../relation.php:108
+msgid "Open this in OSM Relation Analyzer"
+msgstr "Megnyitás OSM Relation Analyzerben"
+
+#: ../relation.php:109
+msgid "Browse on OpenStreetMap"
+msgstr "Böngészés az OpenStreetMapon"
+
+#: ../relation.php:111
+msgid "Note that many features of this page will not work without JavaScript."
+msgstr "Vedd figyelembe, hogy az oldal számos jellemzője nem fog működni JavaScript nélkül."
+
+#: ../relation.php:112
+#, php-format
+msgid "The data was last refreshed on %s. The timestamp of the relation is %s. If you think one of the members might have been changed, %sreload the data manually%s."
+msgstr "Az adatok ekkor frissültek utoljára: %s. A kapcsolat időbélyege: %s. Ha úgy gondolod, hogy valamelyik tag változhatott, %stöltsd újra az adatokat kézzel%s."
+
+#: ../relation.php:113
+msgid "Tags"
+msgstr "Címkék"
+
+#: ../relation.php:151
+msgid "Details"
+msgstr "Részletek"
+
+#: ../relation.php:153
+msgid "Last changed"
+msgstr "Legutóbb változott"
+
+#: ../relation.php:154
+#, php-format
+msgid "%s by %s"
+msgstr "%s %s által"
+
+#: ../relation.php:156
+msgid "Total length"
+msgstr "Teljes hossz"
+
+#: ../relation.php:159
+msgid "Sub-relations"
+msgstr "Alkapcsolatok"
+
+#: ../relation.php:180
+msgid "Parent relations"
+msgstr "Szülőkapcsolatok"
+
+#: ../relation.php:194
+msgid "Segments"
+msgstr "Szakaszok"
+
+#: ../relation.php:199
+msgid "Get GPS coordinates by clicking on the map."
+msgstr "GPS koordinátákat a térképre kattintva kaphatsz."
+
+#: ../relation.php:207
+msgid "Segment #"
+msgstr "Szakasz #"
+
+#: ../relation.php:208
+msgid "Length"
+msgstr "Hossz"
+
+#: ../relation.php:209
+msgid "Distance to next segments"
+msgstr "Távolság a következő szakaszig"
+
+#: ../relation.php:214
+msgid "Visible"
+msgstr "Látható"
+
+#: ../relation.php:215
+#: ../relation.php:236
+msgid "Zoom"
+msgstr "Nagyítás"
+
+#: ../relation.php:219
+msgid "Add to personal route"
+msgstr "Hozzáadás a személyes útvonalhoz"
+
+#: ../relation.php:247
+msgid "Personal route"
+msgstr "Személyes útvonal"
+
+#: ../relation.php:251
+msgid "Download GPX"
+msgstr "GPX letöltése"
+
+#: ../relation.php:288
+#: ../relation.php:340
+#, php-format
+msgid "Segment %s"
+msgstr "Szakasz: %s"
+
+#: ../relation.php:340
+#, php-format
+msgid "Segment %s (reversed)"
+msgstr "Szakasz: %s (fordított)"
+
+#: ../classes/osmapierror.php:23
+msgid "Error during API request: "
+msgstr "Hiba az API kérés közben: "
+
+#: ../classes/osmapierror.php:27
+msgid "400 Bad Request"
+msgstr "400 Hibás kérelem"
+
+#: ../classes/osmapierror.php:30
+msgid "401 Unauthorized"
+msgstr "401 Nincs hitelesítve"
+
+#: ../classes/osmapierror.php:33
+msgid "404 Not Found"
+msgstr "404 Nem található"
+
+#: ../classes/osmapierror.php:36
+msgid "405 Method Not Allowed"
+msgstr "405 Nem engedélyezett módszer"
+
+#: ../classes/osmapierror.php:39
+msgid "410 Gone"
+msgstr "410 Eltűnt"
+
+#: ../classes/osmapierror.php:42
+msgid "412 Precondition Failed"
+msgstr "412 Nem teljesül az előfeltétel"
+
+#: ../classes/osmapierror.php:45
+msgid "500 Internal Server Error"
+msgstr "500 Belső szerverhiba"
+
+#: ../classes/osmapierror.php:48
+msgid "503 Service Unavailable"
+msgstr "503 A szolgáltatás nem érhető el"
+
+#: ../classes/osmapierror.php:51
+#, php-format
+msgid "Unknown error code %s"
+msgstr "Ismeretlen hibakód: %s"
+
+#: ../classes/osmapierror.php:56
+#, php-format
+msgid "API call was %s."
+msgstr "Az API hívás a következő volt: %s."
+
+#: ../classes/osmapi.php:43
+msgid "Could not connect to the API server."
+msgstr "Nem lehet kapcsolódni az API szerverhez."
+
+#: ../classes/osmapi.php:80
+msgid "The OSM server sent no data."
+msgstr "Az OSM szerver nem küldött adatot."
+
+#: ../classes/osmobject.php:82
+msgid "This element could not be found."
+msgstr "Az elem nem található."
+
+#: ../classes/gui.php:33
+msgid "OSM Route Manager"
+msgstr "OSM Útvonalkezelő"
+
+#: ../classes/gui.php:35
+#, php-format
+msgid "OSM Route Manager: %s"
+msgstr "OSM Útvonalkezelő: %s"
+
+#: ../index.php:22
+msgid "OSM Route Manager is a debugging tool for Relations in OpenStreetMap."
+msgstr "Az OSM Útvonalkezelő egy hibakereső eszköz kapcsolatokhoz az OpenStreetMapban."
+
+#: ../index.php:28
+msgid "Lookup relation by ID"
+msgstr "Kapcsolat kikeresése azonosító alapján"
+
+#: ../index.php:30
+msgid "Relation ID"
+msgstr "Kapcsolat-azonosító"
+
+#: ../index.php:33
+msgid "Don’t show map"
+msgstr "Ne jelenjen meg térkép"
+
+#: ../index.php:36
+msgid "Lookup"
+msgstr "Kikeresés"
+
+#: ../index.php:41
+msgid "Search for relations"
+msgstr "Keresés kapcsolatokra"
+
+#: ../index.php:55
+msgid "ID"
+msgstr "Azonosító"
+
+#: ../index.php:61
+#: ../index.php:78
+msgid "Open"
+msgstr "Megnyitás"
+
+#: ../index.php:78
+msgid "No map"
+msgstr "Nincs térkép"
+
+#: ../index.php:96
+msgid "Key"
+msgstr "Kulcs"
+
+#: ../index.php:103
+msgid "Value"
+msgstr "Érték"
+
+#: ../index.php:106
+msgid "Search using OSM API"
+msgstr "Keresés az OSM API használatával"
+
+#: ../index.php:107
+msgid "Search using XAPI"
+msgstr "Keresés az XAPI használatával"
+
+#: ../index.php:108
+msgid "OSM API will probably be more current and a lot faster but won’t let you use wildcards."
+msgstr "Az OSM API valószínűleg aktuálisabb és sokkal gyorsabb, de nem használhatók helyettesítő karakterek."
+

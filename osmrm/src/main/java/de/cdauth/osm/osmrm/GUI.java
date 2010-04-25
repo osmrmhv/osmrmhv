@@ -1,25 +1,27 @@
 package de.cdauth.osm.osmrm;
 
+import gnu.gettext.GettextResource;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.*;
-import java.util.regex.Pattern;
 
-import static de.cdauth.osm.osmrm.I18n.*;
-
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
 public class GUI
 {
-	public static final Map<Locale,String> LOCALES = new Hashtable<Locale,String>() {{
-		put(Locale.ENGLISH, "English");
-		put(Locale.GERMAN, "Deutsch");
-		put(new Locale("hu"), "Magyar");
+	protected static final String RESOURCE = "de.cdauth.osm.osmrm.locale.osmrm";
+
+	public static final Map<String,String> LOCALES = new Hashtable<String,String>() {{
+		put("en_GB", "English");
+		put("de_DE", "Deutsch");
+		put("hu_HU", "Magyar");
 	}};
 	
 	public static final Charset UTF8 = Charset.forName("UTF-8");
@@ -28,6 +30,73 @@ public class GUI
 	private String[] m_javaScripts = null;
 	private String m_title = null;
 	private String m_bodyClass = null;
+
+	private final ResourceBundle m_bundle;
+
+	private final HttpServletRequest m_req;
+	private final HttpServletResponse m_resp;
+
+	public GUI(HttpServletRequest a_req, HttpServletResponse a_resp)
+	{
+		m_req = a_req;
+		m_resp = a_resp;
+
+		ResourceBundle bundle = null;
+		if(m_req.getParameter("lang") != null)
+		{
+			String[] lang = m_req.getParameter("lang").split("_");
+			Locale locale;
+			if(lang.length >= 2)
+				locale = new Locale(lang[0], lang[1]);
+			else
+				locale = new Locale(lang[0]);
+			bundle = ResourceBundle.getBundle(RESOURCE, locale);
+			if(!bundle.getLocale().getLanguage().equalsIgnoreCase(lang[0]))
+				bundle = null;
+			else
+			{
+				Cookie cookie = new Cookie("lang", m_req.getParameter("lang"));
+				cookie.setMaxAge(86400*365*2);
+				cookie.setPath(m_req.getContextPath());
+				m_resp.addCookie(cookie);
+			}
+		}
+
+		if(bundle == null)
+		{
+			for(Cookie cookie : m_req.getCookies())
+			{
+				if(cookie.getName().equals("lang"))
+				{
+					String[] lang = cookie.getValue().split("_");
+					Locale locale;
+					if(lang.length >= 2)
+						locale = new Locale(lang[0], lang[1]);
+					else
+						locale = new Locale(lang[0]);
+					bundle = ResourceBundle.getBundle(RESOURCE, locale);
+					if(!bundle.getLocale().getLanguage().equalsIgnoreCase(lang[0]))
+						bundle = null;
+				}
+			}
+		}
+
+		if(bundle == null)
+		{
+			Enumeration<Locale> locales = a_req.getLocales();
+			while(locales.hasMoreElements() && bundle == null)
+			{
+				Locale locale = locales.nextElement();
+				bundle = ResourceBundle.getBundle(RESOURCE, locale);
+				if(!bundle.getLocale().getLanguage().equals(locale.getLanguage())) // Chose default locale
+					bundle = null;
+			}
+		}
+
+		if(bundle == null)
+			bundle = ResourceBundle.getBundle(RESOURCE);
+		m_bundle = bundle;
+	}
 	
 	public void setDescription(String a_description)
 	{
@@ -61,7 +130,7 @@ public class GUI
 		if(m_title == null)
 			return _("OSM Route Manager");
 		else
-			return sprintf(_("OSM Route Manager: %s"), m_title);
+			return String.format(_("OSM Route Manager: %s"), m_title);
 	}
 	
 	public void setBodyClass(String a_bodyClass)
@@ -178,10 +247,36 @@ public class GUI
 		}
 		return ret.toString();
 	}
-	
-	public void head(HttpServletRequest a_req, HttpServletResponse a_resp) throws IOException
+
+	public String _(String a_message)
 	{
-		PrintWriter out = a_resp.getWriter();
+		return gettext(a_message);
+	}
+
+	public String gettext(String a_message)
+	{
+		return GettextResource.gettext(m_bundle, a_message);
+	}
+
+	public String ngettext(String a_message, String a_messagePlural, long a_number)
+	{
+		return GettextResource.ngettext(m_bundle, a_message, a_messagePlural, a_number);
+	}
+
+	public String formatNumber(Number a_number)
+	{
+		return a_number.toString();
+	}
+
+	public String formatNumber(Number a_number, int a_decimals)
+	{
+		long factor = (long)Math.pow(10, a_decimals);
+		return formatNumber(Math.round(a_number.doubleValue()*factor)/factor);
+	}
+
+	public void head() throws IOException
+	{
+		PrintWriter out = m_resp.getWriter();
 
 		out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"");
@@ -233,14 +328,14 @@ public class GUI
 		out.println("\t\t<h1>"+htmlspecialchars(getTitle())+"</h1>");
 		
 		StringBuilder urlB = new StringBuilder("?");
-		Enumeration<String> params = a_req.getParameterNames();
+		Enumeration<String> params = m_req.getParameterNames();
 		while(params.hasMoreElements())
 		{
 			String key = params.nextElement();
 			if(key.equals("lang"))
 				continue;
 
-			for(String value : a_req.getParameterValues(key))
+			for(String value : m_req.getParameterValues(key))
 			{
 				try { urlB.append(URLEncoder.encode(key, "UTF-8")); } catch(UnsupportedEncodingException e) {}
 				urlB.append('=');
@@ -251,17 +346,18 @@ public class GUI
 		String url = urlB.toString();
 		
 		out.println("\t\t<ul id=\"switch-lang\">");
-		for(Map.Entry<Locale,String> locale : LOCALES.entrySet())
+		for(Map.Entry<String,String> locale : LOCALES.entrySet())
 		{
-			// FIXME: Skip current locale
-			out.println("\t\t\t<li><a href=\""+htmlspecialchars(url+"lang="+locale.getKey().getLanguage())+"\">"+htmlspecialchars(locale.getValue())+"</a></li>");
+			if(m_bundle.getLocale().toString().equals(locale.getKey()))
+				continue;
+			out.println("\t\t\t<li><a href=\""+htmlspecialchars(url+"lang="+locale.getKey())+"\">"+htmlspecialchars(locale.getValue())+"</a></li>");
 		}
 		out.println("\t\t</ul>");
 	}
 
-	public void foot(HttpServletRequest a_req, HttpServletResponse a_resp) throws IOException
+	public void foot() throws IOException
 	{
-		PrintWriter out = a_resp.getWriter();
+		PrintWriter out = m_resp.getWriter();
 		out.println("\t\t\t<hr />");
 		out.println("\t\t\t<p>All geographic data by <a href=\"http://www.openstreetmap.org/\">OpenStreetMap</a>, available under <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">cc-by-sa-2.0</a>.</p>");
 		out.println("\t\t\t<p>OSM Route Manager is free software: you can redistribute it and/or modify it under the terms of the <a href=\"http://www.gnu.org/licenses/agpl.html\">GNU Affero General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. Get the source code via <a href=\"http://gitorious.org/osmrmhv\">Git</a>.</p>");

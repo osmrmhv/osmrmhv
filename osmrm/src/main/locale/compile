@@ -1,0 +1,6 @@
+cd "$(dirname "$0")"
+
+for i in *.po; do
+	locale="${i%.po}"
+	msgfmt --java2 -l "$locale" -r "de.cdauth.osm.osmrm.locale.osmrm" -d "../../../target/classes/" "$i"
+done
