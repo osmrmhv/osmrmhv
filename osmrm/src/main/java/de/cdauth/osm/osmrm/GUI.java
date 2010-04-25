@@ -184,16 +184,7 @@ public class GUI
 			else if(c == '\r')
 				ret.append("\\r");
 			else if(c <= 0x1f || c >= 0x7f)
-			{
-				ret.append("\\u");
-				if(c > 0xff)
-					ret.append('0');
-				else if(c > 0xf)
-					ret.append("00");
-				else
-					ret.append("000");
-				ret.append(Integer.toHexString(c));
-			}
+				ret.append("\\u"+String.format("%04x", c));
 			else
 				ret.append(c);
 		}
@@ -270,8 +261,7 @@ public class GUI
 
 	public String formatNumber(Number a_number, int a_decimals)
 	{
-		long factor = (long)Math.pow(10, a_decimals);
-		return formatNumber(Math.round(a_number.doubleValue()*factor)/factor);
+		return String.format("%."+a_decimals+"f", a_number);
 	}
 
 	public void head() throws IOException

@@ -52,7 +52,7 @@
 	Relation relation = api.getRelationFactory().fetch(relationId); // request.getParameter("refresh") != null
 	RelationSegment[] segments = RouteManager.segmentate(relation);
 
-	long totalLength = 0;
+	double totalLength = 0;
 	List<Integer>[] connection1 = new List[segments.length];
 	List<Integer>[] connection2 = new List[segments.length];
 	double[] distance1 = new double[segments.length];
@@ -381,15 +381,11 @@
 	function PRDownloadGPX()
 	{
 		var segments = [ ];
-		var segments_rev = [ ];
 
 		for(var i=0; i<pr_stack.length; i++)
-		{
-			segments[i] = "segments[]="+encodeURIComponent(pr_stack[i][0]);
-			segments_rev[i] = "segments_rev[]="+(pr_stack[i][1] ? "1" : "0");
-		}
+			segments[i] = (pr_stack[i][1] ? "-" : "+")+pr_stack[i][0];
 
-		location.href = "gpx.php?relation=<%=urlencode(relationId.toString())%>&"+segments.join("&")+segments_rev.join("&");
+		location.href = "gpx.jsp?relation=<%=urlencode(relationId.toString())%>&segments="+encodeURIComponent(segments.join(","));
 	}
 
 	function updatePRButtons()
