@@ -25,7 +25,7 @@ import java.util.Date;
  * relation multiple times, but these properties are different for all relation members.
  * @author cdauth
  */
-public interface Relation extends GeographicalObject,VersionedObject
+public interface Relation extends GeographicalItem, VersionedItem
 {
 	/**
 	 * Gets all objects that are contained in this relation. This list can be empty. The elements are ordered.
@@ -46,7 +46,7 @@ public interface Relation extends GeographicalObject,VersionedObject
 	 * @return
 	 * @throws APIError
 	 */
-	public GeographicalObject[] getMembersRecursive(Date a_date) throws APIError;
+	public GeographicalItem[] getMembersRecursive(Date a_date) throws APIError;
 	
 	public Node[] getNodesRecursive(Date a_date) throws APIError;
 	

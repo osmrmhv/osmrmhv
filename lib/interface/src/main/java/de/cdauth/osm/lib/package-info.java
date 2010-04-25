@@ -17,7 +17,7 @@
 
 /**
  * This package provides an abstract interface for implementations that talk to the OSM API.
- * Furthermore, it brings some useful classes such as an Object cache.
+ * Furthermore, it brings some useful classes such as an Item cache.
  */
 
 package de.cdauth.osm.lib;

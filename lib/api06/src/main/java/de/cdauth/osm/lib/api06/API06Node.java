@@ -22,14 +22,14 @@ import org.w3c.dom.Element;
 import de.cdauth.osm.lib.APIError;
 import de.cdauth.osm.lib.LonLat;
 import de.cdauth.osm.lib.Node;
-import de.cdauth.osm.lib.VersionedObjectCache;
+import de.cdauth.osm.lib.VersionedItemCache;
 import de.cdauth.osm.lib.Way;
 
 /**
  * Represents a Node in OpenStreetMap.
  */
 
-public class API06Node extends API06GeographicalObject implements Node
+public class API06Node extends API06GeographicalItem implements Node
 {
 	protected API06Node(Element a_dom, API06API a_api)
 	{
@@ -46,7 +46,7 @@ public class API06Node extends API06GeographicalObject implements Node
 	public Way[] getContainingWays() throws APIError
 	{
 		Way[] ret = (Way[])getAPI().get("/node/"+getID()+"/ways");
-		VersionedObjectCache<Way> cache = getAPI().getWayFactory().getCache();
+		VersionedItemCache<Way> cache = getAPI().getWayFactory().getCache();
 		for(Way it : ret)
 		{
 			((API06Way)it).markAsCurrent();

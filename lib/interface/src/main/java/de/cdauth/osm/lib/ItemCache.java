@@ -35,7 +35,7 @@ import java.util.WeakHashMap;
  * @author Candid Dauth
  */
 
-public class ObjectCache<T extends Object>
+public class ItemCache<T extends Item>
 {
 	/**
 	 * How many entries may be in the cache?
@@ -46,11 +46,11 @@ public class ObjectCache<T extends Object>
 	 */
 	public static final int MAX_AGE = 3600;
 	
-	public static final Map<ObjectCache<? extends Object>, java.lang.Object> sm_instances = Collections.synchronizedMap(new WeakHashMap<ObjectCache<? extends Object>, java.lang.Object>());
+	private static final Map<ItemCache<? extends Item>, java.lang.Object> sm_instances = Collections.synchronizedMap(new WeakHashMap<ItemCache<? extends Item>, java.lang.Object>());
 
 	private final Hashtable<ID,T> m_cache = new Hashtable<ID,T>();
 	
-	public ObjectCache()
+	public ItemCache()
 	{
 		synchronized(sm_instances)
 		{
@@ -63,7 +63,7 @@ public class ObjectCache<T extends Object>
 	 * {@link #cleanUp()}.
 	 */
 	private final SortedMap<Long,ID> m_cacheTimes = Collections.synchronizedSortedMap(new TreeMap<Long,ID>());
-	
+
 	/**
 	 * Returns the object with the ID a_id. For versioned objects returns the version that is known to be the current
 	 * one.
@@ -100,13 +100,13 @@ public class ObjectCache<T extends Object>
 	 */
 	protected static void cleanUpAll()
 	{
-		ObjectCache<? extends Object>[] instances;
+		ItemCache<? extends Item>[] instances;
 		synchronized(sm_instances)
 		{ // Copy the list of instances to avoid locking the instances list (and thus preventing the creation of new
 		  // instances) during the cleanup process.
-			instances = sm_instances.keySet().toArray(new ObjectCache[0]);
+			instances = sm_instances.keySet().toArray(new ItemCache[sm_instances.size()]);
 		}
-		for(ObjectCache<? extends Object> instance : instances)
+		for(ItemCache<? extends Item> instance : instances)
 		{
 			instance.cleanUp();
 		}

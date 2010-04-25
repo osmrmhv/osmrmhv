@@ -5,10 +5,11 @@ package de.cdauth.osm.lib;
  * coordinates. Currently these are nodes, ways and relations.
  * @author cdauth
  */
-public interface GeographicalObject extends Object
+public interface GeographicalItem extends Item
 {
 	/**
-	 * Returns all relations that this object is contained in. Relations can only contain geographical objects.
+	 * Returns all relations that the <strong>current</strong> version of this object is currently contained in.
+	 * Relations can only contain geographical objects.
 	 * @return The relations that contain this object.
 	 * @throws APIError There was an error fetching the relations.
 	 */

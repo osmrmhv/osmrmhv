@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * Represents an OpenStreetMap changeset. A changeset contains information about the time it was created,
  * tags and the objects that were created, modified and deleted. These objects have versions and thus instances
- * of {@link VersionedObject}.
+ * of {@link VersionedItem}.
  *  
  * You can do very funny things in a changeset. You can create an object, modify it multiple times and then remove
  * it again, so that basically, you haven’t created nor modified nor removed anything in the changeset, because
@@ -35,7 +35,7 @@ import java.util.Map;
  * 4. If an object has been created and later removed in one changset, remove it from both the “create” and the “delete” part
  */
 
-public interface Changeset extends Object
+public interface Changeset extends Item
 {
 	/**
 	 * An osmChange file knows these types of changes.
@@ -47,6 +47,12 @@ public interface Changeset extends Object
 	 * @return The creation date of this Changeset.
 	 */
 	public Date getCreationDate();
+
+	/**
+	 * Returns the user that created this changeset.
+	 * @return The user that created this changeset.
+	 */
+	public User getUser();
 	
 	/**
 	 * Returns the created, the modified or the deleted objects of this changeset.
@@ -54,7 +60,7 @@ public interface Changeset extends Object
 	 * @return A list of the objects with the specified {@link ChangeType}.
 	 * @throws APIError There was an error receiving the members.
 	 */
-	public VersionedObject[] getMemberObjects(ChangeType a_type) throws APIError;
+	public VersionedItem[] getMemberObjects(ChangeType a_type) throws APIError;
 	
 	/**
 	 * Fetches the previous version of all objects that were {@link ChangeType#modify modified} in this changeset.
@@ -63,5 +69,5 @@ public interface Changeset extends Object
 	 * @return A hashtable with the new version of an object in the key and the old version in the value.
 	 * @throws APIError There was an error fetching the previous versions of the objects.
 	 */
-	public Map<VersionedObject,VersionedObject> getPreviousVersions(boolean a_onlyWithTagChanges) throws APIError;
+	public Map<VersionedItem, VersionedItem> getPreviousVersions(boolean a_onlyWithTagChanges) throws APIError;
 }

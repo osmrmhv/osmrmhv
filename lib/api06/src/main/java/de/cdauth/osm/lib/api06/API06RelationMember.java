@@ -19,7 +19,7 @@ package de.cdauth.osm.lib.api06;
 
 import org.w3c.dom.Element;
 
-import de.cdauth.osm.lib.GeographicalObject;
+import de.cdauth.osm.lib.GeographicalItem;
 import de.cdauth.osm.lib.ID;
 import de.cdauth.osm.lib.Node;
 import de.cdauth.osm.lib.Relation;
@@ -43,7 +43,7 @@ public class API06RelationMember extends API06XMLObject implements RelationMembe
 	}
 	
 	@Override
-	public Class<? extends GeographicalObject> getType()
+	public Class<? extends GeographicalItem> getType()
 	{
 		String type = getDOM().getAttribute("type");
 		if(type.equals("node"))

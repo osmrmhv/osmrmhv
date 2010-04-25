@@ -17,29 +17,26 @@
 
 package de.cdauth.osm.lib.api06;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Map;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.*;
 
-import de.cdauth.osm.lib.APIError;
-import de.cdauth.osm.lib.ID;
-import de.cdauth.osm.lib.Object;
-import de.cdauth.osm.lib.ObjectCache;
-import de.cdauth.osm.lib.ObjectFactory;
+import de.cdauth.osm.lib.*;
+import de.cdauth.osm.lib.ItemCache;
 
-abstract public class API06ObjectFactory<T extends Object> implements ObjectFactory<T>
+abstract public class API06ItemFactory<T extends Item> implements ItemFactory<T>
 {
 	private final API06API m_api;
 	private final String m_type;
-	private final ObjectCache<T> m_cache = new ObjectCache<T>();
+	private final ItemCache<T> m_cache = new ItemCache<T>();
 	
-	protected API06ObjectFactory(API06API a_api, String a_type)
+	protected API06ItemFactory(API06API a_api, String a_type)
 	{
 		m_api = a_api;
 		m_type = a_type;
 	}
 	
-	protected ObjectCache<T> getCache()
+	protected ItemCache<T> getCache()
 	{
 		return m_cache;
 	}
@@ -88,7 +85,7 @@ abstract public class API06ObjectFactory<T extends Object> implements ObjectFact
 		
 		if(toFetch.size() > 0)
 		{
-			Object[] fetched = getAPI().get(makeFetchURL(toFetch.toArray(new ID[0])));
+			Item[] fetched = getAPI().get(makeFetchURL(toFetch.toArray(new ID[0])));
 			for(int i=0; i<fetched.length; i++)
 			{
 				ret.put(fetched[i].getID(), (T)fetched[i]);
@@ -103,5 +100,40 @@ abstract public class API06ObjectFactory<T extends Object> implements ObjectFact
 	public T fetch(ID a_id) throws APIError
 	{
 		return fetch(new ID[] { a_id }).get(a_id);
+	}
+
+	@Override
+	public Set<T> search(Map<String,String> a_tags) throws APIError
+	{
+		try
+		{
+			if(a_tags.size() < 1)
+				throw new APIError("You have to specify at least one tag.");
+			Map.Entry<String,String>[] tags = a_tags.entrySet().toArray(new Map.Entry[a_tags.size()]);
+			HashSet<T> ret = new HashSet<T>();
+			ret.addAll((Collection)Arrays.asList(getAPI().get("/"+getType()+"s/search?type="+URLEncoder.encode(tags[0].getKey(), "UTF-8")+"&value="+URLEncoder.encode(tags[0].getValue(), "UTF-8"))));
+			if(tags.length > 1)
+			{
+				Iterator<T> retIter = ret.iterator();
+				retVals: while(retIter.hasNext())
+				{
+					Map<String,String> it_tags = retIter.next().getTags();
+					for(Map.Entry<String,String> tag : tags)
+					{
+						if(!tag.getValue().equals(it_tags.get(tag.getKey())))
+						{
+							retIter.remove();
+							continue retVals;
+						}
+					}
+				}
+			}
+
+			return ret;
+		}
+		catch(UnsupportedEncodingException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 }

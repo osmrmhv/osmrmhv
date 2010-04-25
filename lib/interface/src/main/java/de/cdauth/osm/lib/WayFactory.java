@@ -17,7 +17,7 @@
 
 package de.cdauth.osm.lib;
 
-public interface WayFactory extends VersionedObjectFactory<Way>
+public interface WayFactory extends VersionedItemFactory<Way>
 {
 
 }

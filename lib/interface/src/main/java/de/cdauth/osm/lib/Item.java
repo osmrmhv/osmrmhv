@@ -23,7 +23,7 @@ import java.util.Map;
  * An object in the OSM database that has an ID and tags.
  * @author cdauth
  */
-public interface Object extends Comparable<Object>
+public interface Item extends Comparable<Item>
 {
 	/**
 	 * Get the ID of this object.

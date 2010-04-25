@@ -1,7 +1,7 @@
 package de.cdauth.osm.lib;
 
 /**
- * All OSM objects have an ID that is a 64-bit integer. This class mainly exist to provide type safety, as other
+ * All OSM objects have an ID that is a 64-bit integer. This class mainly exists to provide type safety, as other
  * data types such as {@link Version} are 64-bit integers as well.
  * @author cdauth
  */

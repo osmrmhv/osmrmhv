@@ -17,30 +17,22 @@
 
 package de.cdauth.osm.lib.api06;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
 
-import de.cdauth.osm.lib.APIError;
-import de.cdauth.osm.lib.Changeset;
-import de.cdauth.osm.lib.ID;
-import de.cdauth.osm.lib.Version;
-import de.cdauth.osm.lib.VersionedObject;
-import de.cdauth.osm.lib.VersionedObjectCache;
-import de.cdauth.osm.lib.VersionedObjectFactory;
+import de.cdauth.osm.lib.*;
+import de.cdauth.osm.lib.VersionedItem;
 
-abstract public class API06GeographicalObjectFactory<T extends VersionedObject> extends API06ObjectFactory<T> implements VersionedObjectFactory<T>
+abstract public class API06GeographicalItemFactory<T extends VersionedItem> extends API06ItemFactory<T> implements VersionedItemFactory<T>
 {
-	private final VersionedObjectCache<T> m_cache = new VersionedObjectCache<T>();
+	private final VersionedItemCache<T> m_cache = new VersionedItemCache<T>();
 
-	protected API06GeographicalObjectFactory(API06API a_api, String a_type)
+	protected API06GeographicalItemFactory(API06API a_api, String a_type)
 	{
 		super(a_api, a_type);
 	}
 	
 	@Override
-	protected VersionedObjectCache<T> getCache()
+	protected VersionedItemCache<T> getCache()
 	{
 		return m_cache;
 	}
@@ -62,8 +54,9 @@ abstract public class API06GeographicalObjectFactory<T extends VersionedObject> 
 	public T fetch(ID a_id) throws APIError
 	{
 		T ret = super.fetch(a_id);
-		if(ret instanceof API06GeographicalObject) // Should always be true
-			((API06GeographicalObject)ret).markAsCurrent();
+		if(ret instanceof API06GeographicalItem) // Should always be true
+			((API06GeographicalItem)ret).markAsCurrent();
+		getCache().cacheObject(ret);
 		return ret;
 	}
 
@@ -74,8 +67,22 @@ abstract public class API06GeographicalObjectFactory<T extends VersionedObject> 
 		for(Map.Entry<ID,T> entry : ret.entrySet())
 		{
 			T it = entry.getValue();
-			if(it instanceof API06GeographicalObject) // Should always be true
-				((API06GeographicalObject)it).markAsCurrent();
+			if(it instanceof API06GeographicalItem) // Should always be true
+				((API06GeographicalItem)it).markAsCurrent();
+			getCache().cacheObject(it);
+		}
+		return ret;
+	}
+
+	@Override
+	public Set<T> search(Map<String,String> a_tags) throws APIError
+	{
+		Set<T> ret = super.search(a_tags);
+		for(T it : ret)
+		{
+			if(it instanceof API06GeographicalItem) // Should always be true
+				((API06GeographicalItem)it).markAsCurrent();
+			getCache().cacheObject(it);
 		}
 		return ret;
 	}
@@ -104,11 +111,11 @@ abstract public class API06GeographicalObjectFactory<T extends VersionedObject> 
 		Object[] historyElements = getAPI().get("/"+getType()+"/"+a_id+"/history");
 		TreeMap<Version,T> ordered = new TreeMap<Version,T>();
 		for(Object element : historyElements)
-			ordered.put(((VersionedObject)element).getVersion(), (T)element);
+			ordered.put(((VersionedItem)element).getVersion(), (T)element);
 		
 		T lastEntry = ordered.lastEntry().getValue();
-		if(lastEntry instanceof API06GeographicalObject) // Should always be true
-			((API06GeographicalObject)lastEntry).markAsCurrent();
+		if(lastEntry instanceof API06GeographicalItem) // Should always be true
+			((API06GeographicalItem)lastEntry).markAsCurrent();
 
 		getCache().cacheHistory(ordered);
 		return ordered;

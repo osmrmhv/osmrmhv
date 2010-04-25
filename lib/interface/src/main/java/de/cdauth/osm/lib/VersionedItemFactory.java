@@ -20,7 +20,7 @@ package de.cdauth.osm.lib;
 import java.util.Date;
 import java.util.NavigableMap;
 
-public interface VersionedObjectFactory<T extends VersionedObject> extends ObjectFactory<T>
+public interface VersionedItemFactory<T extends VersionedItem> extends ItemFactory<T>
 {
 	/**
 	 * Fetches the version of an object that was the current one at the given point of time.
@@ -42,6 +42,13 @@ public interface VersionedObjectFactory<T extends VersionedObject> extends Objec
 	 */
 	public T fetch(ID a_id, Changeset a_changeset) throws APIError;
 	
+	/**
+	 * Fetches the given version of an object.
+	 * @param a_id
+	 * @param a_version
+	 * @return
+	 * @throws APIError
+	 */
 	public T fetch(ID a_id, Version a_version) throws APIError;
 
 	/**

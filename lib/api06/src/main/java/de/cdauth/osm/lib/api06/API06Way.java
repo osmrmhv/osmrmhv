@@ -28,7 +28,7 @@ import de.cdauth.osm.lib.LonLat;
 import de.cdauth.osm.lib.Node;
 import de.cdauth.osm.lib.Way;
 
-public class API06Way extends API06GeographicalObject implements Way
+public class API06Way extends API06GeographicalItem implements Way
 {
 	protected API06Way(Element a_dom, API06API a_api)
 	{

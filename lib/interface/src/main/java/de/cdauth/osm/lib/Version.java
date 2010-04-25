@@ -1,19 +1,38 @@
 package de.cdauth.osm.lib;
 
+/**
+ * Represents the version of a {@link VersionedItem}. Versions start at 1 and are always increased by 1, gaps
+ * do not exist. They are 64-bit integers.
+ * 
+ * @author cdauth
+ */
 public class Version implements Comparable<Version>
 {
 	private final Long m_version;
 
+	/**
+	 * Creates a version from a long.
+	 * @param a_version The Version.
+	 */
 	public Version(Long a_version)
 	{
 		m_version = a_version;
 	}
 	
+	/**
+	 * Creates a Version from a String.
+	 * @see {@link Long#Long(String)}
+	 * @param a_id The Version, usually the value of the XML attribute <code>version</code>.
+	 */
 	public Version(String a_version)
 	{
 		m_version = new Long(a_version);
 	}
 	
+	/**
+	 * Returns the long representation of this version.
+	 * @return The long representation of this version.
+	 */
 	public Long asLong()
 	{
 		return m_version;

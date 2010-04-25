@@ -30,24 +30,16 @@ import java.util.NavigableMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import de.cdauth.osm.lib.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import de.cdauth.osm.lib.APIError;
-import de.cdauth.osm.lib.Changeset;
-import de.cdauth.osm.lib.ID;
-import de.cdauth.osm.lib.Node;
-import de.cdauth.osm.lib.Object;
-import de.cdauth.osm.lib.Relation;
-import de.cdauth.osm.lib.Segment;
-import de.cdauth.osm.lib.Version;
-import de.cdauth.osm.lib.VersionedObject;
-import de.cdauth.osm.lib.Way;
+import de.cdauth.osm.lib.Item;
 
-public class API06Changeset extends API06Object implements Changeset
+public class API06Changeset extends API06Item implements Changeset
 {
-	private Hashtable<ChangeType,VersionedObject[]> m_content = null;
+	private Hashtable<ChangeType, VersionedItem[]> m_content = null;
 	
 	/**
 	 * Contains the uncleaned osmChange XML element.
@@ -64,12 +56,18 @@ public class API06Changeset extends API06Object implements Changeset
 	{
 		try
 		{
-			return API06GeographicalObject.getDateFormat().parse(getDOM().getAttribute("created_at"));
+			return API06GeographicalItem.getDateFormat().parse(getDOM().getAttribute("created_at"));
 		}
 		catch(ParseException e)
 		{
 			return null;
 		}
+	}
+
+	@Override
+	public User getUser()
+	{
+		return new User(new ID(getDOM().getAttribute("uid")), getDOM().getAttribute("user"));
 	}
 	
 	/**
@@ -80,7 +78,7 @@ public class API06Changeset extends API06Object implements Changeset
 	 * @throws APIError 
 	 */
 	@Override
-	public VersionedObject[] getMemberObjects(ChangeType a_type) throws APIError
+	public VersionedItem[] getMemberObjects(ChangeType a_type) throws APIError
 	{
 		if(m_content == null)
 			fixMemberObjects();
@@ -94,17 +92,17 @@ public class API06Changeset extends API06Object implements Changeset
 	 * @return
 	 * @throws APIError 
 	 */
-	private VersionedObject[] getMemberObjectsUnfixed(ChangeType a_type) throws APIError
+	private VersionedItem[] getMemberObjectsUnfixed(ChangeType a_type) throws APIError
 	{
 		if(m_uncleanedDom == null)
 			m_uncleanedDom = getAPI().fetch("/changeset/"+getID()+"/download");
 		
-		ArrayList<Object> ret = new ArrayList<Object>();
+		ArrayList<Item> ret = new ArrayList<Item>();
 		NodeList nodes = m_uncleanedDom.getElementsByTagName(a_type.toString());
 		for(int i=0; i<nodes.getLength(); i++)
 			ret.addAll(getAPI().makeObjects((Element) nodes.item(i)));
-		VersionedObject[] retArr = ret.toArray(new VersionedObject[0]);
-		for(VersionedObject object : retArr)
+		VersionedItem[] retArr = ret.toArray(new VersionedItem[0]);
+		for(VersionedItem object : retArr)
 		{
 			if(object instanceof Node)
 				(getAPI().getNodeFactory()).getCache().cacheObject((Node)object);
@@ -130,11 +128,11 @@ public class API06Changeset extends API06Object implements Changeset
 	 */
 	private void fixMemberObjects() throws APIError
 	{
-		Hashtable<Long,VersionedObject> created = new Hashtable<Long,VersionedObject>();
-		Hashtable<Long,VersionedObject> modified = new Hashtable<Long,VersionedObject>();
-		Hashtable<Long,VersionedObject> deleted = new Hashtable<Long,VersionedObject>();
+		Hashtable<Long, VersionedItem> created = new Hashtable<Long, VersionedItem>();
+		Hashtable<Long, VersionedItem> modified = new Hashtable<Long, VersionedItem>();
+		Hashtable<Long, VersionedItem> deleted = new Hashtable<Long, VersionedItem>();
 		
-		for(VersionedObject it : getMemberObjectsUnfixed(ChangeType.create))
+		for(VersionedItem it : getMemberObjectsUnfixed(ChangeType.create))
 		{
 			long id = it.getID().asLong() * 4;
 			if(it instanceof Node)
@@ -146,7 +144,7 @@ public class API06Changeset extends API06Object implements Changeset
 			created.put(id, it);
 		}
 		
-		for(VersionedObject it : getMemberObjectsUnfixed(ChangeType.modify))
+		for(VersionedItem it : getMemberObjectsUnfixed(ChangeType.modify))
 		{
 			long id = it.getID().asLong() * 4;
 			if(it instanceof Node)
@@ -171,7 +169,7 @@ public class API06Changeset extends API06Object implements Changeset
 			modified.put(idObj, it);
 		}
 		
-		for(VersionedObject it : getMemberObjectsUnfixed(ChangeType.delete))
+		for(VersionedItem it : getMemberObjectsUnfixed(ChangeType.delete))
 		{
 			long id = it.getID().asLong() * 4;
 			if(it instanceof Node)
@@ -196,22 +194,22 @@ public class API06Changeset extends API06Object implements Changeset
 			deleted.put(new Long(id), it);
 		}
 		
-		Hashtable<ChangeType,VersionedObject[]> ret = new Hashtable<ChangeType,VersionedObject[]>();
-		ret.put(ChangeType.create, created.values().toArray(new VersionedObject[0]));
-		ret.put(ChangeType.modify, modified.values().toArray(new VersionedObject[0]));
-		ret.put(ChangeType.delete, deleted.values().toArray(new VersionedObject[0]));
+		Hashtable<ChangeType, VersionedItem[]> ret = new Hashtable<ChangeType, VersionedItem[]>();
+		ret.put(ChangeType.create, created.values().toArray(new VersionedItem[0]));
+		ret.put(ChangeType.modify, modified.values().toArray(new VersionedItem[0]));
+		ret.put(ChangeType.delete, deleted.values().toArray(new VersionedItem[0]));
 		
 		m_content = ret;
 	}
 	
 	@Override
-	public Map<VersionedObject,VersionedObject> getPreviousVersions(boolean a_onlyWithTagChanges) throws APIError
+	public Map<VersionedItem, VersionedItem> getPreviousVersions(boolean a_onlyWithTagChanges) throws APIError
 	{
-		VersionedObject[] newVersions = getMemberObjects(ChangeType.modify);
-		Hashtable<VersionedObject,VersionedObject> ret = new Hashtable<VersionedObject,VersionedObject>();
+		VersionedItem[] newVersions = getMemberObjects(ChangeType.modify);
+		Hashtable<VersionedItem, VersionedItem> ret = new Hashtable<VersionedItem, VersionedItem>();
 		for(int i=0; i<newVersions.length; i++)
 		{
-			VersionedObject last = null;
+			VersionedItem last = null;
 			long version = newVersions[i].getVersion().asLong()-1;
 			do
 			{
@@ -251,25 +249,25 @@ public class API06Changeset extends API06Object implements Changeset
 	
 	public Segment[][] getNodeChanges() throws IOException, SAXException, ParserConfigurationException, APIError, ParseException
 	{
-		Map<VersionedObject,VersionedObject> old = getPreviousVersions(false);
+		Map<VersionedItem, VersionedItem> old = getPreviousVersions(false);
 		
 		Hashtable<ID,Node> nodesRemoved = new Hashtable<ID,Node>(); // All removed nodes and the old versions of all moved nodes
 		Hashtable<ID,Node> nodesAdded = new Hashtable<ID,Node>(); // All created nodes and the new versions of all moved nodes
 		Hashtable<ID,Node> nodesChanged = new Hashtable<ID,Node>(); // Only the new versions of all moved nodes
 		
-		for(VersionedObject obj : getMemberObjects(ChangeType.delete))
+		for(VersionedItem obj : getMemberObjects(ChangeType.delete))
 		{
 			if(obj instanceof Node)
 				nodesRemoved.put(obj.getID(), (Node) obj);
 		}
 		
-		for(VersionedObject obj : getMemberObjects(ChangeType.create))
+		for(VersionedItem obj : getMemberObjects(ChangeType.create))
 		{
 			if(obj instanceof Node)
 				nodesAdded.put(obj.getID(), (Node) obj);
 		}
 		
-		for(VersionedObject obj : getMemberObjects(ChangeType.modify))
+		for(VersionedItem obj : getMemberObjects(ChangeType.modify))
 		{
 			if(!(obj instanceof Node))
 				continue;
@@ -287,7 +285,7 @@ public class API06Changeset extends API06Object implements Changeset
 		
 		Hashtable<Way,List<ID>> containedWays = new Hashtable<Way,List<ID>>();
 		Hashtable<ID,Way> previousWays = new Hashtable<ID,Way>();
-		for(VersionedObject obj : getMemberObjects(ChangeType.modify))
+		for(VersionedItem obj : getMemberObjects(ChangeType.modify))
 		{
 			if(!(obj instanceof Way))
 				continue;
@@ -341,7 +339,7 @@ public class API06Changeset extends API06Object implements Changeset
 		HashSet<Segment> segmentsOld = new HashSet<Segment>();
 		HashSet<Segment> segmentsNew = new HashSet<Segment>();
 		
-		for(VersionedObject obj : getMemberObjects(ChangeType.create))
+		for(VersionedItem obj : getMemberObjects(ChangeType.create))
 		{
 			if(!(obj instanceof Way))
 				continue;
@@ -364,7 +362,7 @@ public class API06Changeset extends API06Object implements Changeset
 			}
 		}
 		
-		for(VersionedObject obj : getMemberObjects(ChangeType.delete))
+		for(VersionedItem obj : getMemberObjects(ChangeType.delete))
 		{
 			if(!(obj instanceof Way))
 				continue;
@@ -387,7 +385,7 @@ public class API06Changeset extends API06Object implements Changeset
 			}
 		}
 		
-		for(Object obj : getMemberObjects(ChangeType.modify))
+		for(Item obj : getMemberObjects(ChangeType.modify))
 		{
 			if(!(obj instanceof Way))
 				continue;

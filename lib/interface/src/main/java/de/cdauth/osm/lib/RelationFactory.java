@@ -17,6 +17,6 @@
 
 package de.cdauth.osm.lib;
 
-public interface RelationFactory extends VersionedObjectFactory<Relation>
+public interface RelationFactory extends VersionedItemFactory<Relation>
 {
 }

@@ -19,7 +19,7 @@ package de.cdauth.osm.lib;
 
 import java.util.Date;
 
-public interface Way extends GeographicalObject,VersionedObject
+public interface Way extends GeographicalItem, VersionedItem
 {
 	public ID[] getMembers() throws APIError;
 	

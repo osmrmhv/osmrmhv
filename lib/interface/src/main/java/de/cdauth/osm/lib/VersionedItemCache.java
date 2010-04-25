@@ -6,12 +6,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * This class extends the {@link ObjectCache} class to be able to additionally cache old versions of {@link VersionedObject}s.
- * As a VersionedObject does not know if it is the current one, you have to use special methods if you fetch
+ * This class extends the {@link ItemCache} class to be able to additionally cache old versions of {@link VersionedItem}s.
+ * As a VersionedItem does not know if it is the current one, you have to use special methods if you fetch
  * current object versions; if you deal with old versions or whole history trees, use the other methods of this class.
  * @author cdauth
  */
-public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache<T>
+public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 {
 	/**
 	 * How many entries may be in the cache?
@@ -65,7 +65,7 @@ public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache
 			
 			for(long i=1; i<=currentVersion.asLong(); i++)
 			{
-				if(!history.containsKey(new Long(i)))
+				if(!history.containsKey(new Version(i)))
 					return null;
 			}
 			return history;
@@ -73,7 +73,7 @@ public class VersionedObjectCache<T extends VersionedObject> extends ObjectCache
 	}
 	
 	/**
-	 * Caches an specific version ({@link VersionedObject#getVersion}) of an object.
+	 * Caches an specific version ({@link VersionedItem#getVersion}) of an object.
 	 * @param a_object The versioned object to cache.
 	 */
 	@Override

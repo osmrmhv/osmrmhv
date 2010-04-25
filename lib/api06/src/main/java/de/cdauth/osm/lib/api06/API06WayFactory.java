@@ -20,11 +20,11 @@ package de.cdauth.osm.lib.api06;
 import de.cdauth.osm.lib.APIError;
 import de.cdauth.osm.lib.ID;
 import de.cdauth.osm.lib.Node;
-import de.cdauth.osm.lib.VersionedObjectCache;
+import de.cdauth.osm.lib.VersionedItemCache;
 import de.cdauth.osm.lib.Way;
 import de.cdauth.osm.lib.WayFactory;
 
-public class API06WayFactory extends API06GeographicalObjectFactory<Way> implements WayFactory
+public class API06WayFactory extends API06GeographicalItemFactory<Way> implements WayFactory
 {
 	protected static final String TYPE = "way";
 
@@ -40,8 +40,8 @@ public class API06WayFactory extends API06GeographicalObjectFactory<Way> impleme
 	 */
 	protected void downloadFull(ID a_id) throws APIError
 	{
-		VersionedObjectCache<Way> wayCache = getCache();
-		VersionedObjectCache<Node> nodeCache = (getAPI().getNodeFactory()).getCache();
+		VersionedItemCache<Way> wayCache = getCache();
+		VersionedItemCache<Node> nodeCache = (getAPI().getNodeFactory()).getCache();
 
 		boolean downloadNecessary = true;
 		if(wayCache.getObject(a_id) != null)
@@ -62,8 +62,8 @@ public class API06WayFactory extends API06GeographicalObjectFactory<Way> impleme
 			Object[] fetched = getAPI().get("/way/"+a_id+"/full");
 			for(Object object : fetched)
 			{
-				if(object instanceof API06GeographicalObject)
-					((API06GeographicalObject)object).markAsCurrent();
+				if(object instanceof API06GeographicalItem)
+					((API06GeographicalItem)object).markAsCurrent();
 
 				if(object instanceof Way)
 					wayCache.cacheObject((Way) object);

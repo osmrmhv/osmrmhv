@@ -25,7 +25,7 @@ import de.cdauth.osm.lib.Changeset;
 import de.cdauth.osm.lib.ChangesetFactory;
 import de.cdauth.osm.lib.ID;
 
-public class API06ChangesetFactory extends API06ObjectFactory<Changeset> implements ChangesetFactory
+public class API06ChangesetFactory extends API06ItemFactory<Changeset> implements ChangesetFactory
 {
 	protected static final String TYPE = "changeset";
 	

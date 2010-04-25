@@ -25,23 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 
-import de.cdauth.osm.lib.APIError;
-import de.cdauth.osm.lib.Changeset;
-import de.cdauth.osm.lib.ChangesetFactory;
-import de.cdauth.osm.lib.GeographicalObject;
-import de.cdauth.osm.lib.ID;
-import de.cdauth.osm.lib.Node;
-import de.cdauth.osm.lib.NodeFactory;
-import de.cdauth.osm.lib.Relation;
-import de.cdauth.osm.lib.RelationFactory;
-import de.cdauth.osm.lib.RelationMember;
-import de.cdauth.osm.lib.Segment;
-import de.cdauth.osm.lib.Version;
-import de.cdauth.osm.lib.VersionedObjectCache;
-import de.cdauth.osm.lib.Way;
-import de.cdauth.osm.lib.WayFactory;
+import de.cdauth.osm.lib.*;
+import de.cdauth.osm.lib.GeographicalItem;
 
-public class API06RelationFactory extends API06GeographicalObjectFactory<Relation> implements RelationFactory
+public class API06RelationFactory extends API06GeographicalItemFactory<Relation> implements RelationFactory
 {
 	protected static final String TYPE = "relation";
 
@@ -58,9 +45,9 @@ public class API06RelationFactory extends API06GeographicalObjectFactory<Relatio
 	
 	public void downloadFull(ID a_id) throws APIError
 	{
-		VersionedObjectCache<Node> nodeCache = getAPI().getNodeFactory().getCache();
-		VersionedObjectCache<Way> wayCache = getAPI().getWayFactory().getCache();
-		VersionedObjectCache<Relation> relationCache = getCache();
+		VersionedItemCache<Node> nodeCache = getAPI().getNodeFactory().getCache();
+		VersionedItemCache<Way> wayCache = getAPI().getWayFactory().getCache();
+		VersionedItemCache<Relation> relationCache = getCache();
 		
 		boolean downloadNecessary = true;
 		if(getCache().getObject(a_id) != null)
@@ -68,7 +55,7 @@ public class API06RelationFactory extends API06GeographicalObjectFactory<Relatio
 			downloadNecessary = false;
 			for(RelationMember it : fetch(a_id).getMembers())
 			{
-				Class<? extends GeographicalObject> type = it.getType();
+				Class<? extends GeographicalItem> type = it.getType();
 				ID id = it.getReferenceID();
 				boolean isCached = true;
 				if(type.equals(Node.class))
@@ -90,8 +77,8 @@ public class API06RelationFactory extends API06GeographicalObjectFactory<Relatio
 			Object[] fetched = getAPI().get("/relation/"+a_id+"/full");
 			for(Object object : fetched)
 			{
-				if(object instanceof API06GeographicalObject)
-					((API06GeographicalObject)object).markAsCurrent();
+				if(object instanceof API06GeographicalItem)
+					((API06GeographicalItem)object).markAsCurrent();
 
 				if(object instanceof Node)
 					nodeCache.cacheObject((Node) object);
@@ -129,7 +116,7 @@ public class API06RelationFactory extends API06GeographicalObjectFactory<Relatio
 			{
 				for(RelationMember member : fetch(id).getMembers())
 				{
-					Class<? extends GeographicalObject> type = member.getType();
+					Class<? extends GeographicalItem> type = member.getType();
 					ID refId = member.getReferenceID();
 					if(type.equals(Relation.class) && !containedRelations.contains(refId))
 						downloadRelations.add(refId);

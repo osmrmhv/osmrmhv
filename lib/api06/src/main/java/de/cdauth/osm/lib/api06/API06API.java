@@ -25,19 +25,13 @@ import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import de.cdauth.osm.lib.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import de.cdauth.osm.lib.API;
-import de.cdauth.osm.lib.APIError;
-import de.cdauth.osm.lib.BoundingBox;
-import de.cdauth.osm.lib.GeographicalObject;
-import de.cdauth.osm.lib.Node;
-import de.cdauth.osm.lib.Object;
-import de.cdauth.osm.lib.Relation;
-import de.cdauth.osm.lib.Way;
+import de.cdauth.osm.lib.Item;
 
 /**
  * Provides static methods to communicate with the OSM API 0.6. Handles the HTTP connection
@@ -97,7 +91,7 @@ public class API06API implements API
 			connection.connect();
 	
 			if(connection.getResponseCode() != 200)
-				throw new APIError("ResponseCode is "+connection.getResponseCode()+".");
+				throw new APIError("ResponseCode is "+connection.getResponseCode()+" for URL "+url+".");
 	
 			Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(connection.getInputStream());
 			Element root = null;
@@ -131,14 +125,14 @@ public class API06API implements API
 	
 	/**
 	 * Makes OSM objects out of an XML element containing &lt;node&gt;, &lt;way&gt;,
-	 * &lt;relation&gt; and &lt;changeset&gt; elements. Do not forget to call {@link API06GeographicalObject#markAsCurrent}
+	 * &lt;relation&gt; and &lt;changeset&gt; elements. Do not forget to call {@link API06GeographicalItem#markAsCurrent}
 	 * afterwards if appropriate.
 	 * @param a_root The root element.
 	 * @return An ArrayList of OSM Objects.
 	 */
-	protected ArrayList<Object> makeObjects(Element a_root)
+	protected ArrayList<Item> makeObjects(Element a_root)
 	{
-		ArrayList<Object> ret = new ArrayList<Object>();
+		ArrayList<Item> ret = new ArrayList<Item>();
 
 		NodeList nodes = a_root.getChildNodes();
 		for(int i=0; i<nodes.getLength(); i++)
@@ -172,16 +166,16 @@ public class API06API implements API
 	}
 	
 	/**
-	 * Fetches OSM objects from the given API URL. Do not forget to call {@link API06GeographicalObject#markAsCurrent}
+	 * Fetches OSM objects from the given API URL. Do not forget to call {@link API06GeographicalItem#markAsCurrent}
 	 * afterwards if appropriate.
 	 * @param a_url For example "/node/1"
-	 * @return An array of OSM Objects. They can be cast to the sub-types checking the Object.getDOM().getTagName() value.
+	 * @return An array of OSM Objects. They can be cast to the sub-types checking the Item.getDOM().getTagName() value.
 	 * @throws APIError There was an error communicating with the API.
 	 */
 
-	protected Object[] get(String a_url) throws APIError
+	protected Item[] get(String a_url) throws APIError
 	{
-		return makeObjects(fetch(a_url)).toArray(new Object[0]);
+		return makeObjects(fetch(a_url)).toArray(new Item[0]);
 	}
 
 	private API06ChangesetFactory m_changesetFactory = null;
@@ -225,14 +219,14 @@ public class API06API implements API
 	}
 
 	@Override
-	public GeographicalObject[] fetchBoundingBox(BoundingBox a_boundingBox)
+	public GeographicalItem[] fetchBoundingBox(BoundingBox a_boundingBox)
 			throws APIError
 	{
-		Object[] objects = get("/map?bbox="+a_boundingBox.getLeft()+","+a_boundingBox.getBottom()+","+a_boundingBox.getRight()+","+a_boundingBox.getTop());
-		for(Object it : objects)
+		Item[] items = get("/map?bbox="+a_boundingBox.getLeft()+","+a_boundingBox.getBottom()+","+a_boundingBox.getRight()+","+a_boundingBox.getTop());
+		for(Item it : items)
 		{
-			if(it instanceof API06GeographicalObject) // should always be true
-				((API06GeographicalObject)it).markAsCurrent();
+			if(it instanceof API06GeographicalItem) // should always be true
+				((API06GeographicalItem)it).markAsCurrent();
 
 			if(it instanceof Node)
 				getNodeFactory().getCache().cacheObject((Node)it);
@@ -242,6 +236,6 @@ public class API06API implements API
 				getRelationFactory().getCache().cacheObject((Relation)it);
 		}
 		
-		return (GeographicalObject[])objects;
+		return (GeographicalItem[]) items;
 	}
 }

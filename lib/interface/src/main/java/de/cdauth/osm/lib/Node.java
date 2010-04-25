@@ -18,10 +18,10 @@
 package de.cdauth.osm.lib;
 
 /**
- * A node is OSM is a versioned object that consists of an ID, a position and tags.
+ * A node in OSM is a versioned object that consists of an ID, a position and tags.
  * @author cdauth
  */
-public interface Node extends GeographicalObject,VersionedObject
+public interface Node extends GeographicalItem, VersionedItem
 {
 	/**
 	 * Returns a LonLat object for the coordinates of this node.

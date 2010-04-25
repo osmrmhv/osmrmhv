@@ -18,13 +18,14 @@
 package de.cdauth.osm.lib;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
- * The methods of this type are common to all factories that fetch {@link Object}s using an {@link API} implementation.
+ * The methods of this type are common to all factories that fetch {@link Item}s using an {@link API} implementation.
  * The sub-types of this interface define which type of object is to be referenced by the IDs used in these methods.
  * @author cdauth
  */
-public interface ObjectFactory<T extends Object>
+public interface ItemFactory<T extends Item>
 {
 	/**
 	 * Fetches multiple objects from the API at once.
@@ -41,4 +42,12 @@ public interface ObjectFactory<T extends Object>
 	 * @throws APIError The object could not be fetched.
 	 */
 	public T fetch(ID a_id) throws APIError;
+
+	/**
+	 * Searches for objects having the specified tags.
+	 * @param a_tags The tags the objects have to have.
+	 * @return The objects containing the tags.
+	 * @throws APIError The search could not be performed.
+	 */
+	public Set<T> search(Map<String,String> a_tags) throws APIError;
 }

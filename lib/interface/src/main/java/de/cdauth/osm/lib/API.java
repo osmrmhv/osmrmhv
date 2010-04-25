@@ -54,5 +54,5 @@ public interface API
 	 * @return A list of the geographical elements inside the bounding box.
 	 * @throws APIError An error has occurred, perhaps the API could not process such a large bounding box.
 	 */
-	public GeographicalObject[] fetchBoundingBox(BoundingBox a_boundingBox) throws APIError;
+	public GeographicalItem[] fetchBoundingBox(BoundingBox a_boundingBox) throws APIError;
 }

@@ -20,21 +20,21 @@ package de.cdauth.osm.lib.api06;
 import java.util.Hashtable;
 import java.util.Map;
 
+import de.cdauth.osm.lib.Item;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import de.cdauth.osm.lib.ID;
-import de.cdauth.osm.lib.Object;
 
 /**
  * Parent class for all geographical objects in OSM, currently Nodes, Ways and Relations.
 */
 
-abstract public class API06Object extends API06XMLObject implements Object
+abstract public class API06Item extends API06XMLObject implements Item
 {
 	private Hashtable<String,String> m_tags = null;
 
-	protected API06Object(Element a_dom, API06API a_api)
+	protected API06Item(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);
 	}
@@ -45,9 +45,9 @@ abstract public class API06Object extends API06XMLObject implements Object
 	@Override
 	public boolean equals(java.lang.Object a_other)
 	{
-		if(a_other instanceof API06Object)
+		if(a_other instanceof API06Item)
 		{
-			API06Object other = (API06Object) a_other;
+			API06Item other = (API06Item) a_other;
 			return (getDOM().getTagName().equals(other.getDOM().getTagName()) && !getDOM().getAttribute("id").equals("") && getDOM().getAttribute("id").equals(other.getDOM().getAttribute("id")) && getDOM().getAttribute("version").equals(other.getDOM().getAttribute("version")));
 		}
 		else
@@ -61,7 +61,7 @@ abstract public class API06Object extends API06XMLObject implements Object
 	}
 	
 	@Override
-	public int compareTo(Object o)
+	public int compareTo(Item o)
 	{
 		return getID().compareTo(o.getID());
 	}
@@ -85,7 +85,7 @@ abstract public class API06Object extends API06XMLObject implements Object
 	}
 	
 	/**
-	 * Returns a Hashtable of all tags set on this Object.
+	 * Returns a Hashtable of all tags set on this Item.
 	 * @return
 	 */
 	@Override

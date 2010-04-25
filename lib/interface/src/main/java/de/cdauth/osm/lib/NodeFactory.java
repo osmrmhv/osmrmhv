@@ -22,7 +22,7 @@ package de.cdauth.osm.lib;
  * @see {@link API#getNodeFactory()}
  * @author cdauth
  */
-public interface NodeFactory extends VersionedObjectFactory<Node>
+public interface NodeFactory extends VersionedItemFactory<Node>
 {
 
 }

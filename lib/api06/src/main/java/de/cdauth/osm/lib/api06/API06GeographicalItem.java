@@ -21,20 +21,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import de.cdauth.osm.lib.*;
 import org.w3c.dom.Element;
 
-import de.cdauth.osm.lib.APIError;
-import de.cdauth.osm.lib.GeographicalObject;
-import de.cdauth.osm.lib.ID;
-import de.cdauth.osm.lib.Node;
-import de.cdauth.osm.lib.Object;
-import de.cdauth.osm.lib.Relation;
-import de.cdauth.osm.lib.Version;
-import de.cdauth.osm.lib.VersionedObject;
-import de.cdauth.osm.lib.VersionedObjectCache;
-import de.cdauth.osm.lib.Way;
+import de.cdauth.osm.lib.GeographicalItem;
 
-abstract public class API06GeographicalObject extends API06Object implements VersionedObject,GeographicalObject
+abstract public class API06GeographicalItem extends API06Item implements VersionedItem, GeographicalItem
 {
 	private static SimpleDateFormat sm_dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	
@@ -45,7 +37,7 @@ abstract public class API06GeographicalObject extends API06Object implements Ver
 		return sm_dateFormat;
 	}
 	
-	protected API06GeographicalObject(Element a_dom, API06API a_api)
+	protected API06GeographicalItem(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);
 	}
@@ -59,12 +51,12 @@ abstract public class API06GeographicalObject extends API06Object implements Ver
 	}
 	
 	@Override
-	public int compareTo(Object o)
+	public int compareTo(Item o)
 	{
 		int c1 = super.compareTo(o);
-		if(c1 != 0 || !(o instanceof VersionedObject))
+		if(c1 != 0 || !(o instanceof VersionedItem))
 			return c1;
-		return ((VersionedObject)this).getVersion().compareTo(((VersionedObject)o).getVersion());
+		return ((VersionedItem)this).getVersion().compareTo(((VersionedItem)o).getVersion());
 	}
 	
 	@Override
@@ -117,9 +109,12 @@ abstract public class API06GeographicalObject extends API06Object implements Ver
 			urlPart = "relation";
 		else
 			throw new RuntimeException("Unknown data type.");
-		
-		Relation[] ret = (Relation[])getAPI().get("/"+urlPart+"/"+getID()+"/relations");
-		VersionedObjectCache<Relation> cache = getAPI().getRelationFactory().getCache();
+
+		Item[] relations = getAPI().get("/"+urlPart+"/"+getID()+"/relations");
+		Relation[] ret = new Relation[relations.length];
+		for(int i=0; i<relations.length; i++)
+			ret[i] = (Relation)relations[i];
+		VersionedItemCache<Relation> cache = getAPI().getRelationFactory().getCache();
 		for(Relation it : ret)
 		{
 			((API06Relation)it).markAsCurrent();

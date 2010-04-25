@@ -20,7 +20,7 @@ package de.cdauth.osm.lib.api06;
 import de.cdauth.osm.lib.Node;
 import de.cdauth.osm.lib.NodeFactory;
 
-public class API06NodeFactory extends API06GeographicalObjectFactory<Node> implements NodeFactory
+public class API06NodeFactory extends API06GeographicalItemFactory<Node> implements NodeFactory
 {
 	protected static final String TYPE = "node";
 

@@ -22,7 +22,7 @@ package de.cdauth.osm.lib;
  * @see API#getChangesetFactory
  * @author cdauth
  */
-public interface ChangesetFactory extends ObjectFactory<Changeset>
+public interface ChangesetFactory extends ItemFactory<Changeset>
 {
 
 }
