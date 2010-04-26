@@ -139,7 +139,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 	}
 	
 	/**
-	 * Caches an specific version ({@link VersionedItem#getVersion}) of an object.
+	 * Caches a specific version ({@link VersionedItem#getVersion}) of an object.
 	 * @param a_object The versioned object to cache.
 	 */
 	@Override
@@ -155,7 +155,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 		TreeMap<Version,T> history;
 		synchronized(m_history)
 		{
-			history = getHistory(id);
+			history = m_history.get(id);
 			if(history == null)
 			{
 				history = new TreeMap<Version,T>();

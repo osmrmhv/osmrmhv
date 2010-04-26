@@ -116,19 +116,23 @@ public class GUI
 
 		if(bundle == null)
 		{
-			for(Cookie cookie : m_req.getCookies())
+			Cookie[] cookies = m_req.getCookies();
+			if(cookies != null)
 			{
-				if(cookie.getName().equals("lang"))
+				for(Cookie cookie : cookies)
 				{
-					String[] lang = cookie.getValue().split("_");
-					Locale locale;
-					if(lang.length >= 2)
-						locale = new Locale(lang[0], lang[1]);
-					else
-						locale = new Locale(lang[0]);
-					bundle = ResourceBundle.getBundle(RESOURCE, locale);
-					if(!bundle.getLocale().getLanguage().equalsIgnoreCase(lang[0]))
-						bundle = null;
+					if(cookie.getName().equals("lang"))
+					{
+						String[] lang = cookie.getValue().split("_");
+						Locale locale;
+						if(lang.length >= 2)
+							locale = new Locale(lang[0], lang[1]);
+						else
+							locale = new Locale(lang[0]);
+						bundle = ResourceBundle.getBundle(RESOURCE, locale);
+						if(!bundle.getLocale().getLanguage().equalsIgnoreCase(lang[0]))
+							bundle = null;
+					}
 				}
 			}
 		}

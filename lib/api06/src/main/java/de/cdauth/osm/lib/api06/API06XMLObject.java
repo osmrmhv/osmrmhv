@@ -18,18 +18,31 @@
 package de.cdauth.osm.lib.api06;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSParser;
+import org.w3c.dom.ls.LSSerializer;
 
-import java.io.Serializable;
+import java.io.*;
 
 /**
  * Abstract class for all objects whose information is saved in an XML DOM element.
  */
-abstract public class API06XMLObject implements Serializable
+abstract public class API06XMLObject implements Externalizable
 {
 	/** The DOM element containing the API XML response for this object. */
-	private final Element m_dom;
+	private Element m_dom;
 	
 	private transient API06API m_api;
+
+	/**
+	 * Only for serialization.
+	 */
+	@Deprecated
+	public API06XMLObject()
+	{
+	}
 	
 	/**
 	 * @param a_dom The DOM element.
@@ -58,5 +71,48 @@ abstract public class API06XMLObject implements Serializable
 	protected API06API getAPI()
 	{
 		return m_api;
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		String str = "";
+		if(m_dom != null)
+		{
+			try {
+				DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+				DOMImplementationLS impl = (DOMImplementationLS)registry.getDOMImplementation("LS");
+				LSSerializer writer = impl.createLSSerializer();
+				str = writer.writeToString(m_dom);
+			} catch(Exception e) {
+				if(e instanceof IOException)
+					throw (IOException)e;
+				else
+					throw new IOException(e);
+			}
+		}
+		out.writeObject(str);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+	{
+		String str = (String)in.readObject();
+		if(!str.equals(""))
+		{
+			try {
+				DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+				DOMImplementationLS impl = (DOMImplementationLS)registry.getDOMImplementation("LS");
+				LSParser parser = impl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
+				LSInput input = impl.createLSInput();
+				input.setStringData(str);
+				m_dom = (Element)parser.parse(input).getFirstChild();
+			} catch(Exception e) {
+				if(e instanceof IOException)
+					throw (IOException)e;
+				else
+					throw new IOException(e);
+			}
+		}
 	}
 }

@@ -40,7 +40,7 @@ public class ItemCache<T extends Item>
 	/**
 	 * How many entries may be in the cache?
 	 */
-	public static final int MAX_CACHED_VALUES = 0;
+	public static final int MAX_CACHED_VALUES = 100;
 	/**
 	 * How old may the entries in the cache be at most? (seconds)
 	 */

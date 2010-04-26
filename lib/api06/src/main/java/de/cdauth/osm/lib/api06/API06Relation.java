@@ -29,6 +29,14 @@ import de.cdauth.osm.lib.GeographicalItem;
 
 public class API06Relation extends API06GeographicalItem implements Relation
 {
+	/**
+	 * Only for serialization.
+	 */
+	@Deprecated
+	public API06Relation()
+	{
+	}
+
 	protected API06Relation(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);

@@ -46,6 +46,14 @@ public class API06Changeset extends API06Item implements Changeset
 	 */
 	private Element m_uncleanedDom = null;
 
+	/**
+	 * Only for serialization.
+	 */
+	@Deprecated
+	public API06Changeset()
+	{
+	}
+
 	protected API06Changeset(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);

@@ -35,6 +35,14 @@ abstract public class API06GeographicalItem extends API06Item implements Version
 	private boolean m_current = false;
 
 	private ID[] m_containingRelations = null;
+
+	/**
+	 * Only for serialization.
+	 */
+	@Deprecated
+	public API06GeographicalItem()
+	{
+	}
 	
 	protected static SimpleDateFormat getDateFormat()
 	{

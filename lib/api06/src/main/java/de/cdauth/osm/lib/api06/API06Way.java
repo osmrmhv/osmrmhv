@@ -30,6 +30,14 @@ import de.cdauth.osm.lib.Way;
 
 public class API06Way extends API06GeographicalItem implements Way
 {
+	/**
+	 * Only for serialization.
+	 */
+	@Deprecated
+	public API06Way()
+	{
+	}
+
 	protected API06Way(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);

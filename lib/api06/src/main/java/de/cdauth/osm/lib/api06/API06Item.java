@@ -34,6 +34,14 @@ abstract public class API06Item extends API06XMLObject implements Item
 {
 	private Hashtable<String,String> m_tags = null;
 
+	/**
+	 * Only for serialization.
+	 */
+	@Deprecated
+	public API06Item()
+	{
+	}
+
 	protected API06Item(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);
