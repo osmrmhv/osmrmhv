@@ -18,7 +18,7 @@
 <%@page import="de.cdauth.osm.osmrm.*"%>
 <%@page import="java.util.*" %>
 <%@page import="static de.cdauth.osm.osmrm.GUI.*"%>
-<%@page contentType="text/xml; charset=UTF-8" buffer="none"%>
+<%@page contentType="text/xml; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	private static API api = GUI.getAPI();
 %>

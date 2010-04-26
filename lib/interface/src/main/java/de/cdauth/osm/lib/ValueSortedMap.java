@@ -32,35 +32,41 @@ public class ValueSortedMap<K,V> extends Hashtable<K,V>
 	{
 		V value = super.remove(key);
 
-		if(value == null)
-			return null;
+		updateRemovedValue(value);
 
+		return value;
+	}
+
+	protected void updateRemovedValue(V a_value)
+	{
+		if(a_value == null)
+			return;
 		for(Map.Entry<K,V> it : entrySet())
 		{
-			if(value.equals(it.getValue()))
+			if(a_value.equals(it.getValue()))
 			{
-				m_order.put(value, it.getKey());
-				return value;
+				m_order.put(a_value, it.getKey());
+				return;
 			}
 		}
-
-		m_order.remove(value);
-		return value;
+		m_order.remove(a_value);
 	}
 
 	@Override
 	public synchronized void putAll(Map<? extends K, ? extends V> m)
 	{
 		for(Map.Entry<? extends K,? extends V> it : m.entrySet())
-			m_order.put(it.getValue(), it.getKey());
-		super.putAll(m);
+			put(it.getKey(), it.getValue());
 	}
 
 	@Override
 	public synchronized V put(K key, V value)
 	{
+		V old = super.put(key, value);
+		updateRemovedValue(old);
 		m_order.put(value, key);
-		return super.put(key, value);
+
+		return old;
 	}
 
 	public synchronized K firstKey() throws NoSuchElementException

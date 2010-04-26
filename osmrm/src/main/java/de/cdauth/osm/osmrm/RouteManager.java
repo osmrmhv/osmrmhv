@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.logging.Logger;
 
 import de.cdauth.osm.lib.APIError;
 import de.cdauth.osm.lib.LonLat;
@@ -13,6 +14,8 @@ import de.cdauth.osm.lib.Way;
 
 public class RouteManager
 {
+	private static Logger sm_logger = Logger.getLogger(RouteManager.class.getName());
+	
 	/**
 	 * Makes segments out of the ways of this relation and its sub-relations. The return value is an array of segments. The segments consist of a list of coordinates that are connected via ways. The relation structure is irrelevant for the segmentation; a segment ends where a way is connected to two or more ways where it is not connected to any way. 
 	 * The segments are sorted from north to south or from west to east (depending in which direction the two most distant ends have the greater distance from each other). The sort algorithm sorts using the smaller distance of the two ends of a segment to the northern/western one of the the two most distant points.

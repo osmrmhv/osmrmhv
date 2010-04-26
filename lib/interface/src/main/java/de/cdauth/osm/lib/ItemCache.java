@@ -151,6 +151,8 @@ public class ItemCache<T extends Item>
 					}
 				}
 			}
+			if(ret != null)
+				cacheObject(ret);
 		}
 
 		return ret;
@@ -211,88 +213,93 @@ public class ItemCache<T extends Item>
 		Connection conn = null;
 		try
 		{
-			conn = getConnection();
-		}
-		catch(SQLException e)
-		{
-			sm_logger.log(Level.WARNING, "Could not move memory cache to database, could not open connection.", e);
-		}
-
-		sm_logger.info("Cache "+getPersistenceID()+" contains "+m_cache.size()+" entries.");
-
-		int affected = 0;
-
-		while(true)
-		{
-			T item;
-			synchronized(m_cache)
+			try
 			{
-				synchronized(m_cacheTimes)
-				{
-					if(m_cacheTimes.isEmpty())
-						break;
-					ID oldest = m_cacheTimes.firstKey();
-					long oldestTime = m_cacheTimes.get(oldest);
-					if(System.currentTimeMillis()-oldestTime <= MAX_AGE*1000 && m_cacheTimes.size() <= MAX_CACHED_VALUES)
-						break;
-					m_cacheTimes.remove(oldest);
-					item = m_cache.remove(oldest);
-				}
+				conn = getConnection();
+			}
+			catch(SQLException e)
+			{
+				sm_logger.log(Level.WARNING, "Could not move memory cache to database, could not open connection.", e);
 			}
 
-			affected++;
+			sm_logger.info("Cache "+getPersistenceID()+" contains "+m_cache.size()+" entries.");
 
-			if(persistenceID != null && conn != null)
+			int affected = 0;
+
+			while(true)
 			{
-				try
+				T item;
+				synchronized(m_cache)
 				{
-					synchronized(conn)
+					synchronized(m_cacheTimes)
 					{
-						try
-						{
-							PreparedStatement stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache\" WHERE \"cache_id\" = ? AND \"object_id\" = ?");
-							stmt.setString(1, persistenceID);
-							stmt.setLong(2, item.getID().asLong());
-							stmt.execute();
-
-							stmt = conn.prepareStatement("INSERT INTO \"osmrmhv_cache\" ( \"cache_id\", \"object_id\", \"data\", \"date\" ) VALUES ( ?, ?, ?, ? )");
-							stmt.setString(1, persistenceID);
-							stmt.setLong(2, item.getID().asLong());
-							putSerializedObjectInDatabase(stmt, 3, item);
-							stmt.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-							stmt.execute();
-
-							conn.commit();
-
-							synchronized(m_databaseCache)
-							{
-								m_databaseCache.add(item.getID());
-							}
-						}
-						catch(Exception e)
-						{
-							conn.rollback();
-							throw e;
-						}
+						if(m_cacheTimes.isEmpty())
+							break;
+						ID oldest = m_cacheTimes.firstKey();
+						long oldestTime = m_cacheTimes.get(oldest);
+						if(System.currentTimeMillis()-oldestTime <= MAX_AGE*1000 && m_cacheTimes.size() <= MAX_CACHED_VALUES)
+							break;
+						m_cacheTimes.remove(oldest);
+						item = m_cache.remove(oldest);
 					}
 				}
-				catch(Exception e)
+
+				affected++;
+
+				if(persistenceID != null && conn != null)
 				{
-					sm_logger.log(Level.WARNING, "Could not cache object in database.", e);
+					try
+					{
+						synchronized(conn)
+						{
+							try
+							{
+								PreparedStatement stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache\" WHERE \"cache_id\" = ? AND \"object_id\" = ?");
+								stmt.setString(1, persistenceID);
+								stmt.setLong(2, item.getID().asLong());
+								stmt.execute();
+
+								stmt = conn.prepareStatement("INSERT INTO \"osmrmhv_cache\" ( \"cache_id\", \"object_id\", \"data\", \"date\" ) VALUES ( ?, ?, ?, ? )");
+								stmt.setString(1, persistenceID);
+								stmt.setLong(2, item.getID().asLong());
+								putSerializedObjectInDatabase(stmt, 3, item);
+								stmt.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+								stmt.execute();
+
+								conn.commit();
+
+								synchronized(m_databaseCache)
+								{
+									m_databaseCache.add(item.getID());
+								}
+							}
+							catch(Exception e)
+							{
+								conn.rollback();
+								throw e;
+							}
+						}
+					}
+					catch(Exception e)
+					{
+						sm_logger.log(Level.WARNING, "Could not cache object in database.", e);
+					}
 				}
 			}
-		}
 
-		if(persistenceID != null && conn != null)
-			sm_logger.info("Moved "+affected+" entries to the database cache.");
-		else
-			sm_logger.info("Removed "+affected+" entries from the memory.");
-		
-		if(conn != null)
+			if(persistenceID != null && conn != null)
+				sm_logger.info("Moved "+affected+" entries to the database cache.");
+			else
+				sm_logger.info("Removed "+affected+" entries from the memory.");
+		}
+		finally
 		{
-			try {
-				conn.close();
-			} catch(SQLException e) {
+			if(conn != null)
+			{
+				try {
+					conn.close();
+				} catch(SQLException e) {
+				}
 			}
 		}
 	}
