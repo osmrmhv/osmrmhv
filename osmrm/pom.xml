@@ -4,11 +4,24 @@
 	<artifactId>osmrm</artifactId>
 	<name>OSM Route Manager</name>
 	<packaging>war</packaging>
+
 	<parent>
 		<groupId>de.cdauth.osm</groupId>
 		<artifactId>lib</artifactId>
 		<version>SNAPSHOT</version>
 	</parent>
+
+	<properties>
+		<localeDir>${basedir}/src/main/locale</localeDir>
+	</properties>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>gettext-commons-site</id>
+			<url>http://gettext-commons.googlecode.com/svn/maven-repository</url>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}.lib</groupId>
@@ -27,6 +40,7 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -56,6 +70,23 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
 					<webXml>${pom.basedir}/target/jspweb.xml</webXml>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.xnap.commons</groupId>
+				<artifactId>maven-gettext-plugin</artifactId>
+				<version>1.2.0</version>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							 <goal>dist</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<poDirectory>${localeDir}</poDirectory>
+					<targetBundle>de.cdauth.osm.osmrm.locale.osmrm</targetBundle>
 				</configuration>
 			</plugin>
 		</plugins>
