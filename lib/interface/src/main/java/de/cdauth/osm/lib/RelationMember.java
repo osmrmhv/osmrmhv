@@ -17,6 +17,8 @@
 
 package de.cdauth.osm.lib;
 
+import java.io.Serializable;
+
 /**
  * Represents a member of a {@link Relation} in the OSM database. Relation members are references to
  * {@link GeographicalItem}s and have a role that is an arbitrary text. Relation members can be
@@ -27,7 +29,7 @@ package de.cdauth.osm.lib;
  * 
  * @author cdauth
  */
-public interface RelationMember
+public interface RelationMember extends Serializable
 {
 	/**
 	 * Returns the corresponding {@link Relation} that this member belongs to.

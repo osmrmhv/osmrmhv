@@ -1,10 +1,12 @@
 package de.cdauth.osm.lib;
 
+import java.io.Serializable;
+
 /**
  * A bounding box consisting of a top (nothern), right, bottom and left coordinate in WGS 84 / EPSG 4326.
  * @author cdauth
  */
-public class BoundingBox
+public class BoundingBox implements Serializable
 {
 	private double m_top = Double.MAX_VALUE;
 	private double m_right = Double.MAX_VALUE;

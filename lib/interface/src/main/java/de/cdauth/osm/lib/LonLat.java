@@ -17,11 +17,13 @@
 
 package de.cdauth.osm.lib;
 
+import java.io.Serializable;
+
 /**
  * Represents a pair of coordinates in WGS 84 / EPSG 4326. This is immutable.
  */
 
-public class LonLat
+public class LonLat implements Serializable
 {
 	private double m_lon;
 	private double m_lat;

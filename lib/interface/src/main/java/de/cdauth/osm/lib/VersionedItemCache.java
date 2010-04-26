@@ -17,7 +17,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 	private static final Logger sm_logger = Logger.getLogger(ItemCache.class.getName());
 
 	private final Hashtable<ID,TreeMap<Version,T>> m_history = new Hashtable<ID,TreeMap<Version,T>>();
-	private final SortedMap<Long,ID> m_historyTimes = Collections.synchronizedSortedMap(new TreeMap<Long,ID>());
+	private final ValueSortedMap<ID,Long> m_historyTimes = new ValueSortedMap<ID,Long>();
 
 	private final Set<ID> m_databaseCache = Collections.synchronizedSet(new HashSet<ID>());
 
@@ -54,7 +54,54 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 		{
 			TreeMap<Version,T> history = m_history.get(a_id);
 			if(history == null)
-				return null; // TODO: Read from database
+			{
+				synchronized(m_databaseCache)
+				{
+					if(m_databaseCache.contains(a_id))
+					{
+						Connection conn = null;
+						try
+						{
+							String persistenceID = getPersistenceID();
+							conn = getConnection();
+							if(persistenceID != null && conn != null)
+							{
+								PreparedStatement stmt = conn.prepareStatement("SELECT \"version\", \"data\" FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? AND \"object_id\" = ?");
+								stmt.setString(1, persistenceID);
+								stmt.setLong(2, a_id.asLong());
+								ResultSet res = stmt.executeQuery();
+								history = new TreeMap<Version,T>();
+								while(res.next())
+								{
+									try {
+										history.put(new Version(res.getLong(1)), (T)getSerializedObjectFromDatabase(res, 2));
+									} catch(Exception e) {
+										sm_logger.log(Level.WARNING, "Could not read version from database.", e);
+									}
+								}
+								res.close();
+
+								if(history.size() == 0)
+									history = null;
+							}
+						}
+						catch(Exception e)
+						{
+							sm_logger.log(Level.WARNING, "Could not get object from database.", e);
+						}
+						finally
+						{
+							if(conn != null)
+							{
+								try {
+									conn.close();
+								} catch(SQLException e) {
+								}
+							}
+						}
+					}
+				}
+			}
 			return history;
 		}
 	}
@@ -115,7 +162,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 			
 			synchronized(m_historyTimes)
 			{
-				m_historyTimes.put(System.currentTimeMillis(), id);
+				m_historyTimes.put(id, System.currentTimeMillis());
 			}
 		}
 		synchronized(history)
@@ -148,26 +195,88 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 	{
 		super.cleanUpMemory();
 
+		String persistenceID = getPersistenceID();
+		Connection conn = null;
+		try
+		{
+			conn = getConnection();
+		}
+		catch(SQLException e)
+		{
+			sm_logger.log(Level.WARNING, "Could not move memory cache to database, could not open connection.", e);
+		}
+
 		sm_logger.info("The cache "+getPersistenceID()+" contains "+m_history.size()+" entries.");
 		int affected = 0;
 
 		while(true)
 		{
+			ID id;
+			TreeMap<Version,T> history;
 			synchronized(m_history)
 			{
 				synchronized(m_historyTimes)
 				{
 					if(m_historyTimes.size() == 0)
 						break;
-					Long oldest = m_historyTimes.firstKey();
-					if(System.currentTimeMillis()-oldest <= MAX_AGE*1000 && m_historyTimes.size() <= MAX_CACHED_VALUES)
+					ID oldest = m_historyTimes.firstKey();
+					long oldestTime = m_historyTimes.get(oldest);
+					if(System.currentTimeMillis()-oldestTime <= MAX_AGE*1000 && m_historyTimes.size() <= MAX_CACHED_VALUES)
 						break;
-					ID id = m_historyTimes.remove(oldest);
-					m_history.remove(id);
+					id = oldest;
+					m_historyTimes.remove(oldest);
+					history = m_history.remove(id);
 				}
 			}
 			affected++;
-		} // TODO: Save in database
+
+			if(persistenceID != null && conn != null)
+			{
+				try
+				{
+					synchronized(conn)
+					{
+						try
+						{
+							PreparedStatement stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? AND \"object_id\" = ? AND \"version\" = ?");
+							stmt.setString(1, persistenceID);
+							stmt.setLong(2, id.asLong());
+							for(Version it : history.keySet())
+							{
+								stmt.setLong(3, it.asLong());
+								stmt.execute();
+							}
+
+							stmt = conn.prepareStatement("INSERT INTO \"osmrmhv_cache_version\" ( \"cache_id\", \"object_id\", \"version\", \"data\" ) VALUES ( ?, ?, ?, ? )");
+							stmt.setString(1, persistenceID);
+							stmt.setLong(2, id.asLong());
+							for(Map.Entry<Version,T> it : history.entrySet())
+							{
+								stmt.setLong(3, it.getKey().asLong());
+								putSerializedObjectInDatabase(stmt, 4, it.getValue());
+								stmt.execute();
+							}
+
+							conn.commit();
+
+							synchronized(m_databaseCache)
+							{
+								m_databaseCache.add(id);
+							}
+						}
+						catch(Exception e)
+						{
+							conn.rollback();
+							throw e;
+						}
+					}
+				}
+				catch(Exception e)
+				{
+					sm_logger.log(Level.WARNING, "Could not cache object in database.", e);
+				}
+			}
+		}
 
 		sm_logger.info("Removed "+affected+" cache entries from the memory.");
 	}
@@ -189,7 +298,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 
 			synchronized(conn)
 			{ // TODO: Better selection of entries to remove
-				PreparedStatement stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? AND ( \"object_id\", \"version\" ) IN ( SELECT \"object_id\", \"version\" FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? OFFSET ? )");
+				PreparedStatement stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? AND ( \"object_id\", \"version\" ) IN ( SELECT \"object_id\", \"version\" FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? ORDER BY RANDOM() OFFSET ?)");
 				stmt.setString(1, persistenceID);
 				stmt.setString(2, persistenceID);
 				stmt.setInt(3, MAX_DATABASE_VALUES);

@@ -20,7 +20,6 @@ package de.cdauth.osm.lib;
 import javax.sql.DataSource;
 import java.io.*;
 import java.sql.*;
-import java.sql.Date;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,13 +63,13 @@ public class ItemCache<T extends Item>
 	
 	private static final Map<ItemCache<? extends Item>, java.lang.Object> sm_instances = Collections.synchronizedMap(new WeakHashMap<ItemCache<? extends Item>, java.lang.Object>());
 
-	private final Hashtable<ID,T> m_cache = new Hashtable<ID,T>();
+	private final Map<ID,T> m_cache = new Hashtable<ID,T>();
 
 	/**
-	 * Caches the time stamp ({@link System#currentTimeMillis()}) when an entry is saved to the cache. Needed for all
+	 * Caches the time stamp ({@link System#currentTimeMillis()}) when a entry is saved to the cache. Needed for all
 	 * clean up methods.
 	 */
-	private final SortedMap<Long,ID> m_cacheTimes = Collections.synchronizedSortedMap(new TreeMap<Long,ID>());
+	private final ValueSortedMap<ID,Long> m_cacheTimes = new ValueSortedMap<ID,Long>();
 
 	/**
 	 * Creates a cache that does not use a database but only stores several items in the memory.
@@ -170,7 +169,7 @@ public class ItemCache<T extends Item>
 			synchronized(m_cacheTimes)
 			{
 				m_cache.put(id, a_object);
-				m_cacheTimes.put(System.currentTimeMillis(), id);
+				m_cacheTimes.put(id, System.currentTimeMillis());
 			}
 		}
 	}
@@ -190,6 +189,7 @@ public class ItemCache<T extends Item>
 	/**
 	 * Returns the connection to the cache database.
 	 * @return A database connection or null if no database cache is used.
+	 * @throws SQLException A connection could not be established.
 	 */
 	protected Connection getConnection() throws SQLException
 	{
@@ -229,18 +229,16 @@ public class ItemCache<T extends Item>
 			{
 				synchronized(m_cacheTimes)
 				{
-					if(m_cacheTimes.size() == 0)
+					if(m_cacheTimes.isEmpty())
 						break;
-					Long oldest = m_cacheTimes.firstKey();
-					if(System.currentTimeMillis()-oldest <= MAX_AGE*1000 && m_cacheTimes.size() <= MAX_CACHED_VALUES)
+					ID oldest = m_cacheTimes.firstKey();
+					long oldestTime = m_cacheTimes.get(oldest);
+					if(System.currentTimeMillis()-oldestTime <= MAX_AGE*1000 && m_cacheTimes.size() <= MAX_CACHED_VALUES)
 						break;
-					ID id = m_cacheTimes.remove(oldest);
-					item = m_cache.remove(id);
+					m_cacheTimes.remove(oldest);
+					item = m_cache.remove(oldest);
 				}
 			}
-
-			if(item == null) // TODO :-?
-				continue;
 
 			affected++;
 

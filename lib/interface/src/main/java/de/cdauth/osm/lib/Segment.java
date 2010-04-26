@@ -17,11 +17,13 @@
 
 package de.cdauth.osm.lib;
 
+import java.io.Serializable;
+
 /**
  * Represents a connection between two nodes.
  */
 
-public class Segment
+public class Segment implements Serializable
 {
 	private Node m_node1;
 	private Node m_node2;

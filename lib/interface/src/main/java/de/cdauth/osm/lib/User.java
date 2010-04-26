@@ -1,11 +1,13 @@
 package de.cdauth.osm.lib;
 
+import java.io.Serializable;
+
 /**
  * A user in OpenStreetMap. Every user has a 64-bit ID number and a user name. Objects of this class are immutable.
  *
  * @author cdauth
  */
-public class User implements Comparable<User>
+public class User implements Comparable<User>, Serializable
 {
 	private final ID m_id;
 	private final String m_name;

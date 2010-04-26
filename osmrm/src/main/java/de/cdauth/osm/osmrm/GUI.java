@@ -1,5 +1,6 @@
 package de.cdauth.osm.osmrm;
 
+
 import de.cdauth.osm.lib.ItemCache;
 import de.cdauth.osm.lib.api06.API06API;
 import gnu.gettext.GettextResource;
@@ -67,16 +68,22 @@ public class GUI
 				sm_api = new de.cdauth.osm.lib.api06.API06API(ds);
 			}
 
-			sm_apiCleanUp = new Timer("osmrmhv API cache cleanup", true);
-			sm_apiCleanUp.schedule(new TimerTask(){
+			new Thread("osmrmhv cache cleanup") {
 				@Override public void run() {
-					try {
-						ItemCache.cleanUpAll();
-					} catch(Exception e) {
-						Logger.getLogger(GUI.class.getName()).log(Level.WARNING, "Unexpected exception.", e);
+					while(true)
+					{
+						try {
+							Thread.sleep(60000);
+						} catch(InterruptedException e) {
+						}
+						try {
+							ItemCache.cleanUpAll();
+						} catch(Exception e) {
+							Logger.getLogger(GUI.class.getName()).log(Level.WARNING, "Unexpected exception.", e);
+						}
 					}
 				}
-			}, 60000, 60000);
+			}.start();
 		}
 		return sm_api;
 	}
@@ -388,6 +395,8 @@ public class GUI
 			out.println("\t\t\t<li><a href=\""+htmlspecialchars(url+"lang="+locale.getKey())+"\">"+htmlspecialchars(locale.getValue())+"</a></li>");
 		}
 		out.println("\t\t</ul>");
+
+		out.flush();
 	}
 
 	public void foot() throws IOException

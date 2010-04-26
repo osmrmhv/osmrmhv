@@ -1,12 +1,14 @@
 package de.cdauth.osm.lib;
 
+import java.io.Serializable;
+
 /**
  * Represents the version of a {@link VersionedItem}. Versions start at 1 and are always increased by 1, gaps
  * do not exist. They are 64-bit integers.
  * 
  * @author cdauth
  */
-public class Version implements Comparable<Version>
+public class Version implements Comparable<Version>, Serializable
 {
 	private final Long m_version;
 

@@ -1,0 +1,7 @@
+.classpath
+.project
+.settings
+*.iml
+nbproject
+.idea
+.manager
