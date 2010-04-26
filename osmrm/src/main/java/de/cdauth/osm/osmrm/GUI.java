@@ -1,5 +1,7 @@
 package de.cdauth.osm.osmrm;
 
+import de.cdauth.osm.lib.ItemCache;
+import de.cdauth.osm.lib.api06.API06API;
 import gnu.gettext.GettextResource;
 
 import java.io.IOException;
@@ -8,10 +10,15 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.logging.Logger;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 
 
 public class GUI
@@ -35,6 +42,35 @@ public class GUI
 
 	private final HttpServletRequest m_req;
 	private final HttpServletResponse m_resp;
+
+	private static API06API sm_api = null;
+	private static Timer sm_apiCleanUp = null;
+
+	public synchronized static API06API getAPI()
+	{
+		if(sm_api == null)
+		{
+			DataSource ds = null;
+			try {
+				ds = (DataSource) ((Context)new InitialContext().lookup("java:comp/env")).lookup("jdbc/osmrmhv");
+			} catch(NamingException e) {
+			}
+			if(ds == null)
+			{
+				Logger.getLogger(GUI.class.getName()).info("Using API without database cache.");
+				sm_api = new de.cdauth.osm.lib.api06.API06API();
+			}
+			else
+			{
+				Logger.getLogger(GUI.class.getName()).info("Using API with database cache.");
+				sm_api = new de.cdauth.osm.lib.api06.API06API(ds);
+			}
+
+			sm_apiCleanUp = new Timer("osmrmhv API cache cleanup", true);
+			sm_apiCleanUp.schedule(new TimerTask(){ @Override public void run(){ ItemCache.cleanUpAll(); } }, 60000, 60000);
+		}
+		return sm_api;
+	}
 
 	public GUI(HttpServletRequest a_req, HttpServletResponse a_resp)
 	{

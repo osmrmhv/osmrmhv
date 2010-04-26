@@ -18,10 +18,12 @@
 package de.cdauth.osm.lib.api06;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
+import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -45,6 +47,31 @@ public class API06API implements API
 	protected static final String API_PREFIX = "/api/0.6";
 
 	private String m_userAgent = "cdauth’s OSM library";
+
+	private final DataSource m_databaseCache;
+
+	public API06API()
+	{
+		m_databaseCache = null;
+	}
+
+	/**
+	 * Not only caches some Items in the memory, but also uses a database for caching.
+	 * @param a_databaseCache The database to use for caching.
+	 */
+	public API06API(DataSource a_databaseCache)
+	{
+		m_databaseCache = a_databaseCache;
+	}
+
+	/**
+	 * Returns the database connection source to use for Item caches.
+	 * @return The cache database connection source or null if no such is defined.
+	 */
+	public DataSource getDatabaseCache()
+	{
+		return m_databaseCache;
+	}
 	
 	/**
 	 * Sets the User-Agent HTTP request header for all future API requests.
@@ -178,7 +205,7 @@ public class API06API implements API
 		return makeObjects(fetch(a_url)).toArray(new Item[0]);
 	}
 
-	private API06ChangesetFactory m_changesetFactory = null;
+	private transient API06ChangesetFactory m_changesetFactory = null;
 	
 	@Override
 	public API06ChangesetFactory getChangesetFactory()
@@ -188,7 +215,7 @@ public class API06API implements API
 		return m_changesetFactory;
 	}
 
-	private API06NodeFactory m_nodeFactory = null;
+	private transient API06NodeFactory m_nodeFactory = null;
 	
 	@Override
 	public API06NodeFactory getNodeFactory()
@@ -198,7 +225,7 @@ public class API06API implements API
 		return m_nodeFactory;
 	}
 
-	private API06RelationFactory m_relationFactory = null;
+	private transient API06RelationFactory m_relationFactory = null;
 	
 	@Override
 	public API06RelationFactory getRelationFactory()
@@ -208,7 +235,7 @@ public class API06API implements API
 		return m_relationFactory;
 	}
 
-	private API06WayFactory m_wayFactory = null;
+	private transient API06WayFactory m_wayFactory = null;
 	
 	@Override
 	public API06WayFactory getWayFactory()

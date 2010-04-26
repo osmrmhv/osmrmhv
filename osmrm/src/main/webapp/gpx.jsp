@@ -20,7 +20,7 @@
 <%@page import="static de.cdauth.osm.osmrm.GUI.*"%>
 <%@page contentType="text/xml; charset=UTF-8" buffer="none"%>
 <%!
-	private static API api = new de.cdauth.osm.lib.api06.API06API();
+	private static API api = GUI.getAPI();
 %>
 <%
 	response.setHeader("Content-disposition", "attachment; filename=route.gpx");

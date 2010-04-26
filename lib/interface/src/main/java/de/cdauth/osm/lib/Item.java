@@ -17,13 +17,14 @@
 
 package de.cdauth.osm.lib;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
  * An object in the OSM database that has an ID and tags.
  * @author cdauth
  */
-public interface Item extends Comparable<Item>
+public interface Item extends Comparable<Item>, Serializable
 {
 	/**
 	 * Get the ID of this object.

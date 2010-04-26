@@ -21,7 +21,7 @@
 <%@ page import="java.util.regex.Pattern" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none"%>
 <%!
-	private static final API api = new de.cdauth.osm.lib.api06.API06API();
+	private static final API api = GUI.getAPI();
 %>
 <%
 	if(request.getParameter("id") == null)

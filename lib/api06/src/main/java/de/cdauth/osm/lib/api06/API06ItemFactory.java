@@ -24,16 +24,19 @@ import java.util.*;
 import de.cdauth.osm.lib.*;
 import de.cdauth.osm.lib.ItemCache;
 
+import javax.sql.DataSource;
+
 abstract public class API06ItemFactory<T extends Item> implements ItemFactory<T>
 {
 	private final API06API m_api;
 	private final String m_type;
-	private final ItemCache<T> m_cache = new ItemCache<T>();
+	private final ItemCache<T> m_cache;
 	
 	protected API06ItemFactory(API06API a_api, String a_type)
 	{
 		m_api = a_api;
 		m_type = a_type;
+		m_cache = new ItemCache<T>(getAPI().getDatabaseCache(), getType());
 	}
 	
 	protected ItemCache<T> getCache()
@@ -80,7 +83,12 @@ abstract public class API06ItemFactory<T extends Item> implements ItemFactory<T>
 				toFetch.add(id);
 				continue;
 			}
-			ret.put(id, cached);
+			else
+			{
+				if(cached instanceof API06XMLObject)
+					((API06XMLObject)cached).setAPI(getAPI());
+				ret.put(id, cached);
+			}
 		}
 		
 		if(toFetch.size() > 0)

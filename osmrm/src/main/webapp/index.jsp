@@ -18,9 +18,13 @@
 <%@page import="de.cdauth.osm.osmrm.*"%>
 <%@page import="static de.cdauth.osm.osmrm.GUI.*"%>
 <%@page import="java.util.*" %>
+<%@ page import="javax.sql.DataSource" %>
+<%@ page import="javax.naming.InitialContext" %>
+<%@ page import="javax.naming.Context" %>
+<%@ page import="javax.naming.NamingException" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none"%>
 <%!
-	private static final API api = new de.cdauth.osm.lib.api06.API06API();
+	protected static final API api = GUI.getAPI();
 %>
 <%
 	GUI gui = new GUI(request, response);

@@ -27,7 +27,7 @@ abstract public class API06XMLObject
 	/** The DOM element containing the API XML response for this object. */
 	private final Element m_dom;
 	
-	private final API06API m_api;
+	private transient API06API m_api;
 	
 	/**
 	 * @param a_dom The DOM element.
@@ -36,6 +36,11 @@ abstract public class API06XMLObject
 	protected API06XMLObject(Element a_dom, API06API a_api)
 	{
 		m_dom = a_dom;
+		m_api = a_api;
+	}
+
+	protected void setAPI(API06API a_api)
+	{
 		m_api = a_api;
 	}
 	

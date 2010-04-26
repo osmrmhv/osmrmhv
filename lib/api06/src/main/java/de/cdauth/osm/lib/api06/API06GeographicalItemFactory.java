@@ -24,11 +24,13 @@ import de.cdauth.osm.lib.VersionedItem;
 
 abstract public class API06GeographicalItemFactory<T extends VersionedItem> extends API06ItemFactory<T> implements VersionedItemFactory<T>
 {
-	private final VersionedItemCache<T> m_cache = new VersionedItemCache<T>();
+	private final VersionedItemCache<T> m_cache;
 
 	protected API06GeographicalItemFactory(API06API a_api, String a_type)
 	{
 		super(a_api, a_type);
+
+		m_cache = new VersionedItemCache<T>(getAPI().getDatabaseCache(), getType());
 	}
 	
 	@Override
@@ -106,7 +108,14 @@ abstract public class API06GeographicalItemFactory<T extends VersionedItem> exte
 	{
 		TreeMap<Version,T> cached = getCache().getHistory(a_id);
 		if(cached != null)
+		{
+			for(T cachedEnt : cached.values())
+			{
+				if(cachedEnt instanceof API06XMLObject)
+					((API06XMLObject)cachedEnt).setAPI(getAPI());
+			}
 			return cached;
+		}
 
 		Object[] historyElements = getAPI().get("/"+getType()+"/"+a_id+"/history");
 		TreeMap<Version,T> ordered = new TreeMap<Version,T>();
@@ -126,7 +135,11 @@ abstract public class API06GeographicalItemFactory<T extends VersionedItem> exte
 	{
 		T cached = getCache().getObject(a_id, a_version);
 		if(cached != null)
+		{
+			if(cached instanceof API06XMLObject)
+				((API06XMLObject)cached).setAPI(getAPI());
 			return cached;
+		}
 		
 		Object[] fetched = getAPI().get("/"+getType()+"/"+a_id+"/"+a_version);
 		if(fetched.length < 1)

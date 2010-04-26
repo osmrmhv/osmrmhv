@@ -1,9 +1,10 @@
 package de.cdauth.osm.lib;
 
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import javax.sql.DataSource;
+import java.sql.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class extends the {@link ItemCache} class to be able to additionally cache old versions of {@link VersionedItem}s.
@@ -13,18 +14,23 @@ import java.util.TreeMap;
  */
 public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 {
-	/**
-	 * How many entries may be in the cache?
-	 */
-	public static final int MAX_CACHED_VALUES = 1000;
-	/**
-	 * How old may the entries in the cache be at most?
-	 */
-	public static final int MAX_AGE = 86400;
+	private static final Logger sm_logger = Logger.getLogger(ItemCache.class.getName());
 
 	private final Hashtable<ID,TreeMap<Version,T>> m_history = new Hashtable<ID,TreeMap<Version,T>>();
 	private final SortedMap<Long,ID> m_historyTimes = Collections.synchronizedSortedMap(new TreeMap<Long,ID>());
-	
+
+	private final Set<ID> m_databaseCache = Collections.synchronizedSet(new HashSet<ID>());
+
+	public VersionedItemCache()
+	{
+		super();
+	}
+
+	public VersionedItemCache(DataSource a_dataSource, String a_persistenceID)
+	{
+		super(a_dataSource, a_persistenceID);
+	}
+
 	/**
 	 * Returns a specific version of the object with the ID a_id.
 	 * @param a_id The ID of the object.
@@ -33,12 +39,23 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 	 */
 	public T getObject(ID a_id, Version a_version)
 	{
-		TreeMap<Version,T> history = getHistory(a_id);
+		TreeMap<Version,T> history = getIncompleteHistory(a_id);
 		if(history == null)
 			return null;
 		synchronized(history)
 		{
 			return history.get(a_version);
+		}
+	}
+
+	protected TreeMap<Version,T> getIncompleteHistory(ID a_id)
+	{
+		synchronized(m_history)
+		{
+			TreeMap<Version,T> history = m_history.get(a_id);
+			if(history == null)
+				return null; // TODO: Read from database
+			return history;
 		}
 	}
 	
@@ -53,7 +70,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 	{
 		synchronized(m_history)
 		{
-			TreeMap<Version,T> history = m_history.get(a_id);
+			TreeMap<Version,T> history = getIncompleteHistory(a_id);
 			if(history == null)
 				return null;
 			
@@ -125,11 +142,15 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 			m_history.put(current.getID(), a_history);
 		}
 	}
-	
+
 	@Override
-	protected void cleanUp()
+	protected void cleanUpMemory()
 	{
-		super.cleanUp();
+		super.cleanUpMemory();
+
+		sm_logger.info("The cache "+getPersistenceID()+" contains "+m_history.size()+" entries.");
+		int affected = 0;
+
 		while(true)
 		{
 			synchronized(m_history)
@@ -143,6 +164,77 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 					m_history.remove(id);
 				}
 			}
+			affected++;
+		} // TODO: Save in database
+
+		sm_logger.info("Removed "+affected+" cache entries from the memory.");
+	}
+
+	@Override
+	protected void cleanUpDatabase()
+	{
+		super.cleanUpDatabase();
+
+		int affected = 0;
+		try
+		{
+			String persistenceID = getPersistenceID();
+			Connection conn = getConnection();
+
+			if(persistenceID == null || conn == null)
+				return;
+
+			synchronized(conn)
+			{
+				PreparedStatement stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? AND \"date\" < ?");
+				stmt.setString(1, persistenceID);
+				stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()-MAX_DATABASE_AGE*1000));
+				affected += stmt.executeUpdate();
+				conn.commit();
+
+				stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache\" WHERE \"cache_id\" = ? ORDER BY \"date\" DESC OFFSET ?");
+				stmt.setString(1, persistenceID);
+				stmt.setInt(2, MAX_DATABASE_VALUES);
+				affected += stmt.executeUpdate();
+				conn.commit();
+			}
+		}
+		catch(SQLException e)
+		{
+			sm_logger.log(Level.WARNING, "Could not clean up database cache.", e);
+		}
+
+		if(affected > 0)
+		{
+			sm_logger.info("Removed "+affected+" cache entries from the database.");
+			updateDatabaseCacheList();
+		}
+	}
+
+	private void updateDatabaseCacheList()
+	{
+		try
+		{
+			String persistenceID = getPersistenceID();
+			if(persistenceID == null)
+				return;
+			Connection conn = getConnection();
+			if(conn == null)
+				return;
+			PreparedStatement stmt = conn.prepareStatement("SELECT DISTINCT \"object_id\" FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ?");
+			stmt.setString(1, persistenceID);
+			ResultSet res = stmt.executeQuery();
+			synchronized(m_databaseCache)
+			{
+				m_databaseCache.clear();
+				while(res.next())
+					m_databaseCache.add(new ID(res.getLong(1)));
+			}
+			res.close();
+		}
+		catch(SQLException e)
+		{
+			sm_logger.log(Level.WARNING, "Could not initialise database cache.", e);
 		}
 	}
 }
