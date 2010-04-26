@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -45,6 +47,8 @@ public class API06API implements API
 	protected static final String API_SERVER = "api.openstreetmap.org";
 	protected static final int API_PORT = 80;
 	protected static final String API_PREFIX = "/api/0.6";
+
+	private static Logger sm_logger = Logger.getLogger(API06API.class.getName());
 
 	private String m_userAgent = "cdauth’s OSM library";
 
@@ -111,6 +115,9 @@ public class API06API implements API
 		String url = getAPIPrefix()+a_url;
 		try
 		{
+			if(sm_logger.isLoggable(Level.FINE))
+				sm_logger.fine(url);
+
 			HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 			connection.setRequestMethod("GET");
 			connection.setRequestProperty("User-Agent", getUserAgent());

@@ -19,7 +19,9 @@ package de.cdauth.osm.lib.api06;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Set;
 
 import de.cdauth.osm.lib.*;
 import org.w3c.dom.Element;
@@ -31,6 +33,8 @@ abstract public class API06GeographicalItem extends API06Item implements Version
 	private static SimpleDateFormat sm_dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	
 	private boolean m_current = false;
+
+	private ID[] m_containingRelations = null;
 	
 	protected static SimpleDateFormat getDateFormat()
 	{
@@ -100,28 +104,42 @@ abstract public class API06GeographicalItem extends API06Item implements Version
 	@Override
 	public Relation[] getContainingRelations() throws APIError
 	{
-		String urlPart;
-		if(this instanceof Node)
-			urlPart = "node";
-		else if(this instanceof Way)
-			urlPart = "way";
-		else if(this instanceof Relation)
-			urlPart = "relation";
-		else
-			throw new RuntimeException("Unknown data type.");
-
-		Item[] relations = getAPI().get("/"+urlPart+"/"+getID()+"/relations");
-		Relation[] ret = new Relation[relations.length];
-		for(int i=0; i<relations.length; i++)
-			ret[i] = (Relation)relations[i];
-		VersionedItemCache<Relation> cache = getAPI().getRelationFactory().getCache();
-		for(Relation it : ret)
+		if(m_containingRelations == null)
 		{
-			((API06Relation)it).markAsCurrent();
-			cache.cacheObject(it);
+			String urlPart;
+			if(this instanceof Node)
+				urlPart = "node";
+			else if(this instanceof Way)
+				urlPart = "way";
+			else if(this instanceof Relation)
+				urlPart = "relation";
+			else
+				throw new RuntimeException("Unknown data type.");
+
+			Item[] relations = getAPI().get("/"+urlPart+"/"+getID()+"/relations");
+			Relation[] ret = new Relation[relations.length];
+			for(int i=0; i<relations.length; i++)
+				ret[i] = (Relation)relations[i];
+			VersionedItemCache<Relation> cache = getAPI().getRelationFactory().getCache();
+			for(Relation it : ret)
+			{
+				((API06Relation)it).markAsCurrent();
+				cache.cacheObject(it);
+			}
+
+			synchronized(this)
+			{// TODO This does not seem to be useful
+				m_containingRelations = new ID[ret.length];
+				for(int i=0; i<ret.length; i++)
+					m_containingRelations[i] = ret[i].getID();
+			}
+
+			return ret;
 		}
-		
-		// FIXME: Cache this result somehow?
-		return ret;
+		else
+		{
+			Collection<Relation> ret = getAPI().getRelationFactory().fetch(m_containingRelations).values();
+			return ret.toArray(new Relation[ret.size()]);
+		}
 	}
 }

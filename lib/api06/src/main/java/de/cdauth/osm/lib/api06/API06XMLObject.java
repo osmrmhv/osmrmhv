@@ -19,10 +19,12 @@ package de.cdauth.osm.lib.api06;
 
 import org.w3c.dom.Element;
 
+import java.io.Serializable;
+
 /**
  * Abstract class for all objects whose information is saved in an XML DOM element.
  */
-abstract public class API06XMLObject
+abstract public class API06XMLObject implements Serializable
 {
 	/** The DOM element containing the API XML response for this object. */
 	private final Element m_dom;

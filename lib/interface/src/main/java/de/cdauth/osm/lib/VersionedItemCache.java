@@ -157,8 +157,10 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 			{
 				synchronized(m_historyTimes)
 				{
+					if(m_historyTimes.size() == 0)
+						break;
 					Long oldest = m_historyTimes.firstKey();
-					if(oldest == null || (System.currentTimeMillis()-oldest <= MAX_AGE*1000 && m_historyTimes.size() <= MAX_CACHED_VALUES))
+					if(System.currentTimeMillis()-oldest <= MAX_AGE*1000 && m_historyTimes.size() <= MAX_CACHED_VALUES)
 						break;
 					ID id = m_historyTimes.remove(oldest);
 					m_history.remove(id);
@@ -175,26 +177,22 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 	{
 		super.cleanUpDatabase();
 
+		Connection conn = null;
 		int affected = 0;
 		try
 		{
 			String persistenceID = getPersistenceID();
-			Connection conn = getConnection();
+			conn = getConnection();
 
 			if(persistenceID == null || conn == null)
 				return;
 
 			synchronized(conn)
-			{
-				PreparedStatement stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? AND \"date\" < ?");
+			{ // TODO: Better selection of entries to remove
+				PreparedStatement stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? AND ( \"object_id\", \"version\" ) IN ( SELECT \"object_id\", \"version\" FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? OFFSET ? )");
 				stmt.setString(1, persistenceID);
-				stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()-MAX_DATABASE_AGE*1000));
-				affected += stmt.executeUpdate();
-				conn.commit();
-
-				stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache\" WHERE \"cache_id\" = ? ORDER BY \"date\" DESC OFFSET ?");
-				stmt.setString(1, persistenceID);
-				stmt.setInt(2, MAX_DATABASE_VALUES);
+				stmt.setString(2, persistenceID);
+				stmt.setInt(3, MAX_DATABASE_VALUES);
 				affected += stmt.executeUpdate();
 				conn.commit();
 			}
@@ -202,6 +200,16 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 		catch(SQLException e)
 		{
 			sm_logger.log(Level.WARNING, "Could not clean up database cache.", e);
+		}
+		finally
+		{
+			if(conn != null)
+			{
+				try {
+					conn.close();
+				} catch(SQLException e) {
+				}
+			}
 		}
 
 		if(affected > 0)
@@ -213,12 +221,13 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 
 	private void updateDatabaseCacheList()
 	{
+		Connection conn = null;
 		try
 		{
 			String persistenceID = getPersistenceID();
 			if(persistenceID == null)
 				return;
-			Connection conn = getConnection();
+			conn = getConnection();
 			if(conn == null)
 				return;
 			PreparedStatement stmt = conn.prepareStatement("SELECT DISTINCT \"object_id\" FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ?");
@@ -231,10 +240,21 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 					m_databaseCache.add(new ID(res.getLong(1)));
 			}
 			res.close();
+			conn.close();
 		}
 		catch(SQLException e)
 		{
 			sm_logger.log(Level.WARNING, "Could not initialise database cache.", e);
+		}
+		finally
+		{
+			if(conn != null)
+			{
+				try {
+					conn.close();
+				} catch(SQLException e) {
+				}
+			}
 		}
 	}
 }

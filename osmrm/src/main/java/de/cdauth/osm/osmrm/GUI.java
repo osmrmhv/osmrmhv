@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.naming.Context;
@@ -67,7 +68,15 @@ public class GUI
 			}
 
 			sm_apiCleanUp = new Timer("osmrmhv API cache cleanup", true);
-			sm_apiCleanUp.schedule(new TimerTask(){ @Override public void run(){ ItemCache.cleanUpAll(); } }, 60000, 60000);
+			sm_apiCleanUp.schedule(new TimerTask(){
+				@Override public void run() {
+					try {
+						ItemCache.cleanUpAll();
+					} catch(Exception e) {
+						Logger.getLogger(GUI.class.getName()).log(Level.WARNING, "Unexpected exception.", e);
+					}
+				}
+			}, 60000, 60000);
 		}
 		return sm_api;
 	}

@@ -120,10 +120,11 @@ public class ItemCache<T extends Item>
 			{
 				if(m_databaseCache.contains(a_id))
 				{
+					Connection conn = null;
 					try
 					{
 						String persistenceID = getPersistenceID();
-						Connection conn = getConnection();
+						conn = getConnection();
 						if(persistenceID != null && conn != null)
 						{
 							PreparedStatement stmt = conn.prepareStatement("SELECT \"data\" FROM \"osmrmhv_cache\" WHERE \"cache_id\" = ? AND \"object_id\" = ?");
@@ -138,6 +139,16 @@ public class ItemCache<T extends Item>
 					catch(Exception e)
 					{
 						sm_logger.log(Level.WARNING, "Could not get object from database.", e);
+					}
+					finally
+					{
+						if(conn != null)
+						{
+							try {
+								conn.close();
+							} catch(SQLException e) {
+							}
+						}
 					}
 				}
 			}
@@ -218,13 +229,18 @@ public class ItemCache<T extends Item>
 			{
 				synchronized(m_cacheTimes)
 				{
+					if(m_cacheTimes.size() == 0)
+						break;
 					Long oldest = m_cacheTimes.firstKey();
-					if(oldest == null || (System.currentTimeMillis()-oldest <= MAX_AGE*1000 && m_cacheTimes.size() <= MAX_CACHED_VALUES))
+					if(System.currentTimeMillis()-oldest <= MAX_AGE*1000 && m_cacheTimes.size() <= MAX_CACHED_VALUES)
 						break;
 					ID id = m_cacheTimes.remove(oldest);
 					item = m_cache.remove(id);
 				}
 			}
+
+			if(item == null) // TODO :-?
+				continue;
 
 			affected++;
 
@@ -247,6 +263,8 @@ public class ItemCache<T extends Item>
 							putSerializedObjectInDatabase(stmt, 3, item);
 							stmt.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
 							stmt.execute();
+
+							conn.commit();
 
 							synchronized(m_databaseCache)
 							{
@@ -271,6 +289,14 @@ public class ItemCache<T extends Item>
 			sm_logger.info("Moved "+affected+" entries to the database cache.");
 		else
 			sm_logger.info("Removed "+affected+" entries from the memory.");
+		
+		if(conn != null)
+		{
+			try {
+				conn.close();
+			} catch(SQLException e) {
+			}
+		}
 	}
 
 	/**
@@ -280,10 +306,11 @@ public class ItemCache<T extends Item>
 	protected void cleanUpDatabase()
 	{
 		int affected = 0;
+		Connection conn = null;
 		try
 		{
 			String persistenceID = getPersistenceID();
-			Connection conn = getConnection();
+			conn = getConnection();
 
 			if(persistenceID == null || conn == null)
 				return;
@@ -296,9 +323,10 @@ public class ItemCache<T extends Item>
 				affected += stmt.executeUpdate();
 				conn.commit();
 
-				stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache\" WHERE \"cache_id\" = ? ORDER BY \"date\" DESC OFFSET ?");
+				stmt = conn.prepareStatement("DELETE FROM \"osmrmhv_cache\" WHERE \"cache_id\" = ? AND \"object_id\" IN ( SELECT \"object_id\" FROM \"osmrmhv_cache\" WHERE \"cache_id\" = ? ORDER BY \"date\" DESC OFFSET ? )");
 				stmt.setString(1, persistenceID);
-				stmt.setInt(2, MAX_DATABASE_VALUES);
+				stmt.setString(2, persistenceID);
+				stmt.setInt(3, MAX_DATABASE_VALUES);
 				affected += stmt.executeUpdate();
 				conn.commit();
 			}
@@ -306,6 +334,16 @@ public class ItemCache<T extends Item>
 		catch(SQLException e)
 		{
 			sm_logger.log(Level.WARNING, "Could not clean up database cache.", e);
+		}
+		finally
+		{
+			if(conn != null)
+			{
+				try {
+					conn.close();
+				} catch(SQLException e) {
+				}
+			}
 		}
 
 		if(affected > 0)
@@ -320,12 +358,13 @@ public class ItemCache<T extends Item>
 	 */
 	private void updateDatabaseCacheList()
 	{
+		Connection conn = null;
 		try
 		{
 			String persistenceID = getPersistenceID();
 			if(persistenceID == null)
 				return;
-			Connection conn = getConnection();
+			conn = getConnection();
 			if(conn == null)
 				return;
 			PreparedStatement stmt = conn.prepareStatement("SELECT \"object_id\" FROM \"osmrmhv_cache\" WHERE \"cache_id\" = ?");
@@ -345,6 +384,16 @@ public class ItemCache<T extends Item>
 
 			m_dataSource = null;
 		}
+		finally
+		{
+			if(conn != null)
+			{
+				try {
+					conn.close();
+				} catch(SQLException e) {
+				}
+			}
+		}
 	}
 
 	/**
@@ -356,13 +405,30 @@ public class ItemCache<T extends Item>
 		synchronized(sm_instances)
 		{ // Copy the list of instances to avoid locking the instances list (and thus preventing the creation of new
 		  // instances) during the cleanup process.
+			if(sm_logger.isLoggable(Level.FINER))
+				sm_logger.finer("There seem to be "+sm_instances.size()+" ItemCache instances.");
+
 			instances = sm_instances.keySet().toArray(new ItemCache[sm_instances.size()]);
 		}
+		int number = 0;
 		for(ItemCache<? extends Item> instance : instances)
 		{
-			instance.cleanUpMemory();
-			instance.cleanUpDatabase();
+			if(instance == null) // sm_instances.size() can be larger that the actual size in a WeakHashMap()
+				continue;
+			number++;
+			try
+			{
+				instance.cleanUpMemory();
+				instance.cleanUpDatabase();
+			}
+			catch(Exception e)
+			{
+				sm_logger.log(Level.WARNING, "Could not clean up cache.", e);
+			}
 		}
+
+		if(sm_logger.isLoggable(Level.FINER))
+			sm_logger.finer("There were actually "+number+" ItemCache instances.");
 	}
 
 	protected Serializable getSerializedObjectFromDatabase(ResultSet a_res, int a_idx) throws SQLException
@@ -388,9 +454,7 @@ public class ItemCache<T extends Item>
 			ObjectOutputStream ser2 = new ObjectOutputStream(ser);
 			ser2.writeObject(a_obj);
 			ser2.close();
-			byte[] bytes = ser.toByteArray();
-			ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-			a_stmt.setBinaryStream(a_idx, in, bytes.length);
+			a_stmt.setBytes(a_idx, ser.toByteArray());
 		}
 		catch(IOException e)
 		{
