@@ -18,12 +18,15 @@
 package de.cdauth.osm.lib.api06;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.DeflaterInputStream;
+import java.util.zip.GZIPInputStream;
 
 import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -121,13 +124,21 @@ public class API06API implements API
 			HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 			connection.setRequestMethod("GET");
 			connection.setRequestProperty("User-Agent", getUserAgent());
+			connection.setRequestProperty("Accept-Encoding", "gzip, deflate");
 			System.out.println("API call "+connection.getURL().toString());
 			connection.connect();
 	
 			if(connection.getResponseCode() != 200)
 				throw new APIError("ResponseCode is "+connection.getResponseCode()+" for URL "+url+".");
+
+			InputStream in = connection.getInputStream();
+			String encoding = connection.getContentEncoding();
+			if("gzip".equalsIgnoreCase(encoding))
+				in = new GZIPInputStream(in);
+			else if("delfate".equalsIgnoreCase(encoding))
+				in = new DeflaterInputStream(in);
 	
-			Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(connection.getInputStream());
+			Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in);
 			Element root = null;
 			NodeList nodes = dom.getChildNodes();
 			for(int i=0; i<nodes.getLength(); i++)

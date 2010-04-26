@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.cdauth.osm.lib.APIError;
@@ -24,8 +25,16 @@ public class RouteManager
 	
 	public static RelationSegment[] segmentate(Relation a_relation) throws APIError
 	{
+		long startTime = System.currentTimeMillis();
+
 		ArrayList<Way> waysList = new ArrayList<Way>();
 		waysList.addAll(Arrays.asList(a_relation.getWaysRecursive(null)));
+
+		if(sm_logger.isLoggable(Level.INFO))
+		{
+			sm_logger.info("Took "+(System.currentTimeMillis()-startTime)+" ms to fetch ways.");
+			startTime = System.currentTimeMillis();
+		}
 		
 		// Make roundabout resolution table
 		Hashtable<LonLat,LonLat> roundaboutReplacement = new Hashtable<LonLat,LonLat>();
@@ -41,6 +50,12 @@ public class RouteManager
 					roundaboutReplacement.put(it.getLonLat(), roundaboutCentre);
 				waysList.remove(i--);
 			}
+		}
+
+		if(sm_logger.isLoggable(Level.FINE))
+		{
+			sm_logger.fine("Took "+(System.currentTimeMillis()-startTime)+" ms to analyse roundabouts.");
+			startTime = System.currentTimeMillis();
 		}
 		
 		Way[] ways = waysList.toArray(new Way[0]);
@@ -65,6 +80,12 @@ public class RouteManager
 				waysEnds2[i] = i_lonlat;
 		}
 		i_lonlat = null;
+
+		if(sm_logger.isLoggable(Level.FINE))
+		{
+			sm_logger.fine("Took "+(System.currentTimeMillis()-startTime)+" ms to get way ends.");
+			startTime = System.currentTimeMillis();
+		}
 		
 		// Look which ways are connected
 		ArrayList<Integer> endsIndexes = new ArrayList<Integer>(); // Contains the indexes of all ways that are on one end of a segment (thus connected to more or less than 1 other way)
@@ -107,6 +128,12 @@ public class RouteManager
 		
 		waysEnds1 = null;
 		waysEnds2 = null;
+
+		if(sm_logger.isLoggable(Level.FINE))
+		{
+			sm_logger.fine("Took "+(System.currentTimeMillis()-startTime)+" ms to get way connections.");
+			startTime = System.currentTimeMillis();
+		}
 		
 		ArrayList<ArrayList<Way>> segmentsWaysV = new ArrayList<ArrayList<Way>>();
 		
@@ -140,6 +167,12 @@ public class RouteManager
 		waysConnections1 = null;
 		waysConnections2 = null;
 		endsIndexes = null;
+
+		if(sm_logger.isLoggable(Level.FINE))
+		{
+			sm_logger.fine("Took "+(System.currentTimeMillis()-startTime)+" ms to connect ways.");
+			startTime = System.currentTimeMillis();
+		}
 		
 		ArrayList<Way>[] segmentsWays = segmentsWaysV.toArray(new ArrayList[segmentsWaysV.size()]);
 		
@@ -181,6 +214,12 @@ public class RouteManager
 		for(int i=0; i<segmentsNodesV.size(); i++)
 			segmentsNodes[i] = new RelationSegment(segmentsNodesV.get(i).toArray(new LonLat[0]));
 		segmentsNodesV = null;
+
+		if(sm_logger.isLoggable(Level.FINE))
+		{
+			sm_logger.fine("Took "+(System.currentTimeMillis()-startTime)+" ms to convert ways to segments.");
+			startTime = System.currentTimeMillis();
+		}
 		
 		// Sort segments
 		// Calculate the distance between all segment ends that aren’t connected to any other segment and find the greatest distance
@@ -242,6 +281,14 @@ public class RouteManager
 				RelationSegment.setSortingReference(null);
 			}
 		}
+
+		if(sm_logger.isLoggable(Level.FINE))
+		{
+			sm_logger.fine("Took "+(System.currentTimeMillis()-startTime)+" ms to sort segments.");
+			startTime = System.currentTimeMillis();
+		}
+		else if(sm_logger.isLoggable(Level.INFO))
+			sm_logger.info("Took "+(System.currentTimeMillis()-startTime)+" ms to segmentate.");
 		
 		return segmentsNodes;
 	}

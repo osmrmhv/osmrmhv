@@ -1,17 +1,25 @@
 package de.cdauth.osm.lib;
 
-import java.io.Serializable;
+import java.io.*;
 
 /**
  * A bounding box consisting of a top (nothern), right, bottom and left coordinate in WGS 84 / EPSG 4326.
  * @author cdauth
  */
-public class BoundingBox implements Serializable
+public class BoundingBox implements Externalizable
 {
 	private double m_top = Double.MAX_VALUE;
 	private double m_right = Double.MAX_VALUE;
 	private double m_bottom = Double.MIN_VALUE;
 	private double m_left = Double.MIN_VALUE;
+
+	/**
+	 * Only used for serialization.
+	 */
+	@Deprecated
+	public BoundingBox()
+	{
+	}
 	
 	/**
 	 * Creates a bounding box using two longitude and two latitude borders.
@@ -148,5 +156,23 @@ public class BoundingBox implements Serializable
 	public LonLat getBottomRight()
 	{
 		return new LonLat(getRight(), getBottom());
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		out.writeDouble(m_top);
+		out.writeDouble(m_right);
+		out.writeDouble(m_bottom);
+		out.writeDouble(m_left);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+	{
+		m_top = in.readDouble();
+		m_right = in.readDouble();
+		m_bottom = in.readDouble();
+		m_left = in.readDouble();
 	}
 }

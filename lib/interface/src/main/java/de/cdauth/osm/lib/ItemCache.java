@@ -456,7 +456,8 @@ public class ItemCache<T extends Item>
 		try
 		{
 			ByteArrayOutputStream ser = new ByteArrayOutputStream();
-			ObjectOutputStream ser2 = new ObjectOutputStream(ser);
+			BufferedOutputStream ser3 = new BufferedOutputStream(ser);
+			ObjectOutputStream ser2 = new ObjectOutputStream(ser3);
 			ser2.writeObject(a_obj);
 			ser2.close();
 			a_stmt.setBytes(a_idx, ser.toByteArray());

@@ -17,18 +17,26 @@
 
 package de.cdauth.osm.lib;
 
-import java.io.Serializable;
+import java.io.*;
 
 /**
  * Represents a pair of coordinates in WGS 84 / EPSG 4326. This is immutable.
  */
 
-public class LonLat implements Serializable
+public class LonLat implements Externalizable
 {
 	private double m_lon;
 	private double m_lat;
 	
 	private static final short EARTH_RADIUS = 6367;
+
+	/**
+	 * Only used for serialization.
+	 */
+	@Deprecated
+	public LonLat()
+	{
+	}
 	
 	/**
 	 * Creates a pair of coordinates.
@@ -106,5 +114,19 @@ public class LonLat implements Serializable
 	public String toString()
 	{
 		return getLat()+","+getLon();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		out.writeDouble(m_lon);
+		out.writeDouble(m_lat);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+	{
+		m_lon = in.readDouble();
+		m_lat = in.readDouble();
 	}
 }

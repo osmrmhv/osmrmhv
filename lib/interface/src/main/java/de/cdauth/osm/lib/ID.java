@@ -1,15 +1,23 @@
 package de.cdauth.osm.lib;
 
-import java.io.Serializable;
+import java.io.*;
 
 /**
  * All OSM objects have an ID that is a 64-bit integer. This class mainly exists to provide type safety, as other
  * data types such as {@link Version} are 64-bit integers as well.
  * @author cdauth
  */
-public class ID implements Comparable<ID>, Serializable
+public class ID implements Comparable<ID>, Externalizable
 {
-	private final Long m_id;
+	private Long m_id; // only mutable for externalization
+
+	/**
+	 * Only used for serialization.
+	 */
+	@Deprecated
+	public ID()
+	{
+	}
 
 	/**
 	 * Creates an ID from a long.
@@ -81,5 +89,17 @@ public class ID implements Comparable<ID>, Serializable
 		if(m_id == null)
 			return "";
 		return m_id.toString();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		out.writeLong(m_id);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+	{
+		m_id = in.readLong();
 	}
 }

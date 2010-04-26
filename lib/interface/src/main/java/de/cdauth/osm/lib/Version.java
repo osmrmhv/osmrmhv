@@ -1,6 +1,6 @@
 package de.cdauth.osm.lib;
 
-import java.io.Serializable;
+import java.io.*;
 
 /**
  * Represents the version of a {@link VersionedItem}. Versions start at 1 and are always increased by 1, gaps
@@ -8,9 +8,17 @@ import java.io.Serializable;
  * 
  * @author cdauth
  */
-public class Version implements Comparable<Version>, Serializable
+public class Version implements Comparable<Version>, Externalizable
 {
-	private final Long m_version;
+	private Long m_version; // only mutable for externalization
+
+	/**
+	 * Only used for serialization.
+	 */
+	@Deprecated
+	public Version()
+	{
+	}
 
 	/**
 	 * Creates a version from a long.
@@ -24,7 +32,7 @@ public class Version implements Comparable<Version>, Serializable
 	/**
 	 * Creates a Version from a String.
 	 * @see {@link Long#Long(String)}
-	 * @param a_id The Version, usually the value of the XML attribute <code>version</code>.
+	 * @param a_version The Version, usually the value of the XML attribute <code>version</code>.
 	 */
 	public Version(String a_version)
 	{
@@ -82,5 +90,17 @@ public class Version implements Comparable<Version>, Serializable
 		if(m_version == null)
 			return "";
 		return m_version.toString();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		out.writeLong(m_version);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+	{
+		m_version = in.readLong();
 	}
 }
