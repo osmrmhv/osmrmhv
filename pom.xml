@@ -8,28 +8,57 @@
 	<groupId>eu.cdauth</groupId>
 	<artifactId>osm</artifactId>
 	<version>SNAPSHOT</version>
+	<packaging>pom</packaging>
+
 	<name>osmrmhv</name>
 	<description>osmrmhv library</description>
-	<packaging>pom</packaging>
+	<url>http://gitorious.org/osmrmhv</url>
+
 	<licenses>
 		<license>
 			<name>Public Domain</name>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	<modules>
-		<module>lib</module>
-		<module>web</module>
-	</modules>
+
+	<developers>
+		<developer>
+			<id>cdauth</id>
+			<name>Candid Dauth</name>
+			<email>cdauth@cdauth.eu</email>
+			<url>http://cdauth.eu/</url>
+			<properties>
+				<xmpp>cdauth@cdauth.eu</xmpp>
+			</properties>
+		</developer>
+	</developers>
+
+	<issueManagement>
+		<system>flyspray</system>
+		<url>http://bugs.cdauth.eu/?project=2</url>
+	</issueManagement>
+
+	<ciManagement>
+		<system>hudson</system>
+		<url>http://hudson.cdauth.eu/job/osmrmhv/</url>
+	</ciManagement>
+
 	<scm>
-		<connection>git://gitorious.org/osmrmhv/lib.git</connection>
-		<developerConnection>git@gitorious.org:osmrmhv/lib.git</developerConnection>
-		<url>http://gitorious.org/osmrmhv/lib/trees</url>
+		<connection>scm:git:git://gitorious.org/osmrmhv/lib.git</connection>
+		<developerConnection>scm:git:git@gitorious.org:osmrmhv/lib.git</developerConnection>
+		<url>http://gitorious.org/osmrmhv/lib</url>
 	</scm>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.build.localeDirectory>${basedir}/src/main/locale</project.build.localeDirectory>
 	</properties>
+
+	<modules>
+		<module>lib</module>
+		<module>web</module>
+	</modules>
+
 	<build>
 		<plugins>
 			<plugin>
