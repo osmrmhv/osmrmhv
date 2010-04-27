@@ -20,7 +20,6 @@
 <%@page import="eu.cdauth.osm.osmrm.*"%>
 <%@page import="static eu.cdauth.osm.osmrm.GUI.*"%>
 <%@page import="java.util.*" %>
-<%@page import="java.util.regex.Pattern" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	private static final API api = GUI.getAPI();

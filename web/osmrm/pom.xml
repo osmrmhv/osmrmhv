@@ -36,6 +36,14 @@
 		<version>SNAPSHOT</version>
 	</parent>
 
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>common</artifactId>
+			<version>SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>

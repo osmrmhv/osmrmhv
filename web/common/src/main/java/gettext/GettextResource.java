@@ -17,7 +17,7 @@
  * USA.
  */
 
-package gnu.gettext;
+package gettext;
 
 import java.lang.reflect.*;
 import java.util.*;
