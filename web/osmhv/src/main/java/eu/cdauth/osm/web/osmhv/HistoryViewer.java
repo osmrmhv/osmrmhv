@@ -33,7 +33,7 @@ import java.util.*;
 
 public class HistoryViewer
 {
-	public class Changes
+	public static class Changes
 	{
 		public final Segment[] removed;
 		public final Segment[] created;
@@ -42,7 +42,7 @@ public class HistoryViewer
 		protected Changes(Segment[] a_removed, Segment[] a_created, Segment[] a_unchanged)
 		{
 			removed = a_removed;
-			created = a_added;
+			created = a_created;
 			unchanged = a_unchanged;
 		}
 	}
