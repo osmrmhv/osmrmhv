@@ -44,34 +44,23 @@
 		</dependency>
 	</dependencies>
 
+	<properties>
+		<gettextBundle>eu.cdauth.osm.web.osmhv.locale.osmhv</gettextBundle>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.codehaus.mojo.jspc</groupId>
-				<artifactId>jspc-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							 <goal>compile</goal>
-						</goals>
-					</execution>
-				</executions>
+				<groupId>com.google.code.maven-replacer-plugin</groupId>
+				<artifactId>maven-replacer-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<groupId>org.xnap.commons</groupId>
 				<artifactId>maven-gettext-plugin</artifactId>
-				<version>1.2.0</version>
-				<executions>
-					<execution>
-						<phase>compile</phase>
-						<goals>
-							 <goal>dist</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<targetBundle>eu.cdauth.osm.web.osmhv.locale.osmhv</targetBundle>
-				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo.jspc</groupId>
+				<artifactId>jspc-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

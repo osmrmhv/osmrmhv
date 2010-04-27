@@ -59,6 +59,13 @@
 		<module>web</module>
 	</modules>
 
+	<pluginRepositories>
+		<pluginRepository>
+			<id>gettext-commons-site</id>
+			<url>http://gettext-commons.googlecode.com/svn/maven-repository</url>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -77,5 +84,27 @@
 				<version>2.6.1</version>
 			</plugin>
 		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.xnap.commons</groupId>
+					<artifactId>maven-gettext-plugin</artifactId>
+					<version>1.2.0</version>
+					<executions>
+						<execution>
+							<phase>compile</phase>
+							<goals>
+								 <goal>dist</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<poDirectory>${project.build.localeDirectory}</poDirectory>
+						<targetBundle>${gettextBundle}</targetBundle>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 </project>

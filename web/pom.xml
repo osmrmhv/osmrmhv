@@ -45,8 +45,8 @@
 
 	<pluginRepositories>
 		<pluginRepository>
-			<id>gettext-commons-site</id>
-			<url>http://gettext-commons.googlecode.com/svn/maven-repository</url>
+			<id>maven-replacer-plugin repository</id>
+			<url>http://maven-replacer-plugin.googlecode.com/svn/release-repo</url>
 		</pluginRepository>
 	</pluginRepositories>
 
@@ -76,37 +76,71 @@
 	</dependencies>
 
 	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo.jspc</groupId>
-				<artifactId>jspc-maven-plugin</artifactId>
-				<configuration>
-					<trimSpaces>false</trimSpaces>
-					<source>1.6</source>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>org.codehaus.mojo.jspc</groupId>
-						<artifactId>jspc-compiler-tomcat6</artifactId>
-						<version>2.0-alpha-3</version>
-					</dependency>
-				</dependencies>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<webXml>${pom.basedir}/target/jspweb.xml</webXml>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.xnap.commons</groupId>
-				<artifactId>maven-gettext-plugin</artifactId>
-				<version>1.2.0</version>
-				<configuration>
-					<poDirectory>${project.build.localeDirectory}</poDirectory>
-				</configuration>
-			</plugin>
-		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.codehaus.mojo.jspc</groupId>
+					<artifactId>jspc-maven-plugin</artifactId>
+					<!--<executions>
+						<execution>
+							<goals>
+								 <goal>compile</goal>
+							</goals>
+						</execution>
+					</executions>-->
+					<configuration>
+						<trimSpaces>false</trimSpaces>
+						<source>1.6</source>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>org.codehaus.mojo.jspc</groupId>
+							<artifactId>jspc-compiler-tomcat6</artifactId>
+							<version>2.0-alpha-3</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<configuration>
+						<!--<webXml>${pom.basedir}/target/jspweb.xml</webXml>
+						<failOnMissingWebXml>false</failOnMissingWebXml>-->
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>com.google.code.maven-replacer-plugin</groupId>
+					<artifactId>maven-replacer-plugin</artifactId>
+					<version>1.3.1</version>
+					<executions>
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>replace</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<includes>
+							<include>target/${project.build.finalName}/**/*.jsp</include>
+						</includes>
+						<basedir>${basedir}</basedir>
+						<replacements>
+							<replacement>
+								<token>(--%&gt;)(\n)</token>
+								<value>$2$1</value>
+							</replacement>
+							<replacement>
+								<token>(%&gt;)(\n)</token>
+								<value>$2$1</value>
+							</replacement>
+						</replacements>
+						<regexFlags>
+							<regexFlag>MULTILINE</regexFlag>
+						</regexFlags>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 </project>
