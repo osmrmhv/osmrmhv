@@ -33,7 +33,7 @@
 
 	gui.head();
 %>
-<form action="changeset.php" metdod="get" id="changeset-form">
+<form action="changeset.jsp" metdod="get" id="changeset-form">
 	<fieldset>
 		<legend><%=htmlspecialchars(gui._("Visualise changeset"))%></legend>
 		<dl>
@@ -46,7 +46,7 @@
 
 <fieldset id="search-form">
 	<legend><%=htmlspecialchars(gui._("Relation Blame"))%></legend>
-	<form action="blame.php" method="get">
+	<form action="blame.jsp" method="get">
 		<dl>
 			<dt><label for="i-blame"><%=htmlspecialchars(gui._("Relation ID"))%></label></dt>
 			<dd><input type="text" id="i-blame" name="id" /></dd>

@@ -38,6 +38,12 @@ public interface Changeset extends Item
 	public Date getCreationDate();
 
 	/**
+	 * Returns the date when this Changeset was closed.
+	 * @return The closing date of this Changeset or null if it is not closed yet.
+	 */
+	public Date getClosingDate();
+
+	/**
 	 * Returns the user that created this changeset.
 	 * @return The user that created this changeset.
 	 */
