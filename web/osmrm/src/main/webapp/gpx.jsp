@@ -17,9 +17,9 @@
 	Copyright © 2010 Candid Dauth
 --%>
 <%@page import="eu.cdauth.osm.lib.*"%>
-<%@page import="eu.cdauth.osm.osmrm.*"%>
+<%@page import="eu.cdauth.osm.web.osmrm.*"%>
 <%@page import="java.util.*" %>
-<%@page import="static eu.cdauth.osm.osmrm.GUI.*"%>
+<%@page import="static eu.cdauth.osm.web.osmrm.GUI.*"%>
 <%@page contentType="text/xml; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	private static API api = GUI.getAPI();
