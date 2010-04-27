@@ -20,6 +20,7 @@
 <%@page import="eu.cdauth.osm.web.osmrm.*"%>
 <%@page import="static eu.cdauth.osm.web.osmrm.GUI.*"%>
 <%@page import="java.util.*" %>
+<%@page import="java.net.URL" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	private static final API api = GUI.getAPI();
@@ -27,7 +28,9 @@
 <%
 	if(request.getParameter("id") == null)
 	{
-		response.sendError(response.SC_MOVED_PERMANENTLY, ".");
+		response.setStatus(response.SC_MOVED_PERMANENTLY);
+		URL thisUrl = new URL(request.getRequestURL().toString());
+		response.setHeader("Location", new URL(thisUrl.getProtocol(), thisUrl.getHost(), thisUrl.getPort(), request.getContextPath()).toString());
 		return;
 	}
 
