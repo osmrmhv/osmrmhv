@@ -39,7 +39,7 @@
 	<modules>
 		<module>common</module>
 		<module>osmrm</module>
-		<!--<module>osmhv</module>-->
+		<module>osmhv</module>
 		<!--<module>poiselect</module>-->
 	</modules>
 

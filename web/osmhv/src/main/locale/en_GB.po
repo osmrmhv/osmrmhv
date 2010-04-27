@@ -1,0 +1,320 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: OSM Relation Manager\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-11-02 21:10+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Candid Dauth <webmaster@cdauth.de>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n == 1 ? 0 : 1;\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-Country: UNITED KINGDOM\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: ../changeset.php:43
+#, php-format
+msgid "Changeset %s"
+msgstr "Changeset %s"
+
+#: ../changeset.php:70
+msgid "Changeset could not be analysed."
+msgstr "Changeset could not be analysed."
+
+#: ../changeset.php:75
+msgid "Back to home page"
+msgstr "Back to home page"
+
+#: ../changeset.php:76
+msgid "Browse on OpenStreetMap"
+msgstr "Browse on OpenStreetMap"
+
+#: ../changeset.php:85
+#: ../blame.php:85
+msgid "Note that many features of this page will not work without JavaScript."
+msgstr "Note that many features of this page will not work without JavaScript."
+
+#: ../changeset.php:86
+#, php-format
+msgid "This analysation was created on %s."
+msgstr "This analysation was created on %s."
+
+#: ../changeset.php:87
+msgid "Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."
+msgstr "Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."
+
+#: ../changeset.php:88
+msgid "Tags"
+msgstr "Tags"
+
+#: ../changeset.php:115
+msgid "Details"
+msgstr "Details"
+
+#: ../changeset.php:117
+msgid "Creation time"
+msgstr "Creation time"
+
+#: ../changeset.php:120
+msgid "Closing time"
+msgstr "Closing time"
+
+#: ../changeset.php:123
+msgid "User"
+msgstr "User"
+
+#: ../changeset.php:126
+msgid "Changed object tags"
+msgstr "Changed object tags"
+
+#: ../changeset.php:131
+msgid "No tags have been changed."
+msgstr "No tags have been changed."
+
+#: ../changeset.php:137
+msgid "Hover the elements to view the changed tags."
+msgstr "Hover the elements to view the changed tags."
+
+#: ../changeset.php:159
+msgid "Node"
+msgstr "Node"
+
+#: ../changeset.php:163
+msgid "Way"
+msgstr "Way"
+
+#: ../changeset.php:167
+msgid "Relation"
+msgstr "Relation"
+
+#: ../changeset.php:172
+#: ../blame.php:100
+msgid "browse"
+msgstr "browse"
+
+#: ../changeset.php:238
+msgid "Map"
+msgstr "Map"
+
+#: ../changeset.php:243
+msgid "No objects were changed in the changeset."
+msgstr "No objects were changed in the changeset."
+
+#: ../classes/osmapierror.php:23
+msgid "Error during API request: "
+msgstr "Error during API request: "
+
+#: ../classes/osmapierror.php:27
+msgid "400 Bad Request"
+msgstr "400 Bad Request"
+
+#: ../classes/osmapierror.php:30
+msgid "401 Unauthorized"
+msgstr "401 Unauthorized"
+
+#: ../classes/osmapierror.php:33
+msgid "404 Not Found"
+msgstr "404 Not Found"
+
+#: ../classes/osmapierror.php:36
+msgid "405 Method Not Allowed"
+msgstr "405 Method Not Allowed"
+
+#: ../classes/osmapierror.php:39
+msgid "410 Gone"
+msgstr "410 Gone"
+
+#: ../classes/osmapierror.php:42
+msgid "412 Precondition Failed"
+msgstr "412 Precondition Failed"
+
+#: ../classes/osmapierror.php:45
+msgid "500 Internal Server Error"
+msgstr "500 Internal Server Error"
+
+#: ../classes/osmapierror.php:48
+msgid "503 Service Unavailable"
+msgstr "503 Service Unavailable"
+
+#: ../classes/osmapierror.php:51
+#, php-format
+msgid "Unknown error code %s"
+msgstr "Unknown error code %s"
+
+#: ../classes/osmapierror.php:56
+#, php-format
+msgid "API call was %s."
+msgstr "API call was %s."
+
+#: ../classes/osmapi.php:43
+msgid "Could not connect to the API server."
+msgstr "Could not connect to the API server."
+
+#: ../classes/osmapi.php:80
+msgid "The OSM server sent no data."
+msgstr "The OSM server sent no data."
+
+#: ../classes/osmobject.php:82
+msgid "This element could not be found."
+msgstr "This element could not be found."
+
+#: ../classes/gui.php:33
+msgid "OSM History Viewer"
+msgstr "OSM History Viewer"
+
+#: ../classes/gui.php:35
+#, php-format
+msgid "OSM History Viewer: %s"
+msgstr "OSM History Viewer: %s"
+
+#: ../blame.php:88
+msgid "Affecting changesets by user"
+msgstr "Affecting changesets by user"
+
+#: ../blame.php:88
+msgid "Hide all"
+msgstr "Hide all"
+
+#: ../blame.php:88
+msgid "Show all"
+msgstr "Show all"
+
+#: ../blame.php:88
+msgid "Zoom all"
+msgstr "Zoom all"
+
+#: ../blame.php:100
+msgid "No comment"
+msgstr "No comment"
+
+#: ../blame.php:100
+msgid "Zoom"
+msgstr "Zoom"
+
+#: ../blame.php:100
+msgid "view"
+msgstr "History Viewer"
+
+#: ../index.php:22
+msgid "OSM History Viewer is a debugging tool for Changesets in OpenStreetMap."
+msgstr "OSM History Viewer is a debugging tool for Changesets in OpenStreetMap."
+
+#: ../index.php:28
+msgid "Visualise changeset"
+msgstr "Visualise changeset"
+
+#: ../index.php:30
+msgid "Changeset ID"
+msgstr "Changeset ID"
+
+#: ../index.php:33
+msgid "Lookup"
+msgstr "Lookup"
+
+#: ../index.php:38
+msgid "Relation Blame"
+msgstr "Relation Blame"
+
+#: ../index.php:41
+msgid "Relation ID"
+msgstr "Relation ID"
+
+#: ../index.php:44
+#: ../index.php:66
+#: ../index.php:83
+msgid "Blame"
+msgstr "Blame"
+
+#: ../index.php:60
+msgid "ID"
+msgstr "ID"
+
+#: ../index.php:102
+msgid "Key"
+msgstr "Key"
+
+#: ../index.php:109
+msgid "Value"
+msgstr "Value"
+
+#: ../index.php:112
+msgid "Search using OSM API"
+msgstr "Search using OSM API"
+
+#: ../index.php:113
+msgid "Search using XAPI"
+msgstr "Search using XAPI"
+
+#: ../index.php:114
+msgid "OSM API will probably be more current and a lot faster but won’t let you use wildcards."
+msgstr "OSM API will probably be more current and a lot faster but won’t let you use wildcards."
+
+#~ msgid "Open this in OSM Relation Analyzer"
+#~ msgstr "Open this in OSM Relation Analyzer"
+#~ msgid ""
+#~ "The data was last refreshed on %s. The timestamp of the relation is %s. "
+#~ "If you think one of the members might have been changed, %sreload the "
+#~ "data manually%s."
+#~ msgstr ""
+#~ "The data was last refreshed on %s. The timestamp of the relation is %s. "
+#~ "If you think one of the members might have been changed, %sreload the "
+#~ "data manually%s."
+#~ msgid "Last changed"
+#~ msgstr "Last changed"
+#~ msgid "%s by %s"
+#~ msgstr "%s by %s"
+#~ msgid "Total length"
+#~ msgstr "Total length"
+#~ msgid "Sub-relations"
+#~ msgstr "Sub-relations"
+#~ msgid "Parent relations"
+#~ msgstr "Parent relations"
+#~ msgid "Segments"
+#~ msgstr "Segments"
+#~ msgid "Get GPS coordinates by clicking on the map."
+#~ msgstr "Get GPS coordinates by clicking on the map."
+#~ msgid "Segment #"
+#~ msgstr "Segment #"
+#~ msgid "Length"
+#~ msgstr "Length"
+#~ msgid "Distance to next segments"
+#~ msgstr "Distance to next segments"
+#~ msgid "Visible"
+#~ msgstr "Visible"
+#~ msgid "Add to personal route"
+#~ msgstr "Add to personal route"
+#~ msgid "Personal route"
+#~ msgstr "Personal route"
+#~ msgid "Download GPX"
+#~ msgstr "Download GPX"
+#~ msgid "Segment %s"
+#~ msgstr "Segment %s"
+#~ msgid "Longitude"
+#~ msgstr "Longitude"
+#~ msgid "Latitude"
+#~ msgstr "Latitude"
+#~ msgid "OpenStreetMap Permalink"
+#~ msgstr "OpenStreetMap Permalink"
+#~ msgid "OpenStreetMap Marker"
+#~ msgstr "OpenStreetMap Marker"
+#~ msgid "Google Maps Marker"
+#~ msgstr "Google Maps Marker"
+#~ msgid "Yahoo Maps Permalink"
+#~ msgstr "Yahoo Maps Permalink"
+#~ msgid "Segment %s (reversed)"
+#~ msgstr "Segment %s (reversed)"
+#~ msgid "OSM Route Manager"
+#~ msgstr "OSM Route Manager"
+#~ msgid "OSM Route Manager: %s"
+#~ msgstr "OSM Route Manager: %s"
+#~ msgid "Lookup relation by ID"
+#~ msgstr "Lookup relation by ID"
+#~ msgid "Don’t show map"
+#~ msgstr "Don’t show map"
+#~ msgid "Search for relations"
+#~ msgstr "Search for relations"
+#~ msgid "No map"
+#~ msgstr "No map"
+

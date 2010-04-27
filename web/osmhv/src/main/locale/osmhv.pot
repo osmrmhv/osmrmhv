@@ -1,0 +1,255 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-11-02 21:29+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../changeset.php:43
+#, php-format
+msgid "Changeset %s"
+msgstr ""
+
+#: ../changeset.php:70
+msgid "Changeset could not be analysed."
+msgstr ""
+
+#: ../changeset.php:75
+msgid "Back to home page"
+msgstr ""
+
+#: ../changeset.php:76
+msgid "Browse on OpenStreetMap"
+msgstr ""
+
+#: ../changeset.php:85 ../blame.php:85
+msgid "Note that many features of this page will not work without JavaScript."
+msgstr ""
+
+#: ../changeset.php:86
+#, php-format
+msgid "This analysation was created on %s."
+msgstr ""
+
+#: ../changeset.php:87
+msgid ""
+"Everything green on this page will show the status after the changeset was "
+"committed, red will be the status before, and things displayed in blue "
+"haven’t changed."
+msgstr ""
+
+#: ../changeset.php:88
+msgid "Tags"
+msgstr ""
+
+#: ../changeset.php:115
+msgid "Details"
+msgstr ""
+
+#: ../changeset.php:117
+msgid "Creation time"
+msgstr ""
+
+#: ../changeset.php:120
+msgid "Closing time"
+msgstr ""
+
+#: ../changeset.php:123
+msgid "User"
+msgstr ""
+
+#: ../changeset.php:126
+msgid "Changed object tags"
+msgstr ""
+
+#: ../changeset.php:131
+msgid "No tags have been changed."
+msgstr ""
+
+#: ../changeset.php:137
+msgid "Hover the elements to view the changed tags."
+msgstr ""
+
+#: ../changeset.php:159
+msgid "Node"
+msgstr ""
+
+#: ../changeset.php:163
+msgid "Way"
+msgstr ""
+
+#: ../changeset.php:167
+msgid "Relation"
+msgstr ""
+
+#: ../changeset.php:172 ../blame.php:100
+msgid "browse"
+msgstr ""
+
+#: ../changeset.php:238
+msgid "Map"
+msgstr ""
+
+#: ../changeset.php:243
+msgid "No objects were changed in the changeset."
+msgstr ""
+
+#: ../classes/osmapierror.php:23
+msgid "Error during API request: "
+msgstr ""
+
+#: ../classes/osmapierror.php:27
+msgid "400 Bad Request"
+msgstr ""
+
+#: ../classes/osmapierror.php:30
+msgid "401 Unauthorized"
+msgstr ""
+
+#: ../classes/osmapierror.php:33
+msgid "404 Not Found"
+msgstr ""
+
+#: ../classes/osmapierror.php:36
+msgid "405 Method Not Allowed"
+msgstr ""
+
+#: ../classes/osmapierror.php:39
+msgid "410 Gone"
+msgstr ""
+
+#: ../classes/osmapierror.php:42
+msgid "412 Precondition Failed"
+msgstr ""
+
+#: ../classes/osmapierror.php:45
+msgid "500 Internal Server Error"
+msgstr ""
+
+#: ../classes/osmapierror.php:48
+msgid "503 Service Unavailable"
+msgstr ""
+
+#: ../classes/osmapierror.php:51
+#, php-format
+msgid "Unknown error code %s"
+msgstr ""
+
+#: ../classes/osmapierror.php:56
+#, php-format
+msgid "API call was %s."
+msgstr ""
+
+#: ../classes/osmapi.php:43
+msgid "Could not connect to the API server."
+msgstr ""
+
+#: ../classes/osmapi.php:80
+msgid "The OSM server sent no data."
+msgstr ""
+
+#: ../classes/osmobject.php:82
+msgid "This element could not be found."
+msgstr ""
+
+#: ../classes/gui.php:33
+msgid "OSM History Viewer"
+msgstr ""
+
+#: ../classes/gui.php:35
+#, php-format
+msgid "OSM History Viewer: %s"
+msgstr ""
+
+#: ../blame.php:88
+msgid "Affecting changesets by user"
+msgstr ""
+
+#: ../blame.php:88
+msgid "Hide all"
+msgstr ""
+
+#: ../blame.php:88
+msgid "Show all"
+msgstr ""
+
+#: ../blame.php:88
+msgid "Zoom all"
+msgstr ""
+
+#: ../blame.php:100
+msgid "No comment"
+msgstr ""
+
+#: ../blame.php:100
+msgid "Zoom"
+msgstr ""
+
+#: ../blame.php:100
+msgid "view"
+msgstr ""
+
+#: ../index.php:22
+msgid "OSM History Viewer is a debugging tool for Changesets in OpenStreetMap."
+msgstr ""
+
+#: ../index.php:28
+msgid "Visualise changeset"
+msgstr ""
+
+#: ../index.php:30
+msgid "Changeset ID"
+msgstr ""
+
+#: ../index.php:33
+msgid "Lookup"
+msgstr ""
+
+#: ../index.php:38
+msgid "Relation Blame"
+msgstr ""
+
+#: ../index.php:41
+msgid "Relation ID"
+msgstr ""
+
+#: ../index.php:44 ../index.php:66 ../index.php:83
+msgid "Blame"
+msgstr ""
+
+#: ../index.php:60
+msgid "ID"
+msgstr ""
+
+#: ../index.php:102
+msgid "Key"
+msgstr ""
+
+#: ../index.php:109
+msgid "Value"
+msgstr ""
+
+#: ../index.php:112
+msgid "Search using OSM API"
+msgstr ""
+
+#: ../index.php:113
+msgid "Search using XAPI"
+msgstr ""
+
+#: ../index.php:114
+msgid ""
+"OSM API will probably be more current and a lot faster but won’t let you use "
+"wildcards."
+msgstr ""

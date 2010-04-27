@@ -1,12 +1,12 @@
 <%--
-	This file is part of the OSM Route Manager.
+	This file is part of the OSM History Viewer.
 
-	OSM Route Manager is free software: you can redistribute it and/or modify
+	OSM History Viewer is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Affero General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
 
-	OSM Route Manager is distributed in the hope that it will be useful,
+	OSM History Viewer is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Affero General Public License for more details.
@@ -17,8 +17,8 @@
 	Copyright © 2010 Candid Dauth
 --%>
 <%@page import="eu.cdauth.osm.lib.*"%>
-<%@page import="eu.cdauth.osm.web.osmrm.*"%>
-<%@page import="static eu.cdauth.osm.web.osmrm.GUI.*"%>
+<%@page import="eu.cdauth.osm.web.osmhv.*"%>
+<%@page import="static eu.cdauth.osm.web.osmhv.GUI.*"%>
 <%@page import="java.util.*" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
@@ -26,29 +26,34 @@
 %>
 <%
 	GUI gui = new GUI(request, response);
-	
+
 	if(!request.getParameterNames().hasMoreElements())
-		gui.setDescription(gui._("OSM Route Manager is a debugging tool for Relations in OpenStreetMap."));
+		gui.setDescription(gui._("OSM History Viewer is a debugging tool for Changesets in OpenStreetMap."));
 	gui.setJavaScripts(new String[]{ "sortable.js" });
 
 	gui.head();
 %>
-<form action="relation.jsp" method="get" id="lookup-form">
+<form action="changeset.php" metdod="get" id="changeset-form">
 	<fieldset>
-		<legend><%=htmlspecialchars(gui._("Lookup relation by ID"))%></legend>
+		<legend><%=htmlspecialchars(gui._("Visualise changeset"))%></legend>
 		<dl>
-			<dt><label for="i-lookup-id"><%=htmlspecialchars(gui._("Relation ID"))%></label></dt>
+			<dt><label for="i-lookup-id"><%=htmlspecialchars(gui._("Changeset ID"))%></label></dt>
 			<dd><input type="text" name="id" id="i-lookup-id" /></dd>
-
-			<dt><label for="i-no-map"><%=htmlspecialchars(gui._("Don’t show map"))%></label></dt>
-			<dd><input type="checkbox" name="norender" id="i-no-map" /></dd>
 		</dl>
 		<button type="submit"><%=htmlspecialchars(gui._("Lookup"))%></button>
 	</fieldset>
 </form>
-<form action="#search-form" method="get" id="search-form">
-	<fieldset>
-		<legend><%=htmlspecialchars(gui._("Search for relations"))%></legend>
+
+<fieldset id="search-form">
+	<legend><%=htmlspecialchars(gui._("Relation Blame"))%></legend>
+	<form action="blame.php" method="get">
+		<dl>
+			<dt><label for="i-blame"><%=htmlspecialchars(gui._("Relation ID"))%></label></dt>
+			<dd><input type="text" id="i-blame" name="id" /></dd>
+		</dl>
+		<div><input type="submit" value="<%=htmlspecialchars(gui._("Blame"))%>" /></div>
+	</form>
+	<hr />
 <%
 	final String searchKey = (request.getParameter("search-key") != null ? request.getParameter("search-key").trim() : null);
 	final String searchValue = (request.getParameter("search-value") != null ? request.getParameter("search-value").trim() : null);
@@ -82,7 +87,7 @@
 					<td><%=htmlspecialchars(result.getTag("network"))%></td>
 					<td><%=htmlspecialchars(result.getTag("ref"))%></td>
 					<td><%=htmlspecialchars(result.getTag("name"))%></td>
-					<td><a href="relation.jsp?id=<%=htmlspecialchars(urlencode(result.getID().toString()))%>"><%=htmlspecialchars(gui._("Open"))%></a> (<a href="relation.jsp?id=<%=htmlspecialchars(urlencode(result.getID().toString())+"&norender=on")%>"><%=htmlspecialchars(gui._("No map"))%></a>)</td>
+					<td><a href="blame.jsp?id=<%=htmlspecialchars(urlencode(result.getID().toString()))%>"><%=htmlspecialchars(gui._("Open"))%></a> (<a href="relation.jsp?id=<%=htmlspecialchars(urlencode(result.getID().toString())+"&norender=on")%>"><%=htmlspecialchars(gui._("No map"))%></a>)</td>
 				</tr>
 <%
 			}
@@ -99,6 +104,7 @@
 		}
 	}
 %>
+	<form action="#search-form" method="get">
 		<dl>
 			<dt><label for="i-search-key"><%=htmlspecialchars(gui._("Key"))%></label></dt>
 			<dd><select id="i-search-key" name="search-key">
@@ -111,8 +117,8 @@
 			<dd><input type="text" id="i-search-value" name="search-value" value="<%=htmlspecialchars(request.getParameter("search-value"))%>" /></dd>
 		</dl>
 		<input type="submit" value="<%=htmlspecialchars(gui._("Search using OSM API"))%>" />
-	</fieldset>
-</form>
+	</form>
+</fieldset>
 <%
 	gui.foot();
 %>

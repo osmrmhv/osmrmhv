@@ -1,0 +1,4 @@
+#!/bin/bash
+cd "$(dirname "$0")"
+find .. -name '*.jsp' | xgettext -f- -dosmhv -oosmhv.pot -LPHP --from-code=UTF-8 --add-comments="I18N:"
+find .. -name '*.java' | xgettext -j -f- -dosmhv -oosmhv.pot -LJava --from-code=UTF-8 --add-comments="I18N:"
