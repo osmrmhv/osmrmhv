@@ -1,20 +1,25 @@
+<!--
+	This file is in the public domain, furnished “as is”, without technical
+	support, and with no warranty, express or implied, as to its usefulness for
+	any purpose.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.cdauth</groupId>
 	<artifactId>osm</artifactId>
 	<version>SNAPSHOT</version>
 	<name>osmrmhv</name>
-	<description>OSM Route Manager and History Viewer.</description>
+	<description>osmrmhv library</description>
 	<packaging>pom</packaging>
 	<licenses>
 		<license>
-			<name>GNU Affero General Public License Version 3</name>
+			<name>Public Domain</name>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
 	<modules>
 		<module>lib</module>
-		<module>osmrm</module>
+		<module>web</module>
 	</modules>
 	<scm>
 		<connection>git://gitorious.org/osmrmhv/lib.git</connection>
@@ -23,6 +28,7 @@
 	</scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.localeDirectory>${basedir}/src/main/locale</project.build.localeDirectory>
 	</properties>
 	<build>
 		<plugins>

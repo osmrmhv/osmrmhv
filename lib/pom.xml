@@ -1,14 +1,19 @@
+<!--
+	This file is in the public domain, furnished “as is”, without technical
+	support, and with no warranty, express or implied, as to its usefulness for
+	any purpose.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.cdauth.osm</groupId>
 	<artifactId>lib</artifactId>
 	<version>SNAPSHOT</version>
-	<name>osmrmhv lib</name>
+	<name>osmrmhv/lib</name>
 	<description>A library to talk to the OpenStreetMap database via different ways.</description>
 	<packaging>pom</packaging>
 	<licenses>
 		<license>
-			<name>GNU Affero General Public License Version 3</name>
+			<name>Public Domain</name>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>

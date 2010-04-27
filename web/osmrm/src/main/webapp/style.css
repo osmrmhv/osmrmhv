@@ -1,5 +1,5 @@
 /*
-	This file is part of OSM Route Manager.
+	This file is part of the OSM Route Manager.
 
 	OSM Route Manager is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Affero General Public License as published by
@@ -12,10 +12,9 @@
 	GNU Affero General Public License for more details.
 
 	You should have received a copy of the GNU Affero General Public License
-	along with OSM Route Manager.  If not, see <http://www.gnu.org/licenses/>.
+	along with this software. If not, see <http://www.gnu.org/licenses/>.
 
-	Obtain the source code from http://svn.cdauth.de/viewvc.cgi/Tools/osm/route-manager/
-	or svn://svn.cdauth.de/tools/osm/route-manager/.
+	Copyright © 2010 Candid Dauth
 */
 
 body { line-height:1.4em; background:#fff; color:#000; }

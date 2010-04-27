@@ -1,0 +1,18 @@
+The different modules of this software are put under different license:
+
+The modules inside the “web” directory are licensed under the GNU Affero General Public License,
+version 3. It also contains some third-party software that might be available under different
+licenses.
+
+The GNU Affero General Public License of version 3 allows you modify the software and redistribute
+it. It forces you to make the source code available to all users that you give the software or
+your modified version to as well as to all users that can access your running instance of the
+software or your modified version (for example over the Internet). See the full license on
+http://www.gnu.org/licenses/agpl.html.
+
+The modules inside the “lib” directory are licensed under the MIT License. This license allows
+you to do anything you want with the software as long as you do not remove the copyright notices
+from the files.
+
+Some files inside the “lib” directory are in the public domain. This means that no copyright
+restrictions apply to them at all. These files are labelled specially.
