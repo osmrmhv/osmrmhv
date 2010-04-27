@@ -18,7 +18,7 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.cdauth.osm.web</groupId>
+	<groupId>eu.cdauth.osm.web</groupId>
 	<artifactId>osmrm</artifactId>
 	<name>OSM Route Manager</name>
 	<packaging>war</packaging>
@@ -31,8 +31,40 @@
 	</licenses>
 
 	<parent>
-		<groupId>de.cdauth.osm</groupId>
+		<groupId>eu.cdauth.osm</groupId>
 		<artifactId>web</artifactId>
 		<version>SNAPSHOT</version>
 	</parent>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo.jspc</groupId>
+				<artifactId>jspc-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							 <goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.xnap.commons</groupId>
+				<artifactId>maven-gettext-plugin</artifactId>
+				<version>1.2.0</version>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							 <goal>dist</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<targetBundle>eu.cdauth.osm.osmrm.locale.osmrm</targetBundle>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

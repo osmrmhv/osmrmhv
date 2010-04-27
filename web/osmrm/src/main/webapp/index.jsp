@@ -16,9 +16,9 @@
 
 	Copyright © 2010 Candid Dauth
 --%>
-<%@page import="de.cdauth.osm.lib.*"%>
-<%@page import="de.cdauth.osm.osmrm.*"%>
-<%@page import="static de.cdauth.osm.osmrm.GUI.*"%>
+<%@page import="eu.cdauth.osm.lib.*"%>
+<%@page import="eu.cdauth.osm.osmrm.*"%>
+<%@page import="static eu.cdauth.osm.osmrm.GUI.*"%>
 <%@page import="java.util.*" %>
 <%@page import="javax.sql.DataSource" %>
 <%@page import="javax.naming.InitialContext" %>

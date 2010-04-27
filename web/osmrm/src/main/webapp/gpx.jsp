@@ -16,10 +16,10 @@
 
 	Copyright © 2010 Candid Dauth
 --%>
-<%@page import="de.cdauth.osm.lib.*"%>
-<%@page import="de.cdauth.osm.osmrm.*"%>
+<%@page import="eu.cdauth.osm.lib.*"%>
+<%@page import="eu.cdauth.osm.osmrm.*"%>
 <%@page import="java.util.*" %>
-<%@page import="static de.cdauth.osm.osmrm.GUI.*"%>
+<%@page import="static eu.cdauth.osm.osmrm.GUI.*"%>
 <%@page contentType="text/xml; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	private static API api = GUI.getAPI();

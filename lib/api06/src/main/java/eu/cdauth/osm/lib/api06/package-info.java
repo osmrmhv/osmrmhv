@@ -1,4 +1,4 @@
-<!--
+/*
 	Copyright © 2010 Candid Dauth
 
 	Permission is hereby granted, free of charge, to any person obtaining
@@ -17,30 +17,11 @@
 	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 	OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
--->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>eu.cdauth.osm.lib</groupId>
-	<artifactId>api06</artifactId>
-	<name>osmrmhv/lib/api06</name>
-	<description>Implementation of the osmrmhv library to communicate with the API v0.6 via HTTP.</description>
-	<packaging>jar</packaging>
-	<licenses>
-		<license>
-			<name>MIT License</name>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<parent>
-		<groupId>eu.cdauth.osm</groupId>
-		<artifactId>lib</artifactId>
-		<version>SNAPSHOT</version>
-	</parent>
-	<dependencies>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>interface</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-	</dependencies>
-</project>
+*/
+
+/**
+ * This is an implementation of the {@link eu.cdauth.osm.lib} OSM API interface that talks to the
+ * OSM API 0.6 (<a href="http://wiki.openstreetmap.org/wiki/API_0.6">osmwiki</a>) over HTTP.
+ */
+
+package eu.cdauth.osm.lib.api06;

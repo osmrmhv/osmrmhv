@@ -1,4 +1,4 @@
-<!--
+/*
 	Copyright © 2010 Candid Dauth
 
 	Permission is hereby granted, free of charge, to any person obtaining
@@ -17,30 +17,55 @@
 	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 	OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
--->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>eu.cdauth.osm.lib</groupId>
-	<artifactId>api06</artifactId>
-	<name>osmrmhv/lib/api06</name>
-	<description>Implementation of the osmrmhv library to communicate with the API v0.6 via HTTP.</description>
-	<packaging>jar</packaging>
-	<licenses>
-		<license>
-			<name>MIT License</name>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<parent>
-		<groupId>eu.cdauth.osm</groupId>
-		<artifactId>lib</artifactId>
-		<version>SNAPSHOT</version>
-	</parent>
-	<dependencies>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>interface</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-	</dependencies>
-</project>
+*/
+
+package eu.cdauth.osm.lib.api06;
+
+import org.w3c.dom.Element;
+
+import eu.cdauth.osm.lib.APIError;
+import eu.cdauth.osm.lib.LonLat;
+import eu.cdauth.osm.lib.Node;
+import eu.cdauth.osm.lib.VersionedItemCache;
+import eu.cdauth.osm.lib.Way;
+
+/**
+ * Represents a Node in OpenStreetMap.
+ */
+
+public class API06Node extends API06GeographicalItem implements Node
+{
+	/**
+	 * Only for serialization.
+	 */
+	@Deprecated
+	public API06Node()
+	{
+	}
+
+	protected API06Node(Element a_dom, API06API a_api)
+	{
+		super(a_dom, a_api);
+	}
+
+	@Override
+	public LonLat getLonLat()
+	{
+		return new LonLat(Float.parseFloat(getDOM().getAttribute("lon")), Float.parseFloat(getDOM().getAttribute("lat")));
+	}
+
+	@Override
+	public Way[] getContainingWays() throws APIError
+	{
+		Way[] ret = (Way[])getAPI().get("/node/"+getID()+"/ways");
+		VersionedItemCache<Way> cache = getAPI().getWayFactory().getCache();
+		for(Way it : ret)
+		{
+			((API06Way)it).markAsCurrent();
+			cache.cacheObject(it);
+		}
+		
+		// FIXME: Cache this result somehow?
+		return ret;
+	}
+}
