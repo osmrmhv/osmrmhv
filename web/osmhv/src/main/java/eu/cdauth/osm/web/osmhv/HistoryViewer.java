@@ -47,7 +47,7 @@ public class HistoryViewer
 		}
 	}
 
-	public Map<Segment,Changeset> blame(API a_api, ID a_id) throws APIError
+	public static Map<Segment,Changeset> blame(API a_api, ID a_id) throws APIError
 	{
 		NodeFactory nodeFactory = a_api.getNodeFactory();
 		WayFactory wayFactory = a_api.getWayFactory();
@@ -138,7 +138,8 @@ public class HistoryViewer
 				}
 			}
 
-			List<Segment> segments = Arrays.asList(mainRelation.getSegmentsRecursive(currentDate));
+			List<Segment> segments = new ArrayList<Segment>();
+			segments.addAll(Arrays.asList(mainRelation.getSegmentsRecursive(currentDate)));
 			segments.retainAll(currentSegments);
 
 			if(segments.size() == 0)
@@ -151,7 +152,7 @@ public class HistoryViewer
 			}
 		}
 
-		Map<ID,Changeset> changesets = changesetFactory.fetch(blame.values().toArray(new ID[0]));
+		Map<ID,Changeset> changesets = changesetFactory.fetch(blame.values().toArray(new ID[blame.size()]));
 		Hashtable<Segment,Changeset> ret = new Hashtable<Segment,Changeset>();
 		for(Map.Entry<Segment,ID> e : blame.entrySet())
 			ret.put(e.getKey(), changesets.get(e.getValue()));

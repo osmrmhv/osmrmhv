@@ -324,6 +324,11 @@ abstract public class GUI
 		return ret.toString();
 	}
 
+	public static long rand(long a_min, long a_max)
+	{
+		return a_min+(long)((a_max-a_min)*Math.random());
+	}
+
 	public String _(String a_message)
 	{
 		return gettext(a_message);
