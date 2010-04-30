@@ -30,6 +30,8 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -279,6 +281,23 @@ abstract public class GUI
 			return "<a href=\"http://wiki.openstreetmap.org/wiki/%1$s\">%1$s</a>";
 		else
 			return "%1$s";
+	}
+
+	public static String formatTag(String a_key, String a_value)
+	{
+		String format = getTagFormat(a_key);
+
+		StringBuilder ret = new StringBuilder();
+		Matcher delimMatcher = Pattern.compile("\\s*;\\*").matcher(a_value);
+		int pos = 0;
+		while(delimMatcher.find())
+		{
+			ret.append(String.format(format, a_value.substring(pos, delimMatcher.start())));
+			ret.append(delimMatcher.group());
+			pos = delimMatcher.end();
+		}
+		ret.append(String.format(format, a_value.substring(pos)));
+		return ret.toString();
 	}
 
 	public static String implode(String a_delim, Object[] a_array)

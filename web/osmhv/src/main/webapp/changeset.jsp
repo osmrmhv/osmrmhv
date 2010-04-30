@@ -22,6 +22,8 @@
 <%@page import="java.util.*" %>
 <%@ page import="java.net.URL" %>
 <%@ page import="java.net.URLEncoder" %>
+<%@ page import="java.util.regex.Pattern" %>
+<%@ page import="java.util.regex.Matcher" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	protected static final API api = GUI.getAPI();
@@ -87,7 +89,21 @@
 	<dd><%=htmlspecialchars(changeset.getCreationDate().toString())%></dd>
 
 	<dt><%=htmlspecialchars(gui._("Closing time"))%></dt>
-	<dd><%=htmlspecialchars(changeset.getClosingDate().toString())%></dd>
+<%
+	Date closingDate = changeset.getClosingDate();
+	if(closingDate == null)
+	{
+%>
+	<dd><%=htmlspecialchars(gui._("Still open"))%></dd>
+<%
+	}
+	else
+	{
+%>
+	<dd>changeset.getClosingDate().toString())%></dd>
+<%
+	}
+%>
 
 	<dt><%=htmlspecialchars(gui._("User"))%></dt>
 	<dd><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(URLEncoder.encode(changeset.getUser().toString(), "UTF-8"))%>"><%=htmlspecialchars(changeset.getUser().toString())%></a></dd>
@@ -95,10 +111,11 @@
 <%
 	response.getWriter().flush();
 	HistoryViewer.Changes changes = HistoryViewer.getNodeChanges(api, changeset);
+	Map<VersionedItem,VersionedItem> previousVersions = changeset.getPreviousVersions(true);
 %>
-<%--<h2><%=htmlspecialchars(gui._("Changed object tags"))%></h2>
+<h2><%=htmlspecialchars(gui._("Changed object tags"))%></h2>
 <%
-	if(!$sql->query("SELECT COUNT(*) FROM changeset_tags_objects WHERE changeset = ".$sql->quote($_GET["id"]).";")->fetchColumn())
+	if(previousVersions.isEmpty())
 	{
 %>
 <p class="nothing-to-do"><%=htmlspecialchars(gui._("No tags have been changed."))%></p>
@@ -110,93 +127,61 @@
 <p class="changed-object-tags-note"><%=htmlspecialchars(gui._("Hover the elements to view the changed tags."))%></p>
 <ul class="changed-object-tags">
 <%
-		$old_type = null;
-		$old_id = null;
-		$tags = $sql->query("SELECT * FROM changeset_tags_objects WHERE changeset = ".$sql->quote($_GET["id"]).";");
-		while($line = $tags->fetch())
+		for(Map.Entry<VersionedItem,VersionedItem> it : previousVersions.entrySet())
 		{
-			if($line["type"] != $old_type || $line["id"] != $old_id)
+			VersionedItem oldItem = it.getValue();
+			VersionedItem newItem = it.getKey();
+			String type,browse;
+			if(oldItem instanceof Node)
 			{
-				if($old_type !== null)
-				{
+				type = gui._("Node");
+				browse = "node";
+			}
+			else if(oldItem instanceof Way)
+			{
+				type = gui._("Way");
+				browse = "way";
+			}
+			else if(oldItem instanceof Relation)
+			{
+				type = gui._("Relation");
+				browse = "relation";
+			}
+			else
+				continue;
 %>
-			</tbody>
-		</table>
-	</li>
-<%
-				}
-
-				switch($line["type"])
-				{
-					case 1:
-						$type = _("Node");
-						$browse = "node";
-						break;
-					case 2:
-						$type = _("Way");
-						$browse = "way";
-						break;
-					case 3:
-						$type = _("Relation");
-						$browse = "relation";
-						break;
-				}
-%>
-	<li><%=htmlspecialchars($type." ".$line["id"])%> (<a href="http://www.openstreetmap.org/browse/<%=htmlspecialchars($browse."/".$line["id"])%>"><%=htmlspecialchars(gui._("browse"))%></a>)
+	<li><%=htmlspecialchars(type+" "+oldItem.getID().toString())%> (<a href="http://www.openstreetmap.org/browse/<%=htmlspecialchars(browse+"/"+oldItem.getID().toString())%>"><%=htmlspecialchars(gui._("browse"))%></a>)
 		<table>
 			<tbody>
 <%
-				$old_type = $line["type"];
-				$old_id = $line["id"];
-			}
+			Set<String> tags = new HashSet<String>();
+			tags.addAll(oldItem.getTags().keySet());
+			tags.addAll(newItem.getTags().keySet());
 
-			if($line["value1"] == $line["value2"])
+			for(String key : tags)
 			{
-				$class1 = "unchanged";
-				$class2 = "unchanged";
-			}
-			else
-			{
-				$class1 = "old";
-				$class2 = "new";
-			}
+				String valueOld = oldItem.getTag(key);
+				String valueNew = newItem.getTag(key);
 
-			$values = array();
-			foreach(array($line["value1"], $line["value2"]) as $i=>$v)
-			{
-				if(trim($v) != "")
+				String class1,class2;
+				if(valueOld.equals(valueNew))
 				{
-					if(preg_match("/^url(:|\$)/i", $line["tagname"]))
-					{
-						$v = explode(";", $v);
-						foreach($v as $k=>$v1)
-							$v[$k] = "<a href=\"".htmlspecialchars(trim($v1))."\">".htmlspecialchars($v1)."</a>";
-						$v = implode(";", $v);
-					}
-					elseif(preg_match("/^wiki(:.*)?\$/i", $line["tagname"], $m))
-					{
-						$m[1] = strtolower($m[1]);
-						$v = explode(";", $v);
-						foreach($v as $k=>$v1)
-							$v[$k] = "<a href=\"http://wiki.openstreetmap.org/wiki/".htmlspecialchars(rawurlencode(($m[1] == ":symbol" ? "Image:" : "").$v1))."\">".htmlspecialchars($v1)."</a>";
-						$v = implode(";", $v);
-					}
-					else
-						$v = htmlspecialchars($v);
+					class1 = "unchanged";
+					class2 = "unchanged";
 				}
-				$values[$i] = $v;
-			}
+				else
+				{
+					class1 = "old";
+					class2 = "new";
+				}
 %>
 				<tr>
-					<th><%=htmlspecialchars($line["tagname"])%></th>
-					<td class="<%=htmlspecialchars($class1)%>"><%=$values[0]%></td>
-					<td class="<%=htmlspecialchars($class2)%>"><%=$values[1]%></td>
+					<th><%=htmlspecialchars(key)%></th>
+					<td class="<%=htmlspecialchars(class1)%>"><%=GUI.formatTag(key, valueOld)%></td>
+					<td class="<%=htmlspecialchars(class2)%>"><%=GUI.formatTag(key, valueNew)%></td>
 				</tr>
 <%
-		}
-
-		if($old_type !== null)
-		{
+			}
 %>
 			</tbody>
 		</table>
@@ -207,7 +192,7 @@
 </ul>
 <%
 	}
-%>--%>
+%>
 <h2><%=htmlspecialchars(gui._("Map"))%></h2>
 <%
 	if(changes.removed.length == 0 && changes.created.length == 0 && changes.unchanged.length == 0)
