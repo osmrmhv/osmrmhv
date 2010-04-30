@@ -35,6 +35,24 @@
 		"#f0f",
 		"#0ff"
 	};
+
+	protected static class UserChangeNumber implements Comparable<UserChangeNumber>
+	{
+		public final User user;
+		public final Integer changes;
+
+		public UserChangeNumber(User a_user, int a_changes)
+		{
+			user = a_user;
+			changes = a_changes;
+		}
+
+		//@Override
+		public int compareTo(UserChangeNumber a_other)
+		{
+			return a_other.changes.compareTo(changes);
+		}
+	}
 %>
 <%
 	if(request.getParameter("id") == null)
@@ -71,18 +89,11 @@
 
 	Map<Segment,Changeset> blame = HistoryViewer.blame(api, relationID);
 
-	Map<User,List<Segment>> userChanges = new HashMap<User,List<Segment>>();
 	Map<User,Set<Changeset>> userChangesets = new HashMap<User,Set<Changeset>>();
 	Map<Changeset,List<Segment>> changesetSegments = new HashMap<Changeset,List<Segment>>();
 	for(Map.Entry<Segment,Changeset> segment : blame.entrySet())
 	{
 		User user = segment.getValue().getUser();
-		List<Segment> changes = userChanges.get(user);
-		if(changes == null)
-		{
-			changes = new ArrayList<Segment>();
-			userChanges.put(user, changes);
-		}
 		Set<Changeset> changesets = userChangesets.get(user);
 		if(changesets == null)
 		{
@@ -96,27 +107,31 @@
 			changesetSegments.put(segment.getValue(), segments);
 		}
 
-		changes.add(segment.getKey());
 		changesets.add(segment.getValue());
 		segments.add(segment.getKey());
 	}
 
-	TreeMap<User,Integer> userChangeNumber = new TreeMap<User,Integer>();
-	for(Map.Entry<User,List<Segment>> user : userChanges.entrySet())
-		userChangeNumber.put(user.getKey(), user.getValue().size());
+	TreeSet<UserChangeNumber> userChangeNumber = new TreeSet<UserChangeNumber>();
+	for(Map.Entry<User,Set<Changeset>> user : userChangesets.entrySet())
+	{
+		int number = 0;
+		for(Changeset changeset : user.getValue())
+			number += changesetSegments.get(changeset).size();
+		userChangeNumber.add(new UserChangeNumber(user.getKey(), number));
+	}
 
 	Map<User,String> userColours = new HashMap<User,String>();
 	int i = 0;
-	for(User user : userChangeNumber.descendingKeySet())
+	for(UserChangeNumber user : userChangeNumber)
 	{
 		if(i < predefinedColours.length)
-			userColours.put(user, predefinedColours[i++]);
+			userColours.put(user.user, predefinedColours[i++]);
 		else
 		{
 			long n1 = rand(6, 12);
 			long n2 = rand(12-n1, 12);
 			long n3 = 30-n1-n2;
-			userColours.put(user, String.format("#%x%x%x", n1, n2, n3));
+			userColours.put(user.user, String.format("#%x%x%x", n1, n2, n3));
 		}
 	}
 %>
@@ -125,17 +140,17 @@
 	<h2><%=htmlspecialchars(gui._("Affecting changesets by user"))%> (<a href="javascript:setGlobalVisibility(false)"><%=htmlspecialchars(gui._("Hide all"))%></a>) (<a href="javascript:setGlobalVisibility(true)"><%=htmlspecialchars(gui._("Show all"))%></a>) (<a href="javascript:map.zoomToExtent(extent)"><%=htmlspecialchars(gui._("Zoom all"))%></a>)</h2>
 	<ul>
 <%
-	for(User user : userChangeNumber.descendingKeySet())
+	for(UserChangeNumber user : userChangeNumber)
 	{
 %>
-		<li><strong class="user-colour" style="color:<%=htmlspecialchars(userColours.get(user))%>;"><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(URLEncoder.encode(user.toString()))%>"><%=htmlspecialchars(user.toString())%></a></strong><ul>
+		<li><strong class="user-colour" style="color:<%=htmlspecialchars(userColours.get(user.user))%>;"><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(URLEncoder.encode(user.user.toString()))%>"><%=htmlspecialchars(user.user.toString())%></a></strong><ul>
 <%
-		for(Changeset changeset : userChangesets.get(user))
+		for(Changeset changeset : userChangesets.get(user.user))
 		{
 			String id = changeset.getID().toString();
 			String message = changeset.getTag("comment");
 %>
-			<li><input type="checkbox" id="checkbox-<%=id%>" onchange="layers[<%=id%>].setVisibility(this.checked);" /><%=id%>: <%=message != null ? String.format(gui._("“%s”"), htmlspecialchars(message)) : "<span class=\"nocomment\">"+htmlspecialchars(gui._("No comment"))+"</span>"%> (<a href="javascript:map.zoomToExtent(layers['<%=id%>'].getDataExtent())"><%=htmlspecialchars(gui._("Zoom"))%></a>) (<a href="http://www.openstreetmap.org/browse/changeset/<%=htmlspecialchars(URLEncoder.encode(id))%>"><%=htmlspecialchars(gui._("browse"))%></a>) (<a href="changeset.php?id=<%=htmlspecialchars(URLEncoder.encode(id))%>"><%=htmlspecialchars(gui._("view"))%></a>)</li>
+			<li><input type="checkbox" id="checkbox-<%=id%>" onchange="layers[<%=id%>].setVisibility(this.checked);" /><%=id%>: <%=message != null ? String.format(gui._("“%s”"), htmlspecialchars(message)) : "<span class=\"nocomment\">"+htmlspecialchars(gui._("No comment"))+"</span>"%> (<a href="javascript:map.zoomToExtent(layers['<%=id%>'].getDataExtent())"><%=htmlspecialchars(gui._("Zoom"))%></a>) (<a href="http://www.openstreetmap.org/browse/changeset/<%=htmlspecialchars(URLEncoder.encode(id))%>"><%=htmlspecialchars(gui._("browse"))%></a>) (<a href="changeset.jsp?id=<%=htmlspecialchars(URLEncoder.encode(id))%>"><%=htmlspecialchars(gui._("view"))%></a>)</li>
 <%
 	}
 %>
@@ -184,7 +199,7 @@
 <%
 		}
 %>
-	map.addLayer(layers['id']);
+	map.addLayer(layers['<%=id%>']);
 	if(extent)
 		extent.extend(layers['<%=id%>'].getDataExtent());
 	else
