@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OSM Route Manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-02 21:08+0100\n"
+"POT-Creation-Date: 2010-05-01 06:03+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Candid Dauth <webmaster@cdauth.de>\n"
 "Language-Team: \n"
@@ -14,237 +14,210 @@ msgstr ""
 "X-Poedit-Country: GERMANY\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../relation.php:22
+#: ../webapp/index.jsp:31
+msgid "OSM Route Manager is a debugging tool for Relations in OpenStreetMap."
+msgstr "Der OSM Route Manager ist ein Debug-Werkzeug für Relationen in OpenStreetMap."
+
+#: ../webapp/index.jsp:38
+msgid "Lookup relation by ID"
+msgstr "Relation-ID eingeben"
+
+#: ../webapp/index.jsp:40
+msgid "Relation ID"
+msgstr "Relation-ID"
+
+#: ../webapp/index.jsp:43
+msgid "Don’t show map"
+msgstr "Karte nicht anzeigen"
+
+#: ../webapp/index.jsp:46
+msgid "Lookup"
+msgstr "Analysieren"
+
+#: ../webapp/index.jsp:51
+msgid "Search for relations"
+msgstr "Relationen suchen"
+
+#: ../webapp/index.jsp:64
+msgid "ID"
+msgstr "ID"
+
+#: ../webapp/index.jsp:70
+#: ../webapp/index.jsp:85
+msgid "Open"
+msgstr "Öffnen"
+
+#: ../webapp/index.jsp:85
+msgid "No map"
+msgstr "Ohne Karte"
+
+#: ../webapp/index.jsp:103
+msgid "Key"
+msgstr "Schlüssel"
+
+#: ../webapp/index.jsp:110
+msgid "Value"
+msgstr "Wert"
+
+#: ../webapp/index.jsp:113
+msgid "Search using OSM API"
+msgstr "Mit der OSM-API suchen"
+
+#: ../webapp/relation.jsp:40
 #, php-format
 msgid "Relation %s"
 msgstr "Relation %s"
 
-#: ../relation.php:107
+#: ../webapp/relation.jsp:188
 msgid "Back to home page"
 msgstr "Zur Startseite"
 
-#: ../relation.php:108
+#: ../webapp/relation.jsp:189
 msgid "Open this in OSM Relation Analyzer"
 msgstr "Im OSM Relation Analyzer öffnen"
 
-#: ../relation.php:109
+#: ../webapp/relation.jsp:190
 msgid "Browse on OpenStreetMap"
 msgstr "Details auf OpenStreetMap nachschauen"
 
-#: ../relation.php:111
+#: ../webapp/relation.jsp:191
+msgid "Blame with History Viewer"
+msgstr "Täteranzeige im History Viewer"
+
+#: ../webapp/relation.jsp:193
 msgid "Note that many features of this page will not work without JavaScript."
 msgstr "Die Funktionalität dieser Seite ist ohne JavaScript stark eingeschränkt."
 
-#: ../relation.php:112
+#: ../webapp/relation.jsp:194
 #, php-format
 msgid "The data was last refreshed on %s. The timestamp of the relation is %s. If you think one of the members might have been changed, %sreload the data manually%s."
 msgstr "Die Daten wurden zuletzt am %s vom OSM-Server heruntergeladen. Das Änderungsdatum der Relation ist %s. Einzelne Wege oder Subrelationen könnten sich geändert haben, in diesem Fall %smanuell neuladen%s."
 
-#: ../relation.php:113
+#: ../webapp/relation.jsp:195
 msgid "Tags"
 msgstr "Tags"
 
-#: ../relation.php:151
+#: ../webapp/relation.jsp:218
 msgid "Details"
 msgstr "Details"
 
-#: ../relation.php:153
+#: ../webapp/relation.jsp:220
 msgid "Last changed"
 msgstr "Zuletzt geändert"
 
-#: ../relation.php:154
+#: ../webapp/relation.jsp:221
 #, php-format
 msgid "%s by %s"
 msgstr "%s von %s"
 
-#: ../relation.php:156
+#: ../webapp/relation.jsp:223
 msgid "Total length"
 msgstr "Gesamtlänge"
 
-#: ../relation.php:159
+#: ../webapp/relation.jsp:226
 msgid "Sub-relations"
 msgstr "Sub-Relationen"
 
-#: ../relation.php:180
+#: ../webapp/relation.jsp:247
 msgid "Parent relations"
 msgstr "Super-Relationen"
 
-#: ../relation.php:194
+#: ../webapp/relation.jsp:260
 msgid "Segments"
 msgstr "Abschnitte"
 
-#: ../relation.php:199
+#: ../webapp/relation.jsp:265
 msgid "Get GPS coordinates by clicking on the map."
 msgstr "GPS-Koordinaten lassen sich durch Klick auf die Karte feststellen."
 
-#: ../relation.php:207
+#: ../webapp/relation.jsp:273
 msgid "Segment #"
 msgstr "Abschnitts-Nr. "
 
-#: ../relation.php:208
+#: ../webapp/relation.jsp:274
 msgid "Length"
 msgstr "Länge"
 
-#: ../relation.php:209
+#: ../webapp/relation.jsp:275
 msgid "Distance to next segments"
 msgstr "Entfernung zum nächsten Abschnitt"
 
-#: ../relation.php:214
+#: ../webapp/relation.jsp:280
 msgid "Visible"
 msgstr "Anzeigen"
 
-#: ../relation.php:215
-#: ../relation.php:236
+#: ../webapp/relation.jsp:281
+#: ../webapp/relation.jsp:304
 msgid "Zoom"
 msgstr "Vergrößern"
 
-#: ../relation.php:219
+#: ../webapp/relation.jsp:285
 msgid "Add to personal route"
 msgstr "Zur persönlichen Route hinzufügen"
 
-#: ../relation.php:247
+#: ../webapp/relation.jsp:315
 msgid "Personal route"
 msgstr "Persönliche Route"
 
-#: ../relation.php:251
+#: ../webapp/relation.jsp:319
 msgid "Download GPX"
 msgstr "GPX herunterladen"
 
-#: ../relation.php:288
-#: ../relation.php:340
+#: ../webapp/relation.jsp:355
+#: ../webapp/relation.jsp:445
 #, php-format
 msgid "Segment %s"
 msgstr "Abschnitt %s"
 
-#: ../relation.php:340
+#: ../webapp/relation.jsp:377
+msgid "Markers"
+msgstr "Marker"
+
+#: ../webapp/relation.jsp:445
 #, php-format
 msgid "Segment %s (reversed)"
 msgstr "Segment %s (Rückweg)"
 
-#: ../classes/osmapierror.php:23
-msgid "Error during API request: "
-msgstr "Fehler bei einer API-Anfrage:"
-
-#: ../classes/osmapierror.php:27
-msgid "400 Bad Request"
-msgstr "400 Bad Request"
-
-#: ../classes/osmapierror.php:30
-msgid "401 Unauthorized"
-msgstr "401 Unauthorized"
-
-#: ../classes/osmapierror.php:33
-msgid "404 Not Found"
-msgstr "404 Not Found"
-
-#: ../classes/osmapierror.php:36
-msgid "405 Method Not Allowed"
-msgstr "405 Method Not Allowed"
-
-#: ../classes/osmapierror.php:39
-msgid "410 Gone"
-msgstr "410 Gone"
-
-#: ../classes/osmapierror.php:42
-msgid "412 Precondition Failed"
-msgstr "412 Precondition Failed"
-
-#: ../classes/osmapierror.php:45
-msgid "500 Internal Server Error"
-msgstr "500 Internal Server Error"
-
-#: ../classes/osmapierror.php:48
-msgid "503 Service Unavailable"
-msgstr "503 Service Unavailable"
-
-#: ../classes/osmapierror.php:51
-#, php-format
-msgid "Unknown error code %s"
-msgstr "Unbekannter Fehlercode %s"
-
-#: ../classes/osmapierror.php:56
-#, php-format
-msgid "API call was %s."
-msgstr "Die Anfrage war %s."
-
-#: ../classes/osmapi.php:43
-msgid "Could not connect to the API server."
-msgstr "Konnte nicht mit dem API-Server verbinden."
-
-#: ../classes/osmapi.php:80
-msgid "The OSM server sent no data."
-msgstr "Der OSM-Server hat nichts gesendet."
-
-#: ../classes/osmobject.php:82
-msgid "This element could not be found."
-msgstr "Dieses Objekt wurde nicht gefunden."
-
-#: ../classes/gui.php:33
-msgid "OSM Route Manager"
-msgstr "OSM-Routen-Manager"
-
-#: ../classes/gui.php:35
-#, php-format
-msgid "OSM Route Manager: %s"
-msgstr "OSM-Routen-Manager: %s"
-
-#: ../index.php:22
-msgid "OSM Route Manager is a debugging tool for Relations in OpenStreetMap."
-msgstr "Der OSM Route Manager ist ein Debug-Werkzeug für Relationen in OpenStreetMap."
-
-#: ../index.php:28
-msgid "Lookup relation by ID"
-msgstr "Relation-ID eingeben"
-
-#: ../index.php:30
-msgid "Relation ID"
-msgstr "Relation-ID"
-
-#: ../index.php:33
-msgid "Don’t show map"
-msgstr "Karte nicht anzeigen"
-
-#: ../index.php:36
-msgid "Lookup"
-msgstr "Analysieren"
-
-#: ../index.php:41
-msgid "Search for relations"
-msgstr "Relationen suchen"
-
-#: ../index.php:55
-msgid "ID"
-msgstr "ID"
-
-#: ../index.php:61
-#: ../index.php:78
-msgid "Open"
-msgstr "Öffnen"
-
-#: ../index.php:78
-msgid "No map"
-msgstr "Ohne Karte"
-
-#: ../index.php:96
-msgid "Key"
-msgstr "Schlüssel"
-
-#: ../index.php:103
-msgid "Value"
-msgstr "Wert"
-
-#: ../index.php:106
-msgid "Search using OSM API"
-msgstr "Mit der OSM-API suchen"
-
-#: ../index.php:107
-msgid "Search using XAPI"
-msgstr "Mit der XAPI suchen"
-
-#: ../index.php:108
-msgid "OSM API will probably be more current and a lot faster but won’t let you use wildcards."
-msgstr "Die OSM-API ist normalerweise aktueller und deutlich schneller, aber man kann keine Wildcards verwenden."
-
+#~ msgid "Error during API request: "
+#~ msgstr "Fehler bei einer API-Anfrage:"
+#~ msgid "400 Bad Request"
+#~ msgstr "400 Bad Request"
+#~ msgid "401 Unauthorized"
+#~ msgstr "401 Unauthorized"
+#~ msgid "404 Not Found"
+#~ msgstr "404 Not Found"
+#~ msgid "405 Method Not Allowed"
+#~ msgstr "405 Method Not Allowed"
+#~ msgid "410 Gone"
+#~ msgstr "410 Gone"
+#~ msgid "412 Precondition Failed"
+#~ msgstr "412 Precondition Failed"
+#~ msgid "500 Internal Server Error"
+#~ msgstr "500 Internal Server Error"
+#~ msgid "503 Service Unavailable"
+#~ msgstr "503 Service Unavailable"
+#~ msgid "Unknown error code %s"
+#~ msgstr "Unbekannter Fehlercode %s"
+#~ msgid "API call was %s."
+#~ msgstr "Die Anfrage war %s."
+#~ msgid "Could not connect to the API server."
+#~ msgstr "Konnte nicht mit dem API-Server verbinden."
+#~ msgid "The OSM server sent no data."
+#~ msgstr "Der OSM-Server hat nichts gesendet."
+#~ msgid "This element could not be found."
+#~ msgstr "Dieses Objekt wurde nicht gefunden."
+#~ msgid "OSM Route Manager"
+#~ msgstr "OSM-Routen-Manager"
+#~ msgid "OSM Route Manager: %s"
+#~ msgstr "OSM-Routen-Manager: %s"
+#~ msgid "Search using XAPI"
+#~ msgstr "Mit der XAPI suchen"
+#~ msgid ""
+#~ "OSM API will probably be more current and a lot faster but won’t let you "
+#~ "use wildcards."
+#~ msgstr ""
+#~ "Die OSM-API ist normalerweise aktueller und deutlich schneller, aber man "
+#~ "kann keine Wildcards verwenden."
 #~ msgid "Longitude"
 #~ msgstr "Östl. Länge"
 #~ msgid "Latitude"
