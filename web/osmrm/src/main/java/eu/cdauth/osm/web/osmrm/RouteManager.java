@@ -147,6 +147,21 @@ public class RouteManager
 		waysEnds1 = null;
 		waysEnds2 = null;
 
+		if(endsIndexes.isEmpty())
+		{ // If the relation is a closed circle, break it up somewhere
+			endsIndexes.add(0);
+			int other = waysConnections1[0].get(0);
+			waysConnections1[0].clear();
+			if(other != 0)
+			{
+				endsIndexes.add(other);
+				if(waysConnections1[other].get(0) == 0)
+					waysConnections1[other].clear();
+				else
+					waysConnections2[other].clear();
+			}
+		}
+
 		if(sm_logger.isLoggable(Level.FINE))
 		{
 			sm_logger.fine("Took "+(System.currentTimeMillis()-startTime)+" ms to get way connections.");
