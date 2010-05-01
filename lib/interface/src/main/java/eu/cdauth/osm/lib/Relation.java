@@ -32,16 +32,36 @@ public interface Relation extends GeographicalItem, VersionedItem
 	 * Every object is unique in the returned list, objects being member multiple times or in multiple sub-relations
 	 * are only added once. Thus circular relation memberships will not break the functionality of this method.
 	 * @param a_date Use the version of this relation at a specified date, null to use the current version.
-	 * @return
-	 * @throws APIError
+	 * @return A list of all members and sub-members of this relation.
+	 * @throws APIError There was an error communicating with the API.
 	 */
 	public GeographicalItem[] getMembersRecursive(Date a_date) throws APIError;
-	
+
+	/**
+	 * Like {@link #getMembersRecursive(Date)}, but returns only {@link Node}s.
+	 * @see #getMembersRecursive(Date)
+	 */
 	public Node[] getNodesRecursive(Date a_date) throws APIError;
-	
+
+	/**
+	 * Like {@link #getMembersRecursive(Date)}, but returns only {@link Way}s.
+	 * @see #getMembersRecursive(Date)
+	 */
 	public Way[] getWaysRecursive(Date a_date) throws APIError;
-	
+
+	/**
+	 * Like {@link #getMembersRecursive(Date)}, but returns only {@link Relation}s.
+	 * @see #getMembersRecursive(Date)
+	 */
 	public Relation[] getRelationsRecursive(Date a_date) throws APIError;
-	
+
+	/**
+	 * Returns all segments that this relation and all its sub-relations contained at the given date.
+	 * Actually returns the ways from {@link #getWaysRecursive} converted to segments and the nodes
+	 * from {@link #getNodesRecursive} (as segments with two identical points).
+	 * @param a_date The date to use or null for the current version of the relation.
+	 * @return A list of all segments contained in the relation.
+	 * @throws APIError There was an error communicating with the API.
+	 */
 	public Segment[] getSegmentsRecursive(Date a_date) throws APIError;
 }

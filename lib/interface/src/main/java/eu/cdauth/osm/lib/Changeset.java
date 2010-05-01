@@ -29,7 +29,7 @@ public interface Changeset extends Item
 	/**
 	 * An osmChange file knows these types of changes.
 	 */
-	public static enum ChangeType { create, modify, delete };
+	public static enum ChangeType { create, modify, delete }
 
 	/**
 	 * Returns the date when this Changeset was created.

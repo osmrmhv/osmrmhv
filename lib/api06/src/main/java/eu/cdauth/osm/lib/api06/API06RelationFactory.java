@@ -21,16 +21,10 @@
 
 package eu.cdauth.osm.lib.api06;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-
 import eu.cdauth.osm.lib.*;
-import eu.cdauth.osm.lib.GeographicalItem;
+
+import java.util.Arrays;
+import java.util.HashSet;
 
 public class API06RelationFactory extends API06GeographicalItemFactory<Relation> implements RelationFactory
 {
@@ -43,10 +37,9 @@ public class API06RelationFactory extends API06GeographicalItemFactory<Relation>
 	
 	/**
 	 * Ensures that all members of the relation are downloaded and cached. This saves a lot of time when accessing them with fetch(), as fetch() makes an API call for each uncached item whereas this method can download all members at once.
-	 * @param a_id
-	 * @throws APIError
+	 * @param a_id The ID of the relation to download.
+	 * @throws APIError There was an error communicating with the API
 	 */
-	
 	public void downloadFull(ID a_id) throws APIError
 	{
 		VersionedItemCache<Node> nodeCache = getAPI().getNodeFactory().getCache();
@@ -97,8 +90,8 @@ public class API06RelationFactory extends API06GeographicalItemFactory<Relation>
 	/**
 	 * Downloads all members of this relation and its sub-relations. Acts like a full download, but recursive. The number of API requests is optimised for the case of many sub-relations: as many relations as possible are downloaded in each API request, all ways and all nodes are downloaded in one additional request for both.
 	 * As the OSM API seems to be optimised for full fetches and takes quite a time to respond to the Way and Node request, this function may save requests but not time (at least with the current speed of the API).
-	 * @param a_id
-	 * @throws APIError
+	 * @param a_id The relation ID to download
+	 * @throws APIError There was an error communicating with the API
 	 */
 	
 	public void downloadRecursive(ID a_id) throws APIError
@@ -137,7 +130,7 @@ public class API06RelationFactory extends API06GeographicalItemFactory<Relation>
 					downloadFull(one);
 			}
 			else if(downloadRelations.size() > 1)
-				fetch(downloadRelations.toArray(new ID[0]));
+				fetch(downloadRelations.toArray(new ID[downloadRelations.size()]));
 			
 			containedRelations.addAll(downloadRelations);
 			checkRelations = downloadRelations;
@@ -145,15 +138,12 @@ public class API06RelationFactory extends API06GeographicalItemFactory<Relation>
 		}
 		
 		WayFactory wayFactory = getAPI().getWayFactory();
-		wayFactory.fetch(downloadWays.toArray(new ID[0]));
+		wayFactory.fetch(downloadWays.toArray(new ID[downloadWays.size()]));
 		
 		for(ID id : downloadWays)
-		{
-			for(ID nodeID : wayFactory.fetch(id).getMembers())
-				downloadNodes.add(nodeID);
-		}
+			downloadNodes.addAll(Arrays.asList(wayFactory.fetch(id).getMembers()));
 		
 		NodeFactory nodeFactory = getAPI().getNodeFactory();
-		nodeFactory.fetch(downloadNodes.toArray(new ID[0]));
+		nodeFactory.fetch(downloadNodes.toArray(new ID[downloadNodes.size()]));
 	}
 }

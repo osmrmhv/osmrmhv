@@ -101,6 +101,7 @@ abstract public class GUI
 						try {
 							Thread.sleep(60000);
 						} catch(InterruptedException e) {
+							break;
 						}
 						try {
 							ItemCache.cleanUpAll();
@@ -324,7 +325,7 @@ abstract public class GUI
 			else if(c == '\r')
 				ret.append("\\r");
 			else if(c <= 0x1f || c >= 0x7f)
-				ret.append("\\u"+String.format("%04x", c));
+				ret.append("\\u").append(String.format("%04x", (long)c));
 			else
 				ret.append(c);
 		}

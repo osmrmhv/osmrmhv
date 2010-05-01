@@ -81,10 +81,7 @@ abstract public class API06ItemFactory<T extends Item> implements ItemFactory<T>
 		{
 			T cached = getCache().getObject(id);
 			if(cached == null)
-			{
 				toFetch.add(id);
-				continue;
-			}
 			else
 			{
 				if(cached instanceof API06XMLObject)
@@ -95,11 +92,11 @@ abstract public class API06ItemFactory<T extends Item> implements ItemFactory<T>
 		
 		if(toFetch.size() > 0)
 		{
-			Item[] fetched = getAPI().get(makeFetchURL(toFetch.toArray(new ID[0])));
-			for(int i=0; i<fetched.length; i++)
+			Item[] fetched = getAPI().get(makeFetchURL(toFetch.toArray(new ID[toFetch.size()])));
+			for(Item it : fetched)
 			{
-				ret.put(fetched[i].getID(), (T)fetched[i]);
-				getCache().cacheObject((T)fetched[i]);
+				ret.put(it.getID(), (T)it);
+				getCache().cacheObject((T)it);
 			}
 		}
 		

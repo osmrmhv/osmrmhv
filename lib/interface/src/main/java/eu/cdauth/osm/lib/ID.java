@@ -68,12 +68,7 @@ public class ID implements Comparable<ID>, Externalizable
 			return false;
 		
 		ID other = (ID) a_other;
-		if(m_id == null && other.m_id == null)
-			return true;
-		else if(m_id != null && m_id.equals(other.m_id))
-			return true;
-		else
-			return false;
+		return (m_id == null && other.m_id == null) || (m_id != null && m_id.equals(other.m_id));
 	}
 	
 	@Override

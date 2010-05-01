@@ -71,7 +71,7 @@ abstract public class API06GeographicalItem extends API06Item implements Version
 		int c1 = super.compareTo(o);
 		if(c1 != 0 || !(o instanceof VersionedItem))
 			return c1;
-		return ((VersionedItem)this).getVersion().compareTo(((VersionedItem)o).getVersion());
+		return getVersion().compareTo(((VersionedItem)o).getVersion());
 	}
 	
 	@Override

@@ -24,6 +24,7 @@ package eu.cdauth.osm.lib.api06;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Set;
 
 import eu.cdauth.osm.lib.*;
 import org.w3c.dom.Element;
@@ -46,11 +47,7 @@ public class API06Relation extends API06GeographicalItem implements Relation
 		super(a_dom, a_api);
 	}
 
-	/**
-	 * Returns an array of all members of this relation.
-	 * @return
-	 */
-	
+	@Override
 	public API06RelationMember[] getMembers()
 	{
 		NodeList members = getDOM().getElementsByTagName("member");
@@ -67,7 +64,7 @@ public class API06Relation extends API06GeographicalItem implements Relation
 	 * @param a_members Set to null. Is filled with the result and passed along the recursive calls of this function.
 	 * @param a_ignoreRelations Set to null. Is passed along the recursive calls to processing a relation twice and thus produce an infinite loop.
 	 * @return A set of the members of this relation.
-	 * @throws APIError 
+	 * @throws APIError There was an error communicating with the API
 	 */
 	private HashSet<GeographicalItem> getMembersRecursive(Date a_date, HashSet<GeographicalItem> a_members, HashSet<ID> a_ignoreRelations) throws APIError
 	{
@@ -109,14 +106,11 @@ public class API06Relation extends API06GeographicalItem implements Relation
 	@Override
 	public GeographicalItem[] getMembersRecursive(Date a_date) throws APIError
 	{
-		return getMembersRecursive(a_date, null, null).toArray(new GeographicalItem[0]);
+		Set<GeographicalItem> ret = getMembersRecursive(a_date, null, null);
+		return ret.toArray(new GeographicalItem[ret.size()]);
 	}
-	
-	/**
-	 * Returns an array of all ways that are contained in this relation and all of its sub-relations. You may want to call downloadRecursive() first.
-	 * @return
-	 * @throws APIError
-	 */
+
+	@Override
 	public Way[] getWaysRecursive(Date a_date) throws APIError
 	{
 		HashSet<GeographicalItem> members = getMembersRecursive(a_date, null, null);
@@ -126,14 +120,9 @@ public class API06Relation extends API06GeographicalItem implements Relation
 			if(member instanceof Way)
 				ret.add((Way) member);
 		}
-		return ret.toArray(new Way[0]);
+		return ret.toArray(new Way[ret.size()]);
 	}
-	
-	/**
-	 * Returns an array of all nodes that are contained in this relation and all of its sub-relations. You may want to call downloadRecursive() first.
-	 * @return
-	 * @throws APIError 
-	 */
+
 	@Override
 	public Node[] getNodesRecursive(Date a_date) throws APIError
 	{
@@ -144,7 +133,7 @@ public class API06Relation extends API06GeographicalItem implements Relation
 			if(member instanceof Node)
 				ret.add((Node) member);
 		}
-		return ret.toArray(new Node[0]);
+		return ret.toArray(new Node[ret.size()]);
 	}
 	
 	public Relation[] getRelationsRecursive(Date a_date) throws APIError
@@ -156,7 +145,7 @@ public class API06Relation extends API06GeographicalItem implements Relation
 			if(member instanceof Relation)
 				ret.add((Relation) member);
 		}
-		return ret.toArray(new Relation[0]);
+		return ret.toArray(new Relation[ret.size()]);
 	}
 
 	@Override
@@ -165,22 +154,22 @@ public class API06Relation extends API06GeographicalItem implements Relation
 		HashSet<Segment> ret = new HashSet<Segment>();
 
 		Node[] nodes = getNodesRecursive(a_date);
-		for(int i=0; i<nodes.length; i++)
-			ret.add(new Segment(nodes[i], nodes[i]));
+		for(Node node : nodes)
+			ret.add(new Segment(node, node));
 		
 		Way[] ways = getWaysRecursive(a_date);
-		for(int i=0; i<ways.length; i++)
+		for(Way way : ways)
 		{
-			Node[] members = ways[i].getMemberNodes(a_date);
+			Node[] members = way.getMemberNodes(a_date);
 			Node lastNode = null;
-			for(int j=0; j<members.length; j++)
+			for(Node member : members)
 			{
 				if(lastNode != null)
-					ret.add(new Segment(lastNode, members[j]));
-				lastNode = members[j];
+					ret.add(new Segment(lastNode, member));
+				lastNode = member;
 			}
 		}
 		
-		return ret.toArray(new Segment[0]);
+		return ret.toArray(new Segment[ret.size()]);
 	}
 }

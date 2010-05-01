@@ -65,16 +65,11 @@ public class Version implements Comparable<Version>, Externalizable
 	@Override
 	public boolean equals(java.lang.Object a_other)
 	{
-		if(!(a_other instanceof ID))
+		if(!(a_other instanceof Version))
 			return false;
 		
 		Version other = (Version) a_other;
-		if(m_version == null && other.m_version == null)
-			return true;
-		else if(m_version != null && m_version.equals(other.m_version))
-			return true;
-		else
-			return false;
+		return (m_version == null && other.m_version == null) || (m_version != null && m_version.equals(other.m_version));
 	}
 	
 	@Override

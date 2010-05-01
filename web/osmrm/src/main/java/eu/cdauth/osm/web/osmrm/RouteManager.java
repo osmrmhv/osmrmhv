@@ -22,6 +22,7 @@ package eu.cdauth.osm.web.osmrm;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,7 +39,9 @@ public class RouteManager
 	/**
 	 * Makes segments out of the ways of this relation and its sub-relations. The return value is an array of segments. The segments consist of a list of coordinates that are connected via ways. The relation structure is irrelevant for the segmentation; a segment ends where a way is connected to two or more ways where it is not connected to any way. 
 	 * The segments are sorted from north to south or from west to east (depending in which direction the two most distant ends have the greater distance from each other). The sort algorithm sorts using the smaller distance of the two ends of a segment to the northern/western one of the the two most distant points.
-	 * @throws APIError
+	 * @param a_relation The relation to analyse.
+	 * @return The segments of this relation.
+	 * @throws APIError There was an error talking to the API
 	 */
 	
 	public static RelationSegment[] segmentate(Relation a_relation) throws APIError
@@ -76,7 +79,7 @@ public class RouteManager
 			startTime = System.currentTimeMillis();
 		}
 		
-		Way[] ways = waysList.toArray(new Way[0]);
+		Way[] ways = waysList.toArray(new Way[waysList.size()]);
 		waysList = null;
 		
 		// Get the first and last node of the ways
@@ -245,7 +248,10 @@ public class RouteManager
 		segmentsWays = null;
 		RelationSegment[] segmentsNodes = new RelationSegment[segmentsNodesV.size()];
 		for(int i=0; i<segmentsNodesV.size(); i++)
-			segmentsNodes[i] = new RelationSegment(segmentsNodesV.get(i).toArray(new LonLat[0]));
+		{
+			List<LonLat> nodes = segmentsNodesV.get(i);
+			segmentsNodes[i] = new RelationSegment(nodes.toArray(new LonLat[nodes.size()]));
+		}
 		segmentsNodesV = null;
 
 		if(sm_logger.isLoggable(Level.FINE))
@@ -279,7 +285,7 @@ public class RouteManager
 				endsCoordinatesV.add(segmentsNodes[i].getEnd2());
 		}
 		
-		LonLat[] endsCoordinates = endsCoordinatesV.toArray(new LonLat[0]);
+		LonLat[] endsCoordinates = endsCoordinatesV.toArray(new LonLat[endsCoordinatesV.size()]);
 		endsCoordinatesV = null;
 		LonLat[] greatestDistancePoints = new LonLat[2];
 		double greatestDistance = -1;

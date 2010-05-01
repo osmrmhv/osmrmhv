@@ -32,7 +32,15 @@ import eu.cdauth.osm.lib.Way;
 
 public class API06RelationMember extends API06XMLObject implements RelationMember
 {
-	private final Relation m_relation;
+	private Relation m_relation; // Not final because of serialization
+
+	/**
+	 * Only used for serialization.
+	 */
+	@Deprecated
+	public API06RelationMember()
+	{
+	}
 	
 	protected API06RelationMember(Element a_dom, API06API a_api, Relation a_relation)
 	{

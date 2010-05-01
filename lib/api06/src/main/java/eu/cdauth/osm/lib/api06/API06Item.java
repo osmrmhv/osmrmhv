@@ -84,11 +84,6 @@ abstract public class API06Item extends API06XMLObject implements Item
 		return new ID(getDOM().getAttribute("id"));
 	}
 	
-	/**
-	 * Returns the value of a tag on this object. If the tag is not set, an empty string is returned. If the tag is set multiple times (should not be possible in API 0.6), the values are joined using a comma.
-	 * @param a_tagname
-	 * @return
-	 */
 	@Override
 	public String getTag(String a_tagname)
 	{
@@ -96,10 +91,6 @@ abstract public class API06Item extends API06XMLObject implements Item
 		return ret == null ? "" : ret;
 	}
 	
-	/**
-	 * Returns a Hashtable of all tags set on this Item.
-	 * @return
-	 */
 	@Override
 	public Map<String,String> getTags()
 	{

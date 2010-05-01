@@ -49,7 +49,7 @@ public class API06Way extends API06GeographicalItem implements Way
 	
 	/**
 	 * Returns an array of the IDs of all nodes that are part of this way.
-	 * @return
+	 * @return An array of the IDs of the member nodes
 	 */
 	@Override
 	public ID[] getMembers()

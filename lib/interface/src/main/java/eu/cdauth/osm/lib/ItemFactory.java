@@ -20,7 +20,7 @@ public interface ItemFactory<T extends Item>
 	 * Fetches multiple objects from the API at once.
 	 * @param a_ids The list of IDs to fetch objects for.
 	 * @return A map that contains the IDs from a_ids as keys and the fetched objects as values.
-	 * @throws APIError At least one object could not be fetched.
+	 * @throws APIError At least one object could not be fetched, perhaps because none with the specified ID existed.
 	 */
 	public Map<ID,T> fetch(ID[] a_ids) throws APIError;
 	
@@ -28,7 +28,7 @@ public interface ItemFactory<T extends Item>
 	 * Fetches a single object from the API.
 	 * @param a_id The ID of the object to fetch.
 	 * @return The object with the specified ID.
-	 * @throws APIError The object could not be fetched.
+	 * @throws APIError The object could not be fetched, perhaps none with the specified ID existed.
 	 */
 	public T fetch(ID a_id) throws APIError;
 

@@ -50,6 +50,7 @@ abstract public class API06XMLObject implements Externalizable
 	
 	/**
 	 * @param a_dom The DOM element.
+	 * @param a_api The API that creates this object.
 	*/
 
 	protected API06XMLObject(Element a_dom, API06API a_api)

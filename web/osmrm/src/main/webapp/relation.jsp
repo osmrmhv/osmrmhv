@@ -28,7 +28,7 @@
 <%
 	if(request.getParameter("id") == null)
 	{
-		response.setStatus(response.SC_MOVED_PERMANENTLY);
+		response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
 		URL thisUrl = new URL(request.getRequestURL().toString());
 		response.setHeader("Location", new URL(thisUrl.getProtocol(), thisUrl.getHost(), thisUrl.getPort(), request.getContextPath()).toString());
 		return;
@@ -338,7 +338,7 @@
 
 	map.addLayer(new OpenLayers.Layer.OpenStreetBugs("OpenStreetBugs", { visibility: false, shortName: "osb" }));
 
-	window.onresize = function(){ document.getElementById("map").style.height = Math.round(window.innerHeight*.8)+"px"; map.updateSize(); }
+	window.onresize = function(){ document.getElementById("map").style.height = Math.round(window.innerHeight*.8)+"px"; map.updateSize(); };
 	window.onresize();
 
 	var styleMapNormal = new OpenLayers.StyleMap({strokeColor: "#0000ff", strokeWidth: 3, strokeOpacity: 0.5});
@@ -440,8 +440,8 @@
 
 		var li = document.createElement("li");
 		li.id = "pr-stack-"+(pr_stack.length-1);
-		li.onmouseover = function(){highlightSegment(i);}
-		li.onmouseout = function(){unhighlightSegment(i);}
+		li.onmouseover = function(){highlightSegment(i);};
+		li.onmouseout = function(){unhighlightSegment(i);};
 		li.appendChild(document.createTextNode((pr_stack.length >= 2 && pr_stack[pr_stack.length-2][0] == i) ? "<%=String.format(gui._("Segment %s (reversed)"), "\"+(i+1)+\"")%>" : "<%=String.format(gui._("Segment %s"), "\"+(i+1)+\"")%>"));
 		document.getElementById("personal-route").appendChild(li);
 

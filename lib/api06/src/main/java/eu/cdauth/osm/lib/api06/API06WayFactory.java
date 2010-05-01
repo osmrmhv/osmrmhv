@@ -39,8 +39,8 @@ public class API06WayFactory extends API06GeographicalItemFactory<Way> implement
 	
 	/**
 	 * Ensures that all nodes of the way are downloaded and cached. This saves a lot of time when accessing them with fetch(), as fetch() makes an API call for each uncached item whereas this method can download all members at once.
-	 * @param a_id
-	 * @throws APIError
+	 * @param a_id The ID of the way to download
+	 * @throws APIError There was an error communicating with the API
 	 */
 	protected void downloadFull(ID a_id) throws APIError
 	{

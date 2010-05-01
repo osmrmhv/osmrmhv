@@ -41,7 +41,7 @@ public class RelationSegment implements Comparable<RelationSegment>
 	
 	private Double getReferenceDistance()
 	{
-		return new Double(Math.min(m_nodes[0].getDistance(sm_sortingReference), m_nodes[m_nodes.length-1].getDistance(sm_sortingReference)));
+		return Math.min(m_nodes[0].getDistance(sm_sortingReference), m_nodes[m_nodes.length-1].getDistance(sm_sortingReference));
 	}
 	
 	public synchronized static void setSortingReference(LonLat m_sortingReference)

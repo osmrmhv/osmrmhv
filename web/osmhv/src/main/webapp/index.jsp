@@ -33,7 +33,7 @@
 
 	gui.head();
 %>
-<form action="changeset.jsp" metdod="get" id="changeset-form">
+<form action="changeset.jsp" method="get" id="changeset-form">
 	<fieldset>
 		<legend><%=htmlspecialchars(gui._("Visualise changeset"))%></legend>
 		<dl>
@@ -87,7 +87,7 @@
 					<td><%=htmlspecialchars(result.getTag("network"))%></td>
 					<td><%=htmlspecialchars(result.getTag("ref"))%></td>
 					<td><%=htmlspecialchars(result.getTag("name"))%></td>
-					<td><a href="blame.jsp?id=<%=htmlspecialchars(urlencode(result.getID().toString()))%>"><%=htmlspecialchars(gui._("Open"))%></a> (<a href="relation.jsp?id=<%=htmlspecialchars(urlencode(result.getID().toString())+"&norender=on")%>"><%=htmlspecialchars(gui._("No map"))%></a>)</td>
+					<td><a href="blame.jsp?id=<%=htmlspecialchars(urlencode(result.getID().toString()))%>"><%=htmlspecialchars(gui._("Open"))%></a> (<a href="blame.jsp?id=<%=htmlspecialchars(urlencode(result.getID().toString())+"&norender=on")%>"><%=htmlspecialchars(gui._("No map"))%></a>)</td>
 				</tr>
 <%
 			}
@@ -108,9 +108,9 @@
 		<dl>
 			<dt><label for="i-search-key"><%=htmlspecialchars(gui._("Key"))%></label></dt>
 			<dd><select id="i-search-key" name="search-key">
-				<option name="name"<% if("name".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>name</option>
-				<option name="ref"<% if("ref".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>ref</option>
-				<option name="operator"<% if("operator".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>operator</option>
+				<option value="name"<% if("name".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>name</option>
+				<option value="ref"<% if("ref".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>ref</option>
+				<option value="operator"<% if("operator".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>operator</option>
 			</select></dd>
 
 			<dt><label for="i-search-value"><%=htmlspecialchars(gui._("Value"))%></label></dt>

@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -220,7 +221,8 @@ public class API06API implements API
 
 	protected Item[] get(String a_url) throws APIError
 	{
-		return makeObjects(fetch(a_url)).toArray(new Item[0]);
+		List<Item> ret = makeObjects(fetch(a_url));
+		return ret.toArray(new Item[ret.size()]);
 	}
 
 	private transient API06ChangesetFactory m_changesetFactory = null;

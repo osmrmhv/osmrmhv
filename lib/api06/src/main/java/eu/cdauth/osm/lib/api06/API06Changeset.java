@@ -21,25 +21,15 @@
 
 package eu.cdauth.osm.lib.api06;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import eu.cdauth.osm.lib.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import eu.cdauth.osm.lib.Item;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.Map;
 
 public class API06Changeset extends API06Item implements Changeset
 {
@@ -98,7 +88,7 @@ public class API06Changeset extends API06Item implements Changeset
 	/**
 	 * Returns an array of all objects that are part of one ChangeType of this changeset. The returned values are
 	 * clean of double entries, see fixMemberObjects().
-	 * @param a_type
+	 * @param a_type The ChangeType to return.
 	 * @return For created and modified objects, their new version. For deleted objects, their old version. 
 	 * @throws APIError 
 	 */
@@ -113,20 +103,20 @@ public class API06Changeset extends API06Item implements Changeset
 	/**
 	 * Returns an array of all objects that are part of one ChangeType of this changeset. The returned values are
 	 * _not_ clean of double entries.
-	 * @param a_type
-	 * @return
-	 * @throws APIError 
+	 * @param a_type The ChangeType to return.
+	 * @return An array of all objects with the ChangeType
+	 * @throws APIError There was an error communicating with the API
 	 */
 	private VersionedItem[] getMemberObjectsUnfixed(ChangeType a_type) throws APIError
 	{
 		if(m_uncleanedDom == null)
 			m_uncleanedDom = getAPI().fetch("/changeset/"+getID()+"/download");
-		
+
 		ArrayList<Item> ret = new ArrayList<Item>();
 		NodeList nodes = m_uncleanedDom.getElementsByTagName(a_type.toString());
 		for(int i=0; i<nodes.getLength(); i++)
 			ret.addAll(getAPI().makeObjects((Element) nodes.item(i)));
-		VersionedItem[] retArr = ret.toArray(new VersionedItem[0]);
+		VersionedItem[] retArr = ret.toArray(new VersionedItem[ret.size()]);
 		for(VersionedItem object : retArr)
 		{
 			if(object instanceof Node)
@@ -149,7 +139,7 @@ public class API06Changeset extends API06Item implements Changeset
 	 * 2. If an object has been created and later modified in one changeset, move the newest modification to the “create” block
 	 * 3. If an object has been modified and later removed in one changeset, remove the part from the “modify” block
 	 * 4. If an object has been created and later removed in one changset, remove it from both the “create” and the “delete” part
-	 * @throws APIError 
+	 * @throws APIError There was an error communicating with the API
 	 */
 	private void fixMemberObjects() throws APIError
 	{
@@ -178,20 +168,19 @@ public class API06Changeset extends API06Item implements Changeset
 				id += 2;
 			else if(it instanceof Relation)
 				id += 3;
-			Long idObj = new Long(id);
 			
 			// If an object has been created and then modified in one changeset, move the modified one to the “create” block
-			if(created.containsKey(idObj) && it.getVersion().compareTo(created.get(idObj).getVersion()) > 0)
+			if(created.containsKey(id) && it.getVersion().compareTo(created.get(id).getVersion()) > 0)
 			{
-				created.put(idObj, it);
+				created.put(id, it);
 				continue;
 			}
 
 			// If an object has been modified multiple times in one changeset, only keep the newest one
-			if(modified.containsKey(idObj) && it.getVersion().compareTo(modified.get(idObj).getVersion()) <= 0)
+			if(modified.containsKey(id) && it.getVersion().compareTo(modified.get(id).getVersion()) <= 0)
 				continue;
 			
-			modified.put(idObj, it);
+			modified.put(id, it);
 		}
 		
 		for(VersionedItem it : getMemberObjectsUnfixed(ChangeType.delete))
@@ -203,26 +192,25 @@ public class API06Changeset extends API06Item implements Changeset
 				id += 2;
 			else if(it instanceof Relation)
 				id += 3;
-			Long idObj = new Long(id);
 			
 			// If an object has been modified and then deleted in one changeset, remove it from the “modify” block
-			if(modified.containsKey(idObj))
-				modified.remove(idObj);
+			if(modified.containsKey(id))
+				modified.remove(id);
 			
 			// If an object has been created and then deleted in one changeset, remove it from both blocks
-			if(created.containsKey(idObj))
+			if(created.containsKey(id))
 			{
-				created.remove(idObj);
+				created.remove(id);
 				continue;
 			}
 
-			deleted.put(new Long(id), it);
+			deleted.put(id, it);
 		}
 		
 		Hashtable<ChangeType, VersionedItem[]> ret = new Hashtable<ChangeType, VersionedItem[]>();
-		ret.put(ChangeType.create, created.values().toArray(new VersionedItem[0]));
-		ret.put(ChangeType.modify, modified.values().toArray(new VersionedItem[0]));
-		ret.put(ChangeType.delete, deleted.values().toArray(new VersionedItem[0]));
+		ret.put(ChangeType.create, created.values().toArray(new VersionedItem[created.size()]));
+		ret.put(ChangeType.modify, modified.values().toArray(new VersionedItem[modified.size()]));
+		ret.put(ChangeType.delete, deleted.values().toArray(new VersionedItem[deleted.size()]));
 		
 		m_content = ret;
 	}
@@ -232,24 +220,24 @@ public class API06Changeset extends API06Item implements Changeset
 	{
 		VersionedItem[] newVersions = getMemberObjects(ChangeType.modify);
 		Hashtable<VersionedItem, VersionedItem> ret = new Hashtable<VersionedItem, VersionedItem>();
-		for(int i=0; i<newVersions.length; i++)
+		for(VersionedItem newVersion : newVersions)
 		{
 			VersionedItem last = null;
-			long version = newVersions[i].getVersion().asLong()-1;
+			long version = newVersion.getVersion().asLong()-1;
 			do
 			{
-				if(newVersions[i] instanceof Node)
-					last = getAPI().getNodeFactory().fetch(newVersions[i].getID(), new Version(version));
-				else if(newVersions[i] instanceof Way)
-					last = getAPI().getWayFactory().fetch(newVersions[i].getID(), new Version(version));
-				else if(newVersions[i] instanceof Relation)
-					last = getAPI().getRelationFactory().fetch(newVersions[i].getID(), new Version(version));
+				if(newVersion instanceof Node)
+					last = getAPI().getNodeFactory().fetch(newVersion.getID(), new Version(version));
+				else if(newVersion instanceof Way)
+					last = getAPI().getWayFactory().fetch(newVersion.getID(), new Version(version));
+				else if(newVersion instanceof Relation)
+					last = getAPI().getRelationFactory().fetch(newVersion.getID(), new Version(version));
 				version--;
 			}
 			while(last.getChangeset().equals(getID()) && version >= 1);
 
-			if(last != null && (!a_onlyWithTagChanges || !last.getTags().equals(newVersions[i].getTags())))
-				ret.put(newVersions[i], last);
+			if(last != null && (!a_onlyWithTagChanges || !last.getTags().equals(newVersion.getTags())))
+				ret.put(newVersion, last);
 		}
 		return ret;
 	}

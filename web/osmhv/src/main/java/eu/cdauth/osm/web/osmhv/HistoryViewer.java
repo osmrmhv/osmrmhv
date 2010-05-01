@@ -20,11 +20,6 @@
 package eu.cdauth.osm.web.osmhv;
 
 import eu.cdauth.osm.lib.*;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -66,8 +61,8 @@ public class HistoryViewer
 
 		while(true)
 		{
-			Relation mainRelation = null;
-			Relation mainRelationOlder = null;
+			Relation mainRelation;
+			Relation mainRelationOlder;
 
 			if(nextDate == null)
 			{ // First run
@@ -94,9 +89,9 @@ public class HistoryViewer
 			}
 
 			Node[] nodeMembers = mainRelation.getNodesRecursive(currentDate);
-			for(int i=0; i<nodeMembers.length; i++)
+			for(Node nodeMember : nodeMembers)
 			{
-				NavigableMap<Version,Node> nodeHistory = nodeFactory.fetchHistory(nodeMembers[i].getID());
+				NavigableMap<Version,Node> nodeHistory = nodeFactory.fetchHistory(nodeMember.getID());
 				for(Node node : nodeHistory.values())
 				{
 					Date nodeDate = node.getTimestamp();
@@ -109,9 +104,9 @@ public class HistoryViewer
 			}
 
 			Way[] wayMembers = mainRelation.getWaysRecursive(currentDate);
-			for(int i=0; i<wayMembers.length; i++)
+			for(Way wayMember : wayMembers)
 			{
-				NavigableMap<Version,Way> wayHistory = wayFactory.fetchHistory(wayMembers[i].getID());
+				NavigableMap<Version,Way> wayHistory = wayFactory.fetchHistory(wayMember.getID());
 				for(Way way : wayHistory.values())
 				{
 					Date wayDate = way.getTimestamp();
@@ -124,9 +119,9 @@ public class HistoryViewer
 			}
 
 			Relation[] relationMembers = mainRelation.getRelationsRecursive(currentDate);
-			for(int i=0; i<relationMembers.length; i++)
+			for(Relation relationMember : relationMembers)
 			{
-				NavigableMap<Version,Relation> relationHistory = relationFactory.fetchHistory(relationMembers[i].getID());
+				NavigableMap<Version,Relation> relationHistory = relationFactory.fetchHistory(relationMember.getID());
 				for(Relation relation : relationHistory.values())
 				{
 					Date relationDate = relation.getTimestamp();
@@ -169,16 +164,14 @@ public class HistoryViewer
 	 *   be it by changing their tags or by changing another part of the way they belong to.
 	 * Nodes that have been changed will be represented by a Segment consisting of two
 	 * equal Nodes.
+	 * @param a_api The API to use to fetch the previous versions.
+	 * @param a_changeset The changeset to analyse.
 	 * @return An array of three Segment arrays. The first one is the removed segments,
 	 * the second one the created and the third one the unchanged ones.
-	 * @throws java.io.IOException
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws APIError
-	 * @throws java.text.ParseException
+	 * @throws APIError The API threw an error.
 	 */
 
-	public static Changes getNodeChanges(API a_api, Changeset a_changeset) throws IOException, SAXException, ParserConfigurationException, APIError, ParseException
+	public static Changes getNodeChanges(API a_api, Changeset a_changeset) throws APIError
 	{
 		Map<VersionedItem, VersionedItem> old = a_changeset.getPreviousVersions(false);
 
@@ -215,21 +208,19 @@ public class HistoryViewer
 		}
 
 		Hashtable<Way,List<ID>> containedWays = new Hashtable<Way,List<ID>>();
-		Hashtable<ID,Way> previousWays = new Hashtable<ID,Way>();
 		for(VersionedItem obj : a_changeset.getMemberObjects(Changeset.ChangeType.modify))
 		{
 			if(!(obj instanceof Way))
 				continue;
 			Way way = (Way) obj;
 			containedWays.put(way, Arrays.asList(way.getMembers()));
-			previousWays.put(way.getID(), (Way)old.get(way));
 		}
 
 		// If only one node is moved in a changeset, that node might be a member of one or more
 		// ways and thus change these. As there is no real way to find out the parent ways
 		// of a node at the time of the changeset, we have to guess them.
 		Date changesetDate = a_changeset.getCreationDate();
-		changesetDate.setTime(changesetDate.getTime()-1000);;
+		changesetDate.setTime(changesetDate.getTime()-1000);
 
 		Hashtable<ID,Way> waysChanged = new Hashtable<ID,Way>();
 		for(Node node : nodesChanged.values())
@@ -277,7 +268,7 @@ public class HistoryViewer
 			Node lastNode = null;
 			for(ID id : ((Way)obj).getMembers())
 			{
-				Node thisNode = null;
+				Node thisNode;
 				if(nodesAdded.containsKey(id))
 					thisNode = nodesAdded.get(id);
 				else
@@ -300,7 +291,7 @@ public class HistoryViewer
 			Node lastNode = null;
 			for(ID id : ((Way)obj).getMembers())
 			{
-				Node thisNode = null;
+				Node thisNode;
 				if(nodesRemoved.containsKey(id))
 					thisNode = nodesRemoved.get(id);
 				else
@@ -322,9 +313,9 @@ public class HistoryViewer
 				continue;
 
 			Node lastNode = null;
-			for(ID id : ((Way)old.get(obj)).getMembers())
+			for(ID id : ((Way)old.get((Way)obj)).getMembers())
 			{
-				Node thisNode = null;
+				Node thisNode;
 				if(nodesRemoved.containsKey(id))
 					thisNode = nodesRemoved.get(id);
 				else
@@ -342,7 +333,7 @@ public class HistoryViewer
 			lastNode = null;
 			for(ID id : ((Way)obj).getMembers())
 			{
-				Node thisNode = null;
+				Node thisNode;
 				if(nodesAdded.containsKey(id))
 					thisNode = nodesAdded.get(id);
 				else
@@ -404,6 +395,6 @@ public class HistoryViewer
 		segmentsOld.removeAll(segmentsUnchanged);
 		segmentsNew.removeAll(segmentsUnchanged);
 
-		return new Changes(segmentsOld.toArray(new Segment[0]), segmentsNew.toArray(new Segment[0]), segmentsUnchanged.toArray(new Segment[0]));
+		return new Changes(segmentsOld.toArray(new Segment[segmentsOld.size()]), segmentsNew.toArray(new Segment[segmentsNew.size()]), segmentsUnchanged.toArray(new Segment[segmentsUnchanged.size()]));
 	}
 }

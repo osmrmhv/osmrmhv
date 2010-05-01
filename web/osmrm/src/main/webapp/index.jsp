@@ -102,9 +102,9 @@
 		<dl>
 			<dt><label for="i-search-key"><%=htmlspecialchars(gui._("Key"))%></label></dt>
 			<dd><select id="i-search-key" name="search-key">
-				<option name="name"<% if("name".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>name</option>
-				<option name="ref"<% if("ref".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>ref</option>
-				<option name="operator"<% if("operator".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>operator</option>
+				<option value="name"<% if("name".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>name</option>
+				<option value="ref"<% if("ref".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>ref</option>
+				<option value="operator"<% if("operator".equals(request.getParameter("search-key"))){%> selected="selected""<% }%>>operator</option>
 			</select></dd>
 
 			<dt><label for="i-search-value"><%=htmlspecialchars(gui._("Value"))%></label></dt>

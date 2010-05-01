@@ -20,9 +20,7 @@
 <%@page import="eu.cdauth.osm.web.osmhv.*"%>
 <%@page import="static eu.cdauth.osm.web.osmhv.GUI.*"%>
 <%@page import="java.util.*" %>
-<%@ page import="java.net.URL" %>
-<%@ page import="java.util.regex.Pattern" %>
-<%@ page import="java.util.regex.Matcher" %>
+<%@page import="java.net.URL" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	protected static final API api = GUI.getAPI();
@@ -30,7 +28,7 @@
 <%
 	if(request.getParameter("id") == null)
 	{
-		response.setStatus(response.SC_MOVED_PERMANENTLY);
+		response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
 		URL thisUrl = new URL(request.getRequestURL().toString());
 		response.setHeader("Location", new URL(thisUrl.getProtocol(), thisUrl.getHost(), thisUrl.getPort(), request.getContextPath()).toString());
 		return;
@@ -40,8 +38,7 @@
 
 	ID changesetID = new ID(request.getParameter("id").replace("^\\s*#?(.*)\\s*$", "$1"));
 
-	if(changesetID != null)
-		gui.setTitle(String.format(gui._("Changeset %s"), changesetID.toString()));
+	gui.setTitle(String.format(gui._("Changeset %s"), changesetID.toString()));
 	gui.setJavaScripts(new String[]{
 		"http://www.openlayers.org/api/OpenLayers.js",
 		"http://maps.google.com/maps?file=api&v=2&key=ABQIAAAApZR0PIISH23foUX8nxj4LxQe8fls808ouw55mfsb9VLPMfxZSBRAxMJl1CWns7WN__O20IuUSiDKng",
@@ -209,7 +206,7 @@
 	var map = new OpenLayers.Map.cdauth("map");
 	map.addAllAvailableLayers();
 
-	window.onresize = function(){ document.getElementById("map").style.height = Math.round(window.innerHeight*.9)+"px"; map.updateSize(); }
+	window.onresize = function(){ document.getElementById("map").style.height = Math.round(window.innerHeight*.9)+"px"; map.updateSize(); };
 	window.onresize();
 
 	var styleMapUnchanged = new OpenLayers.StyleMap({strokeColor: "#0000ff", strokeWidth: 3, strokeOpacity: 0.3});
