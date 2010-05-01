@@ -52,6 +52,7 @@
 
 	<properties>
 		<project.build.jspFixedDirectory>${project.build.directory}/jsp-fixed</project.build.jspFixedDirectory>
+		<jspPackage>jsp</jspPackage>
 	</properties>
 
 	<dependencies>
@@ -152,6 +153,7 @@
 						<sources>
 							<directory>${project.build.jspFixedDirectory}</directory>
 						</sources>
+						<packageName>${jspPackage}</packageName>
 					</configuration>
 					<dependencies>
 						<dependency>
