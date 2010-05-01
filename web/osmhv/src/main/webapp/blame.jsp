@@ -21,7 +21,6 @@
 <%@page import="static eu.cdauth.osm.web.osmhv.GUI.*"%>
 <%@page import="java.util.*" %>
 <%@page import="java.net.URL" %>
-<%@page import="java.net.URLEncoder" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	protected static final API api = GUI.getAPI();
@@ -143,14 +142,14 @@
 	for(UserChangeNumber user : userChangeNumber)
 	{
 %>
-		<li><strong class="user-colour" style="color:<%=htmlspecialchars(userColours.get(user.user))%>;"><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(URLEncoder.encode(user.user.toString()))%>"><%=htmlspecialchars(user.user.toString())%></a></strong><ul>
+		<li><strong class="user-colour" style="color:<%=htmlspecialchars(userColours.get(user.user))%>;"><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(urlencode(user.user.toString()))%>"><%=htmlspecialchars(user.user.toString())%></a></strong><ul>
 <%
 		for(Changeset changeset : userChangesets.get(user.user))
 		{
 			String id = changeset.getID().toString();
 			String message = changeset.getTag("comment");
 %>
-			<li><input type="checkbox" id="checkbox-<%=id%>" onchange="layers[<%=id%>].setVisibility(this.checked);" /><%=id%>: <%=message != null ? String.format(gui._("“%s”"), htmlspecialchars(message)) : "<span class=\"nocomment\">"+htmlspecialchars(gui._("No comment"))+"</span>"%> (<a href="javascript:map.zoomToExtent(layers['<%=id%>'].getDataExtent())"><%=htmlspecialchars(gui._("Zoom"))%></a>) (<a href="http://www.openstreetmap.org/browse/changeset/<%=htmlspecialchars(URLEncoder.encode(id))%>"><%=htmlspecialchars(gui._("browse"))%></a>) (<a href="changeset.jsp?id=<%=htmlspecialchars(URLEncoder.encode(id))%>"><%=htmlspecialchars(gui._("view"))%></a>)</li>
+			<li><input type="checkbox" id="checkbox-<%=id%>" onchange="layers[<%=id%>].setVisibility(this.checked);" /><%=id%>: <%=message != null ? String.format(gui._("“%s”"), htmlspecialchars(message)) : "<span class=\"nocomment\">"+htmlspecialchars(gui._("No comment"))+"</span>"%> (<a href="javascript:map.zoomToExtent(layers['<%=id%>'].getDataExtent())"><%=htmlspecialchars(gui._("Zoom"))%></a>) (<a href="http://www.openstreetmap.org/browse/changeset/<%=htmlspecialchars(urlencode(id))%>"><%=htmlspecialchars(gui._("browse"))%></a>) (<a href="changeset.jsp?id=<%=htmlspecialchars(urlencode(id))%>"><%=htmlspecialchars(gui._("view"))%></a>)</li>
 <%
 	}
 %>
