@@ -35,6 +35,9 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 	public VersionedItemCache(DataSource a_dataSource, String a_persistenceID)
 	{
 		super(a_dataSource, a_persistenceID);
+
+		if(getPersistenceID() != null)
+			updateDatabaseCacheList();
 	}
 
 	/**
@@ -59,52 +62,55 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 		synchronized(m_history)
 		{
 			TreeMap<Version,T> history = m_history.get(a_id);
-			if(history == null)
+			synchronized(m_databaseCache)
 			{
-				synchronized(m_databaseCache)
+				if(m_databaseCache.contains(a_id))
 				{
-					if(m_databaseCache.contains(a_id))
-					{
-						Connection conn = null;
-						try
-						{
-							String persistenceID = getPersistenceID();
-							conn = getConnection();
-							if(persistenceID != null && conn != null)
-							{
-								PreparedStatement stmt = conn.prepareStatement("SELECT \"version\", \"data\" FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? AND \"object_id\" = ?");
-								stmt.setString(1, persistenceID);
-								stmt.setLong(2, a_id.asLong());
-								ResultSet res = stmt.executeQuery();
-								history = new TreeMap<Version,T>();
-								while(res.next())
-								{
-									try {
-										T obj = (T)getSerializedObjectFromDatabase(res, 2);
-										history.put(new Version(res.getLong(1)), obj);
-										cacheObject(obj);
-									} catch(Exception e) {
-										sm_logger.log(Level.WARNING, "Could not read version from database.", e);
-									}
-								}
-								res.close();
+					if(sm_logger.isLoggable(Level.FINEST))
+						sm_logger.finest("Pulling object "+a_id+" from database.");
 
-								if(history.size() == 0)
-									history = null;
-							}
-						}
-						catch(Exception e)
+					Connection conn = null;
+					try
+					{
+						String persistenceID = getPersistenceID();
+						conn = getConnection();
+						if(persistenceID != null && conn != null)
 						{
-							sm_logger.log(Level.WARNING, "Could not get object from database.", e);
-						}
-						finally
-						{
-							if(conn != null)
+							PreparedStatement stmt = conn.prepareStatement("SELECT \"version\", \"data\" FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ? AND \"object_id\" = ?");
+							stmt.setString(1, persistenceID);
+							stmt.setLong(2, a_id.asLong());
+							ResultSet res = stmt.executeQuery();
+							if(history == null)
+								history = new TreeMap<Version,T>();
+							while(res.next())
 							{
 								try {
-									conn.close();
-								} catch(SQLException e) {
+									T obj = (T)getSerializedObjectFromDatabase(res, 2);
+									history.put(new Version(res.getLong(1)), obj);
+									cacheObject(obj);
+								} catch(Exception e) {
+									sm_logger.log(Level.WARNING, "Could not read version from database.", e);
 								}
+							}
+							res.close();
+
+							m_databaseCache.remove(a_id);
+
+							if(history.isEmpty())
+								history = null;
+						}
+					}
+					catch(Exception e)
+					{
+						sm_logger.log(Level.WARNING, "Could not get object from database.", e);
+					}
+					finally
+					{
+						if(conn != null)
+						{
+							try {
+								conn.close();
+							} catch(SQLException e) {
 							}
 						}
 					}
@@ -360,14 +366,22 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 			conn = getConnection();
 			if(conn == null)
 				return;
-			PreparedStatement stmt = conn.prepareStatement("SELECT DISTINCT \"object_id\" FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT \"object_id\", \"version\" FROM \"osmrmhv_cache_version\" WHERE \"cache_id\" = ?");
 			stmt.setString(1, persistenceID);
 			ResultSet res = stmt.executeQuery();
-			synchronized(m_databaseCache)
+			synchronized(m_history)
 			{
-				m_databaseCache.clear();
-				while(res.next())
-					m_databaseCache.add(new ID(res.getLong(1)));
+				synchronized(m_databaseCache)
+				{
+					m_databaseCache.clear();
+					while(res.next())
+					{
+						ID id = new ID(res.getLong(1));
+						Version version = new Version(res.getLong(2));
+						if(!m_databaseCache.contains(id) && (!m_history.containsKey(id) || !m_history.get(id).containsKey(version)))
+							m_databaseCache.add(id);
+					}
+				}
 			}
 			res.close();
 			conn.close();
