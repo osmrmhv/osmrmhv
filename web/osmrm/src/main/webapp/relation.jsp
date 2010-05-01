@@ -60,7 +60,9 @@
 	List<Integer>[] connection1 = new List[segments.length];
 	List<Integer>[] connection2 = new List[segments.length];
 	double[] distance1 = new double[segments.length];
+	LonLat[] distance1Target = new LonLat[segments.length];
 	double[] distance2 = new double[segments.length];
+	LonLat[] distance2Target = new LonLat[segments.length];
 
 	for(int i=0; i<segments.length; i++)
 	{
@@ -108,10 +110,77 @@
 			double it_distance21 = thisEnd2.getDistance(thatEnd1);
 			double it_distance22 = thisEnd2.getDistance(thatEnd2);
 
-			distance1[i] = Math.min(distance1[i], Math.min(it_distance11, it_distance12));
-			distance2[i] = Math.min(distance2[i], Math.min(it_distance21, it_distance21));
-			distance1[j] = Math.min(distance1[j], Math.min(it_distance11, it_distance21));
-			distance2[j] = Math.min(distance2[j], Math.min(it_distance12, it_distance22));
+			// distance1[i] = Math.min(distance1[i], Math.min(it_distance11, it_distance12));
+			if(it_distance11 < it_distance12)
+			{
+				if(it_distance11 < distance1[i])
+				{
+					distance1[i] = it_distance11;
+					distance1Target[i] = thatEnd1;
+				}
+			}
+			else
+			{
+				if(it_distance12 < distance1[i])
+				{
+					distance1[i] = it_distance12;
+					distance1Target[i] = thatEnd2;
+				}
+			}
+
+			// distance2[i] = Math.min(distance2[i], Math.min(it_distance21, it_distance22));
+			if(it_distance21 < it_distance22)
+			{
+				if(it_distance21 < distance2[i])
+				{
+					distance2[i] = it_distance21;
+					distance2Target[i] = thatEnd1;
+				}
+			}
+			else
+			{
+				if(it_distance22 < distance2[i])
+				{
+					distance2[i] = it_distance22;
+					distance2Target[i] = thatEnd2;
+				}
+			}
+
+			// distance1[j] = Math.min(distance1[j], Math.min(it_distance11, it_distance21));
+			if(it_distance11 < it_distance21)
+			{
+				if(it_distance11 < distance1[j])
+				{
+					distance1[j] = it_distance11;
+					distance1Target[j] = thisEnd1;
+				}
+			}
+			else
+			{
+				if(it_distance21 < distance1[j])
+				{
+					distance1[j] = it_distance21;
+					distance1Target[j] = thisEnd2;
+				}
+			}
+
+			// distance2[j] = Math.min(distance2[j], Math.min(it_distance12, it_distance22));
+			if(it_distance12 < it_distance22)
+			{
+				if(it_distance11 < distance2[j])
+				{
+					distance2[j] = it_distance12;
+					distance2Target[j] = thisEnd1;
+				}
+			}
+			else
+			{
+				if(it_distance22 < distance2[j])
+				{
+					distance2[j] = it_distance22;
+					distance2Target[j] = thisEnd2;
+				}
+			}
 		}
 	}
 %>
@@ -220,11 +289,13 @@
 <%
 	for(int i=0; i<segments.length; i++)
 	{
+		LonLat end1 = segments[i].getEnd1();
+		LonLat end2 = segments[i].getEnd2();
 %>
 			<tr<% if(render){%> onmouseover="highlightSegment(<%=i%>);" onmouseout="unhighlightSegment(<%=i%>);"<% }%> id="tr-segment-<%=i%>" class="tr-segment-normal">
 				<td><%=htmlspecialchars(""+(i+1))%></td>
 				<td><%=gui.formatNumber(segments[i].getDistance(), 2)%>&thinsp;km</td>
-				<td><% if(segments.length > 1){%><%=gui.formatNumber(distance1[i], 2)%>&thinsp;km, <%=gui.formatNumber(distance2[i], 2)%>&thinsp;km<% }%></td>
+				<td><% if(segments.length > 1){%><a href="javascript:zoomToGap(new OpenLayers.LonLat(<%=end1.getLon()%>, <%=end1.getLat()%>), new OpenLayers.LonLat(<%=distance1Target[i].getLon()%>, <%=distance1Target[i].getLat()%>))"><%=gui.formatNumber(distance1[i], 2)%>&thinsp;km</a>, <a href="javascript:zoomToGap(new OpenLayers.LonLat(<%=end2.getLon()%>, <%=end2.getLat()%>), new OpenLayers.LonLat(<%=distance2Target[i].getLon()%>, <%=distance2Target[i].getLat()%>))"><%=gui.formatNumber(distance2[i], 2)%>&thinsp;km</a><% }%></td>
 <%
 		if(render)
 		{
@@ -530,6 +601,14 @@
 	{
 		var extent = segments[i].getDataExtent();
 		map.zoomToExtent(extent);
+	}
+
+	function zoomToGap(lonlat1, lonlat2)
+	{
+		var bbox = new OpenLayers.Bounds();
+		bbox.extend(lonlat1);
+		bbox.extend(lonlat2);
+		map.zoomToExtent(bbox.transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()));
 	}
 <%
 	}
