@@ -21,7 +21,6 @@
 <%@page import="static eu.cdauth.osm.web.osmhv.GUI.*"%>
 <%@page import="java.util.*" %>
 <%@ page import="java.net.URL" %>
-<%@ page import="java.net.URLEncoder" %>
 <%@ page import="java.util.regex.Pattern" %>
 <%@ page import="java.util.regex.Matcher" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
@@ -106,7 +105,7 @@
 %>
 
 	<dt><%=htmlspecialchars(gui._("User"))%></dt>
-	<dd><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(URLEncoder.encode(changeset.getUser().toString(), "UTF-8"))%>"><%=htmlspecialchars(changeset.getUser().toString())%></a></dd>
+	<dd><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(urlencode(changeset.getUser().toString()))%>"><%=htmlspecialchars(changeset.getUser().toString())%></a></dd>
 </dl>
 <%
 	response.getWriter().flush();

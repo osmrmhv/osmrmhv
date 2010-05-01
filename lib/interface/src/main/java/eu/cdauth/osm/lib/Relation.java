@@ -9,7 +9,7 @@ package eu.cdauth.osm.lib;
 import java.util.Date;
 
 /**
- * A relation in OSM can contain nodes, was and other relations. An object contained in a relation has additional
+ * A relation in OSM can contain nodes, ways and other relations. An object contained in a relation has additional
  * relation-specific properties (its position in the list of members and a role). An object can be contained in a
  * relation multiple times, but these properties are different for all relation members.
  * @author cdauth
