@@ -46,7 +46,7 @@
 
 	<properties>
 		<gettextBundle>eu.cdauth.osm.web.osmhv.locale.osmhv</gettextBundle>
-		<jspPackage>eu.cdauth.osm.web.osmrm.jsp</jspPackage>
+		<jspPackage>eu.cdauth.osm.web.osmhv.jsp</jspPackage>
 	</properties>
 
 	<build>
