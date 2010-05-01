@@ -380,6 +380,10 @@
 	map.addControl(clickControl);
 	clickControl.activate();
 
+	var permalinkControl = new OpenLayers.Control.Permalink(null, "http://www.openstreetmap.org/");
+	map.addControl(permalinkControl);
+	permalinkControl.activate();
+
 	var extent;
 	if(segments.length > 0)
 	{
