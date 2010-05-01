@@ -42,7 +42,7 @@ public class ItemCache<T extends Item>
 	/**
 	 * How old may the entries in the database cache be at most? (seconds)
 	 */
-	public static final int MAX_DATABASE_AGE = 86400;
+	public static final int MAX_DATABASE_AGE = 1800;
 
 	private static final Logger sm_logger = Logger.getLogger(ItemCache.class.getName());
 
