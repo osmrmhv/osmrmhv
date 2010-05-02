@@ -441,7 +441,7 @@ abstract public class GUI
 	}
 
 	/**
-	 * @see gettext(String)
+	 * @see #gettext(String)
 	 */
 	public String _(String a_message)
 	{

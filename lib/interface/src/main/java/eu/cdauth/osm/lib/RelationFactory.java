@@ -8,7 +8,7 @@ package eu.cdauth.osm.lib;
 
 /**
  * Implentations of this type fetch {@link Relation} objects from the {@link API}.
- * @see {@link API#getRelationFactory()}
+ * @see API#getRelationFactory()
  * @author cdauth
  */
 public interface RelationFactory extends VersionedItemFactory<Relation>

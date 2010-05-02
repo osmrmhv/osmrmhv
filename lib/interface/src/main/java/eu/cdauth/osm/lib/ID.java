@@ -36,8 +36,8 @@ public class ID implements Comparable<ID>, Externalizable
 
 	/**
 	 * Creates an ID from a String.
-	 * @see {@link Long#Long(String)}
 	 * @param a_id The ID, usually the value of the XML attribute <code>id</code>.
+	 * @see Long#Long(String)
 	 */
 	public ID(String a_id)
 	{

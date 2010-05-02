@@ -37,8 +37,8 @@ public class Version implements Comparable<Version>, Externalizable
 	
 	/**
 	 * Creates a Version from a String.
-	 * @see {@link Long#Long(String)}
 	 * @param a_version The Version, usually the value of the XML attribute <code>version</code>.
+	 * @see Long#Long(String)
 	 */
 	public Version(String a_version)
 	{

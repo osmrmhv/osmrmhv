@@ -8,7 +8,7 @@ package eu.cdauth.osm.lib;
 
 /**
  * Implentations of this type fetch {@link Node} objects from the {@link API}.
- * @see {@link API#getNodeFactory()}
+ * @see API#getNodeFactory()
  * @author cdauth
  */
 public interface NodeFactory extends VersionedItemFactory<Node>
