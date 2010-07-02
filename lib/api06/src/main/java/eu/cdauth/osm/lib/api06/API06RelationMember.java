@@ -30,7 +30,7 @@ import eu.cdauth.osm.lib.Relation;
 import eu.cdauth.osm.lib.RelationMember;
 import eu.cdauth.osm.lib.Way;
 
-public class API06RelationMember extends API06XMLObject implements RelationMember
+public class API06RelationMember extends API06XMLItem implements RelationMember
 {
 	private Relation m_relation; // Not final because of serialization
 

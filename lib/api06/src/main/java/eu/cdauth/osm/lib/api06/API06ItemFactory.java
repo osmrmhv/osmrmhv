@@ -84,8 +84,8 @@ abstract public class API06ItemFactory<T extends Item> implements ItemFactory<T>
 				toFetch.add(id);
 			else
 			{
-				if(cached instanceof API06XMLObject)
-					((API06XMLObject)cached).setAPI(getAPI());
+				if(cached instanceof API06XMLItem)
+					((API06XMLItem)cached).setAPI(getAPI());
 				ret.put(id, cached);
 			}
 		}

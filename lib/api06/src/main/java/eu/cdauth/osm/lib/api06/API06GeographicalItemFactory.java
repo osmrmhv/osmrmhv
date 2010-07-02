@@ -115,8 +115,8 @@ abstract public class API06GeographicalItemFactory<T extends VersionedItem> exte
 		{
 			for(T cachedEnt : cached.values())
 			{
-				if(cachedEnt instanceof API06XMLObject)
-					((API06XMLObject)cachedEnt).setAPI(getAPI());
+				if(cachedEnt instanceof API06XMLItem)
+					((API06XMLItem)cachedEnt).setAPI(getAPI());
 			}
 			return cached;
 		}
@@ -140,8 +140,8 @@ abstract public class API06GeographicalItemFactory<T extends VersionedItem> exte
 		T cached = getCache().getObject(a_id, a_version);
 		if(cached != null)
 		{
-			if(cached instanceof API06XMLObject)
-				((API06XMLObject)cached).setAPI(getAPI());
+			if(cached instanceof API06XMLItem)
+				((API06XMLItem)cached).setAPI(getAPI());
 			return cached;
 		}
 		

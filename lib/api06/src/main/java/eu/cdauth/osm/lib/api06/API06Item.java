@@ -34,7 +34,7 @@ import eu.cdauth.osm.lib.ID;
  * Parent class for all geographical objects in OSM, currently Nodes, Ways and Relations.
 */
 
-abstract public class API06Item extends API06XMLObject implements Item
+abstract public class API06Item extends API06XMLItem implements Item
 {
 	private Hashtable<String,String> m_tags = null;
 
