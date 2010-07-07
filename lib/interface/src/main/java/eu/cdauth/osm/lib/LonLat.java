@@ -58,6 +58,8 @@ public class LonLat implements Externalizable
 	
 	/**
 	 * Two LonLat objects are equal if their coordinates are the same.
+	 * The OpenStreetMap database saves 7 decimals for each coordinate. If lower decimals differ, this is a result of computation errors
+	 * and is ignored.
 	 * 
 	 * <p>{@inheritDoc}
 	 */
@@ -69,7 +71,7 @@ public class LonLat implements Externalizable
 		if(a_other instanceof LonLat)
 		{
 			LonLat other = (LonLat) a_other;
-			return (getLon() == other.getLon() && getLat() == other.getLat());
+			return (Math.abs(getLon()-other.getLon()) < 0.00000005D && Math.abs(getLat()-other.getLat()) < 0.00000005D);
 		}
 		return false;
 	}

@@ -14,10 +14,10 @@ package eu.cdauth.osm.lib;
 public interface GeographicalItem extends Item
 {
 	/**
-	 * Returns all relations that the <strong>current</strong> version of this object is currently contained in.
+	 * Returns the IDs all relations that the <strong>current</strong> version of this object is currently contained in.
 	 * Relations can only contain geographical objects.
-	 * @return The relations that contain this object.
+	 * @return The IDs of the relations that contain this object.
 	 * @throws APIError There was an error fetching the relations.
 	 */
-	public Relation[] getContainingRelations() throws APIError;
+	public ID[] getContainingRelations() throws APIError;
 }

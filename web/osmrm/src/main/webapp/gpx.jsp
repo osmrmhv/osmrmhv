@@ -23,6 +23,16 @@
 <%@page contentType="text/xml; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	private static API api = GUI.getAPI();
+
+	public void jspInit()
+	{
+		GUI.servletStart();
+	}
+
+	public void jspDestroy()
+	{
+		GUI.servletStop();
+	}
 %>
 <%
 	response.setHeader("Content-disposition", "attachment; filename=route.gpx");

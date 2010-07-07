@@ -23,21 +23,53 @@ package eu.cdauth.osm.lib.api06;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
 
 import eu.cdauth.osm.lib.*;
 import org.w3c.dom.Element;
 
 import eu.cdauth.osm.lib.GeographicalItem;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Arrays;
+import java.util.SimpleTimeZone;
 
 abstract public class API06GeographicalItem extends API06Item implements VersionedItem, GeographicalItem
 {
-	private static SimpleDateFormat sm_dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	private static final SimpleDateFormat sm_dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	static {
+		sm_dateFormat.setTimeZone(new SimpleTimeZone(0, "UTC"));
+	}
 	
-	private boolean m_current = false;
+	private boolean m_current = false; // FIXME: Serialize?
 
+	private Date m_timestamp = null;
+	private Version m_version = null;
+	private ID m_changeset = null;
 	private ID[] m_containingRelations = null;
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+	{
+		super.readExternal(in);
+		m_current = in.readBoolean();
+		m_timestamp = (Date)in.readObject();
+		m_version = (Version)in.readObject();
+		m_changeset = (ID)in.readObject();
+		m_containingRelations = (ID[])in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		super.writeExternal(out);
+		out.writeBoolean(m_current);
+		out.writeObject(m_timestamp);
+		out.writeObject(m_version);
+		out.writeObject(m_changeset);
+		out.writeObject(m_containingRelations);
+	}
 
 	/**
 	 * Only for serialization.
@@ -55,6 +87,20 @@ abstract public class API06GeographicalItem extends API06Item implements Version
 	protected API06GeographicalItem(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);
+
+		try
+		{
+			m_timestamp = getDateFormat().parse(a_dom.getAttribute("timestamp"));
+		}
+		catch(ParseException e)
+		{
+		}
+
+		String version = a_dom.getAttribute("version");
+		if(!version.equals(""))
+			m_version = new Version(version);
+
+		m_changeset = new ID(a_dom.getAttribute("changeset"));
 	}
 	
 	/**
@@ -77,14 +123,7 @@ abstract public class API06GeographicalItem extends API06Item implements Version
 	@Override
 	public Date getTimestamp()
 	{
-		try
-		{
-			return getDateFormat().parse(getDOM().getAttribute("timestamp"));
-		}
-		catch(ParseException e)
-		{
-			return null;
-		}
+		return m_timestamp;
 	}
 	
 	@Override
@@ -100,20 +139,17 @@ abstract public class API06GeographicalItem extends API06Item implements Version
 	@Override
 	public Version getVersion()
 	{
-		String version = getDOM().getAttribute("version");
-		if(version.equals(""))
-			return null;
-		return new Version(version);
+		return m_version;
 	}
 	
 	@Override
 	public ID getChangeset()
 	{
-		return new ID(getDOM().getAttribute("changeset"));
+		return m_changeset;
 	}
 
 	@Override
-	public Relation[] getContainingRelations() throws APIError
+	public ID[] getContainingRelations() throws APIError
 	{
 		if(m_containingRelations == null)
 		{
@@ -128,29 +164,16 @@ abstract public class API06GeographicalItem extends API06Item implements Version
 				throw new RuntimeException("Unknown data type.");
 
 			Item[] relations = getAPI().get("/"+urlPart+"/"+getID()+"/relations");
-			Relation[] ret = new Relation[relations.length];
-			for(int i=0; i<relations.length; i++)
-				ret[i] = (Relation)relations[i];
+			m_containingRelations = new ID[relations.length];
 			VersionedItemCache<Relation> cache = getAPI().getRelationFactory().getCache();
-			for(Relation it : ret)
+			for(int i=0; i<relations.length; i++)
 			{
-				((API06Relation)it).markAsCurrent();
-				cache.cacheObject(it);
+				m_containingRelations[i] = relations[i].getID();
+				((API06Relation)relations[i]).markAsCurrent();
+				cache.cacheObject((Relation)relations[i]);
 			}
-
-			synchronized(this)
-			{// TODO This does not seem to be useful
-				m_containingRelations = new ID[ret.length];
-				for(int i=0; i<ret.length; i++)
-					m_containingRelations[i] = ret[i].getID();
-			}
-
-			return ret;
 		}
-		else
-		{
-			Collection<Relation> ret = getAPI().getRelationFactory().fetch(m_containingRelations).values();
-			return ret.toArray(new Relation[ret.size()]);
-		}
+
+		return Arrays.copyOf(m_containingRelations, m_containingRelations.length);
 	}
 }

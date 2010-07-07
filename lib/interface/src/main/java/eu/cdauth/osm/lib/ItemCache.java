@@ -38,7 +38,7 @@ public class ItemCache<T extends Item>
 	/**
 	 * How many entries may be in the database cache?
 	 */
-	public static final int MAX_DATABASE_VALUES = 5000;
+	public static final int MAX_DATABASE_VALUES = 50000;
 	/**
 	 * How old may the entries in the database cache be at most? (seconds)
 	 */
@@ -159,7 +159,9 @@ public class ItemCache<T extends Item>
 		{
 			synchronized(m_cacheTimes)
 			{
-				m_cache.put(id, a_object);
+				T old = m_cache.get(id);
+				if(old == null || !old.equals(a_object)) // Prevent additionally downloaded data (for example the content of a changeset) from being lost.
+					m_cache.put(id, a_object);
 				m_cacheTimes.put(id, System.currentTimeMillis());
 			}
 		}
@@ -195,8 +197,9 @@ public class ItemCache<T extends Item>
 	/**
 	 * Clean up entries from the memory cache that exceed {@link #MAX_CACHED_VALUES} or {@link #MAX_AGE}. If a database
 	 * cache is used, the entries are moved there.
+	 * @param a_completely If set to true, the memory cache will be cleared completely, not just up to {@link #MAX_CACHED_VALUES} (useful at shutdown)
 	 */
-	protected void cleanUpMemory()
+	protected void cleanUpMemory(boolean a_completely)
 	{
 		String persistenceID = getPersistenceID();
 		Connection conn = null;
@@ -226,7 +229,7 @@ public class ItemCache<T extends Item>
 							break;
 						ID oldest = m_cacheTimes.firstKey();
 						long oldestTime = m_cacheTimes.get(oldest);
-						if(System.currentTimeMillis()-oldestTime <= MAX_AGE*1000 && m_cacheTimes.size() <= MAX_CACHED_VALUES)
+						if(!a_completely && System.currentTimeMillis()-oldestTime <= MAX_AGE*1000 && m_cacheTimes.size() <= MAX_CACHED_VALUES)
 							break;
 						m_cacheTimes.remove(oldest);
 						item = m_cache.remove(oldest);
@@ -392,8 +395,9 @@ public class ItemCache<T extends Item>
 
 	/**
 	 * Runs {@link #cleanUpMemory()} and {@link #cleanUpDatabase()} on all instances of this class.
+	 * @param a_completely If set to true, the memory cache is cleared completely instead of just to {@link #MAX_CACHED_VALUES}.
 	 */
-	public static void cleanUpAll()
+	public static void cleanUpAll(boolean a_completely)
 	{
 		ItemCache<? extends Item>[] instances;
 		synchronized(sm_instances)
@@ -412,7 +416,7 @@ public class ItemCache<T extends Item>
 			number++;
 			try
 			{
-				instance.cleanUpMemory();
+				instance.cleanUpMemory(a_completely);
 				instance.cleanUpDatabase();
 			}
 			catch(Exception e)

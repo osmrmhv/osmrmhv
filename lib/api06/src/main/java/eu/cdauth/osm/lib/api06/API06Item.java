@@ -21,6 +21,10 @@
 
 package eu.cdauth.osm.lib.api06;
 
+import eu.cdauth.osm.lib.Changeset;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -29,6 +33,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import eu.cdauth.osm.lib.ID;
+import eu.cdauth.osm.lib.Node;
+import eu.cdauth.osm.lib.Relation;
+import eu.cdauth.osm.lib.VersionedItem;
+import eu.cdauth.osm.lib.Way;
+import java.io.Externalizable;
+import java.util.Collections;
 
 /**
  * Parent class for all geographical objects in OSM, currently Nodes, Ways and Relations.
@@ -36,7 +46,24 @@ import eu.cdauth.osm.lib.ID;
 
 abstract public class API06Item extends API06XMLItem implements Item
 {
-	private Hashtable<String,String> m_tags = null;
+	private ID m_id = null;
+	private Map<String,String> m_tags = null;
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+	{
+		super.readExternal(in);
+		m_id = (ID)in.readObject();
+		m_tags = (Map<String,String>)in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		super.writeExternal(out);
+		out.writeObject(m_id);
+		out.writeObject(m_tags);
+	}
 
 	/**
 	 * Only for serialization.
@@ -49,6 +76,22 @@ abstract public class API06Item extends API06XMLItem implements Item
 	protected API06Item(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);
+
+		m_id = new ID(a_dom.getAttribute("id"));
+
+		m_tags = new Hashtable<String,String>();
+		NodeList tags = a_dom.getElementsByTagName("tag");
+		for(int i=0; i<tags.getLength(); i++)
+		{
+			if(tags.item(i).getNodeType() != org.w3c.dom.Node.ELEMENT_NODE)
+				continue;
+			Element item = (Element) tags.item(i);
+			String key = item.getAttribute("k");
+			if(m_tags.containsKey(key))
+				m_tags.put(key, m_tags.get(key)+","+item.getAttribute("v"));
+			else
+				m_tags.put(key, item.getAttribute("v"));
+		}
 	}
 	
 	/**
@@ -57,13 +100,28 @@ abstract public class API06Item extends API06XMLItem implements Item
 	@Override
 	public boolean equals(java.lang.Object a_other)
 	{
-		if(a_other instanceof API06Item)
-		{
-			API06Item other = (API06Item) a_other;
-			return (getDOM().getTagName().equals(other.getDOM().getTagName()) && !getDOM().getAttribute("id").equals("") && getDOM().getAttribute("id").equals(other.getDOM().getAttribute("id")) && getDOM().getAttribute("version").equals(other.getDOM().getAttribute("version")));
-		}
-		else
+		if(!(a_other instanceof Item))
 			return false;
+		if(!((Item)a_other).getID().equals(getID()))
+			return false;
+		if(a_other instanceof VersionedItem)
+		{
+			if(!(this instanceof VersionedItem))
+				return false;
+			if(!((VersionedItem)a_other).getVersion().equals(((VersionedItem)this).getVersion()))
+				return false;
+		}
+
+		if(a_other instanceof Node && this instanceof Node)
+			return true;
+		if(a_other instanceof Way && this instanceof Way)
+			return true;
+		if(a_other instanceof Relation && this instanceof Relation)
+			return true;
+		if(a_other instanceof Changeset && this instanceof Changeset)
+			return true;
+
+		return false;
 	}
 	
 	@Override
@@ -81,7 +139,7 @@ abstract public class API06Item extends API06XMLItem implements Item
 	@Override
 	public ID getID()
 	{
-		return new ID(getDOM().getAttribute("id"));
+		return m_id;
 	}
 	
 	@Override
@@ -94,22 +152,6 @@ abstract public class API06Item extends API06XMLItem implements Item
 	@Override
 	public Map<String,String> getTags()
 	{
-		if(m_tags == null)
-		{
-			m_tags = new Hashtable<String,String>();
-			NodeList tags = getDOM().getElementsByTagName("tag");
-			for(int i=0; i<tags.getLength(); i++)
-			{
-				if(tags.item(i).getNodeType() != org.w3c.dom.Node.ELEMENT_NODE)
-					continue;
-				Element item = (Element) tags.item(i);
-				String key = item.getAttribute("k");
-				if(m_tags.containsKey(key))
-					m_tags.put(key, m_tags.get(key)+","+item.getAttribute("v"));
-				else
-					m_tags.put(key, item.getAttribute("v"));
-			}
-		}
-		return m_tags;
+		return Collections.unmodifiableMap(m_tags);
 	}
 }

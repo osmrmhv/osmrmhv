@@ -52,6 +52,16 @@
 			return a_other.changes.compareTo(changes);
 		}
 	}
+
+	public void jspInit()
+	{
+		GUI.servletStart();
+	}
+
+	public void jspDestroy()
+	{
+		GUI.servletStop();
+	}
 %>
 <%
 	if(request.getParameter("id") == null)

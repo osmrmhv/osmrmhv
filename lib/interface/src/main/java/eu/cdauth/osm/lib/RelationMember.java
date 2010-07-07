@@ -21,10 +21,10 @@ import java.io.Serializable;
 public interface RelationMember extends Serializable
 {
 	/**
-	 * Returns the corresponding {@link Relation} that this member belongs to.
-	 * @return The relation that contains this member.
+	 * Returns the corresponding {@link Relation} ID that this member belongs to.
+	 * @return The ID of the relation that contains this member.
 	 */
-	public Relation getRelation();
+	public ID getRelation();
 	
 	/**
 	 * Returns the type of the {@link GeographicalItem} that this member refers to.

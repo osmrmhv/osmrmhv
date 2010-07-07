@@ -22,6 +22,10 @@
 package eu.cdauth.osm.lib.api06;
 
 import eu.cdauth.osm.lib.*;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -33,12 +37,36 @@ import java.util.Map;
 
 public class API06Changeset extends API06Item implements Changeset
 {
-	private Hashtable<ChangeType, VersionedItem[]> m_content = null;
+	private Map<ChangeType, VersionedItem[]> m_content = null;
+	
+	private Date m_creation = null;
+	private Date m_closing = null;
+	private User m_user = null;
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+	{
+		super.readExternal(in);
+		m_content = (Map<ChangeType, VersionedItem[]>)in.readObject();
+		m_creation = (Date)in.readObject();
+		m_closing = (Date)in.readObject();
+		m_user = (User)in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		super.writeExternal(out);
+		out.writeObject(m_content);
+		out.writeObject(m_creation);
+		out.writeObject(m_closing);
+		out.writeObject(m_user);
+	}
 	
 	/**
 	 * Contains the uncleaned osmChange XML element.
 	 */
-	private Element m_uncleanedDom = null;
+	private Element m_uncleanedDom = null; // FIXME: Do not serialize
 
 	/**
 	 * Only for serialization.
@@ -51,38 +79,42 @@ public class API06Changeset extends API06Item implements Changeset
 	protected API06Changeset(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);
+
+		try
+		{
+			m_creation = API06GeographicalItem.getDateFormat().parse(a_dom.getAttribute("created_at"));
+		}
+		catch(ParseException e)
+		{
+		}
+
+		try
+		{
+			m_closing = API06GeographicalItem.getDateFormat().parse(a_dom.getAttribute("closed_at"));
+		}
+		catch(ParseException e)
+		{
+		}
+
+		m_user = new User(new ID(a_dom.getAttribute("uid")), a_dom.getAttribute("user"));
 	}
 
 	@Override
 	public Date getCreationDate()
 	{
-		try
-		{
-			return API06GeographicalItem.getDateFormat().parse(getDOM().getAttribute("created_at"));
-		}
-		catch(ParseException e)
-		{
-			return null;
-		}
+		return m_creation;
 	}
 
 	@Override
 	public Date getClosingDate()
 	{
-		try
-		{
-			return API06GeographicalItem.getDateFormat().parse(getDOM().getAttribute("closed_at"));
-		}
-		catch(ParseException e)
-		{
-			return null;
-		}
+		return m_closing;
 	}
 
 	@Override
 	public User getUser()
 	{
-		return new User(new ID(getDOM().getAttribute("uid")), getDOM().getAttribute("user"));
+		return m_user;
 	}
 	
 	/**

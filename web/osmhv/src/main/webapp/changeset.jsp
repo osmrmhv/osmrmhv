@@ -24,6 +24,16 @@
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	protected static final API api = GUI.getAPI();
+
+	public void jspInit()
+	{
+		GUI.servletStart();
+	}
+
+	public void jspDestroy()
+	{
+		GUI.servletStop();
+	}
 %>
 <%
 	if(request.getParameter("id") == null)

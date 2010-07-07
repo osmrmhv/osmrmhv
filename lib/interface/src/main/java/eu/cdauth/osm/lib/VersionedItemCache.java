@@ -205,9 +205,9 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 	}
 
 	@Override
-	protected void cleanUpMemory()
+	protected void cleanUpMemory(boolean a_completely)
 	{
-		super.cleanUpMemory();
+		super.cleanUpMemory(a_completely);
 
 		String persistenceID = getPersistenceID();
 		Connection conn = null;
@@ -237,7 +237,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 							break;
 						ID oldest = m_historyTimes.firstKey();
 						long oldestTime = m_historyTimes.get(oldest);
-						if(System.currentTimeMillis()-oldestTime <= MAX_AGE*1000 && m_historyTimes.size() <= MAX_CACHED_VALUES)
+						if(!a_completely && System.currentTimeMillis()-oldestTime <= MAX_AGE*1000 && m_historyTimes.size() <= MAX_CACHED_VALUES)
 							break;
 						id = oldest;
 						m_historyTimes.remove(oldest);

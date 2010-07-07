@@ -24,6 +24,16 @@
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	private static final API api = GUI.getAPI();
+
+	public void jspInit()
+	{
+		GUI.servletStart();
+	}
+
+	public void jspDestroy()
+	{
+		GUI.servletStop();
+	}
 %>
 <%
 	if(request.getParameter("id") == null)
@@ -247,11 +257,11 @@
 	<dt><%=htmlspecialchars(gui._("Parent relations"))%></dt>
 	<dd><ul>
 <%
-	Relation[] parentRelations = relation.getContainingRelations();
-	for(Relation parentRelation : parentRelations)
+	Map<ID,Relation> parentRelations = api.getRelationFactory().fetch(relation.getContainingRelations());
+	for(Map.Entry<ID,Relation> parentRelation : parentRelations.entrySet())
 	{
 %>
-		<li><a href="?id=<%=htmlspecialchars(urlencode(parentRelation.getID().toString()))%>"><%=htmlspecialchars(parentRelation.getID().toString())%> (<%=htmlspecialchars(parentRelation.getTag("name"))%>)</a></li>
+		<li><a href="?id=<%=htmlspecialchars(urlencode(parentRelation.getKey().toString()))%>"><%=htmlspecialchars(parentRelation.getKey().toString())%> (<%=htmlspecialchars(parentRelation.getValue().getTag("name"))%>)</a></li>
 <%
 	}
 %>

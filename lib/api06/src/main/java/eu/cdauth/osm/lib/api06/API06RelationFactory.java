@@ -58,7 +58,7 @@ public class API06RelationFactory extends API06GeographicalItemFactory<Relation>
 				if(type.equals(Node.class))
 					isCached = (nodeCache.getObject(id) != null);
 				else if(type.equals(Way.class))
-					isCached = (wayCache.getObject(id) != null);
+					isCached = (wayCache.getObject(id) != null); // FIXME: Download also necessary if some of the way”s member nodes are missing
 				else if(type.equals(Relation.class))
 					isCached = (relationCache.getObject(id) != null);
 				if(!isCached)

@@ -19,9 +19,9 @@ public interface Node extends GeographicalItem, VersionedItem
 	public LonLat getLonLat();
 	
 	/**
-	 * Returns all ways that currently contain the <strong>current</strong> version of this node.
-	 * @return An array of ways that currently contain this node.
+	 * Returns the ID of all ways that currently contain the <strong>current</strong> version of this node.
+	 * @return An array of the IDs of all ways that currently contain this node.
 	 * @throws APIError The ways could not be fetched.
 	 */
-	public Way[] getContainingWays() throws APIError;
+	public ID[] getContainingWays() throws APIError;
 }

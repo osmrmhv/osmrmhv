@@ -237,7 +237,7 @@ public class HistoryViewer
 			}*/
 
 			// Second guess: Current parent nodes of the node
-			for(Way obj : node.getContainingWays())
+			for(Way obj : a_api.getWayFactory().fetch(node.getContainingWays()).values())
 			{
 				if(waysChanged.containsKey(obj.getID()))
 					continue;

@@ -31,9 +31,29 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import eu.cdauth.osm.lib.GeographicalItem;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Arrays;
 
 public class API06Relation extends API06GeographicalItem implements Relation
 {
+	private API06RelationMember[] m_members = null;
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+	{
+		super.readExternal(in);
+		m_members = (API06RelationMember[])in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		super.writeExternal(out);
+		out.writeObject(m_members);
+	}
+
 	/**
 	 * Only for serialization.
 	 */
@@ -45,16 +65,17 @@ public class API06Relation extends API06GeographicalItem implements Relation
 	protected API06Relation(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);
+
+		NodeList members = a_dom.getElementsByTagName("member");
+		m_members = new API06RelationMember[members.getLength()];
+		for(int i=0; i<members.getLength(); i++)
+			m_members[i] = new API06RelationMember((Element) members.item(i), getAPI(), getID());
 	}
 
 	@Override
 	public API06RelationMember[] getMembers()
 	{
-		NodeList members = getDOM().getElementsByTagName("member");
-		API06RelationMember[] ret = new API06RelationMember[members.getLength()];
-		for(int i=0; i<members.getLength(); i++)
-			ret[i] = new API06RelationMember((Element) members.item(i), getAPI(), this);
-		return ret;
+		return Arrays.copyOf(m_members, m_members.length);
 	}
 	
 	/**

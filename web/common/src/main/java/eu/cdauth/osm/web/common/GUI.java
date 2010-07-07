@@ -68,7 +68,46 @@ abstract public class GUI
 	private final HttpServletResponse m_resp;
 
 	private static API06API sm_api = null;
-	private static Timer sm_apiCleanUp = null;
+	private static Thread sm_apiCleanUp = null;
+	
+	private static int sm_servletsRunning = 0;
+
+	public synchronized static void servletStart()
+	{
+		if(sm_servletsRunning++ == 0)
+		{
+			Logger.getLogger(GUI.class.getName()).info("Starting cache cleanup thread.");
+			sm_apiCleanUp = new Thread("osmrmhv cache cleanup") {
+				@Override public void run() {
+					while(true)
+					{
+						try {
+							Thread.sleep(60000);
+						} catch(InterruptedException e) {
+							break;
+						}
+						try {
+							ItemCache.cleanUpAll(false);
+						} catch(Exception e) {
+							Logger.getLogger(GUI.class.getName()).log(Level.WARNING, "Unexpected exception.", e);
+						}
+					}
+				}
+			};
+			sm_apiCleanUp.start();
+		}
+	}
+
+	public synchronized static void servletStop()
+	{
+		if(--sm_servletsRunning == 0)
+		{
+			Logger.getLogger(GUI.class.getName()).info("Stopping cache cleanup thread, completely clearing memory.");
+			sm_apiCleanUp.interrupt();
+			sm_apiCleanUp = null;
+			ItemCache.cleanUpAll(true);
+		}
+	}
 
 	/**
 	 * Returns an {@link eu.cdauth.osm.lib.API} object to use.
@@ -93,24 +132,6 @@ abstract public class GUI
 				Logger.getLogger(GUI.class.getName()).info("Using API with database cache.");
 				sm_api = new eu.cdauth.osm.lib.api06.API06API(ds);
 			}
-
-			new Thread("osmrmhv cache cleanup") {
-				@Override public void run() {
-					while(true)
-					{
-						try {
-							Thread.sleep(60000);
-						} catch(InterruptedException e) {
-							break;
-						}
-						try {
-							ItemCache.cleanUpAll();
-						} catch(Exception e) {
-							Logger.getLogger(GUI.class.getName()).log(Level.WARNING, "Unexpected exception.", e);
-						}
-					}
-				}
-			}.start();
 		}
 		return sm_api;
 	}

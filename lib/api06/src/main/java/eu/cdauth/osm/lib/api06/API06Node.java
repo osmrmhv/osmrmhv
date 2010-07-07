@@ -24,10 +24,16 @@ package eu.cdauth.osm.lib.api06;
 import org.w3c.dom.Element;
 
 import eu.cdauth.osm.lib.APIError;
+import eu.cdauth.osm.lib.ID;
+import eu.cdauth.osm.lib.Item;
 import eu.cdauth.osm.lib.LonLat;
 import eu.cdauth.osm.lib.Node;
 import eu.cdauth.osm.lib.VersionedItemCache;
 import eu.cdauth.osm.lib.Way;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Arrays;
 
 /**
  * Represents a Node in OpenStreetMap.
@@ -35,6 +41,25 @@ import eu.cdauth.osm.lib.Way;
 
 public class API06Node extends API06GeographicalItem implements Node
 {
+	private LonLat m_lonlat = null;
+	private ID[] m_containingWays = null;
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+	{
+		super.readExternal(in);
+		m_lonlat = (LonLat)in.readObject();
+		m_containingWays = (ID[])in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		super.writeExternal(out);
+		out.writeObject(m_lonlat);
+		out.writeObject(m_containingWays);
+	}
+
 	/**
 	 * Only for serialization.
 	 */
@@ -46,26 +71,35 @@ public class API06Node extends API06GeographicalItem implements Node
 	protected API06Node(Element a_dom, API06API a_api)
 	{
 		super(a_dom, a_api);
+
+		m_lonlat = new LonLat(Double.parseDouble(a_dom.getAttribute("lon")), Double.parseDouble(a_dom.getAttribute("lat")));
 	}
 
 	@Override
 	public LonLat getLonLat()
 	{
-		return new LonLat(Float.parseFloat(getDOM().getAttribute("lon")), Float.parseFloat(getDOM().getAttribute("lat")));
+		return m_lonlat;
 	}
 
 	@Override
-	public Way[] getContainingWays() throws APIError
+	public ID[] getContainingWays() throws APIError
 	{
-		Way[] ret = (Way[])getAPI().get("/node/"+getID()+"/ways");
-		VersionedItemCache<Way> cache = getAPI().getWayFactory().getCache();
-		for(Way it : ret)
+		if(m_containingWays == null)
 		{
-			((API06Way)it).markAsCurrent();
-			cache.cacheObject(it);
+			Item[] ways = getAPI().get("/node/"+getID()+"/ways");
+			VersionedItemCache<Way> cache = getAPI().getWayFactory().getCache();
+			synchronized(this)
+			{
+				m_containingWays = new ID[ways.length];
+				for(int i=0; i<ways.length; i++)
+				{
+					((API06GeographicalItem)ways[i]).markAsCurrent();
+					cache.cacheObject((Way)ways[i]);
+					m_containingWays[i] = ways[i].getID();
+				}
+			}
 		}
 		
-		// FIXME: Cache this result somehow?
-		return ret;
+		return Arrays.copyOf(m_containingWays, m_containingWays.length);
 	}
 }

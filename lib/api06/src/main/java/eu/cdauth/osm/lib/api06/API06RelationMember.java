@@ -29,10 +29,36 @@ import eu.cdauth.osm.lib.Node;
 import eu.cdauth.osm.lib.Relation;
 import eu.cdauth.osm.lib.RelationMember;
 import eu.cdauth.osm.lib.Way;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 public class API06RelationMember extends API06XMLItem implements RelationMember
 {
-	private Relation m_relation; // Not final because of serialization
+	private String m_type = null;
+	private ID m_referenceID = null;
+	private ID m_relationID = null;
+	private String m_role = null;
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+	{
+		super.readExternal(in);
+		m_type = (String)in.readObject();
+		m_referenceID = (ID)in.readObject();
+		m_relationID = (ID)in.readObject();
+		m_role = (String)in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		super.writeExternal(out);
+		out.writeObject(m_type);
+		out.writeObject(m_referenceID);
+		out.writeObject(m_relationID);
+		out.writeObject(m_role);
+	}
 
 	/**
 	 * Only used for serialization.
@@ -42,41 +68,44 @@ public class API06RelationMember extends API06XMLItem implements RelationMember
 	{
 	}
 	
-	protected API06RelationMember(Element a_dom, API06API a_api, Relation a_relation)
+	protected API06RelationMember(Element a_dom, API06API a_api, ID a_relation)
 	{
 		super(a_dom, a_api);
-		m_relation = a_relation;
+
+		m_relationID = a_relation;
+		m_type = a_dom.getAttribute("type");
+		m_referenceID = new ID(a_dom.getAttribute("ref"));
+		m_role = a_dom.getAttribute("role");
 	}
 
 	@Override
-	public Relation getRelation()
+	public ID getRelation()
 	{
-		return m_relation;
+		return m_relationID;
 	}
 	
 	@Override
 	public Class<? extends GeographicalItem> getType()
 	{
-		String type = getDOM().getAttribute("type");
-		if(type.equals("node"))
+		if(m_type.equals("node"))
 			return Node.class;
-		else if(type.equals("way"))
+		else if(m_type.equals("way"))
 			return Way.class;
-		else if(type.equals("relation"))
+		else if(m_type.equals("relation"))
 			return Relation.class;
 		else
-			throw new RuntimeException("Unknown relation member type "+type+".");
+			throw new RuntimeException("Unknown relation member type "+m_type+".");
 	}
 
 	@Override
 	public ID getReferenceID()
 	{
-		return new ID(getDOM().getAttribute("ref"));
+		return m_referenceID;
 	}
 
 	@Override
 	public String getRole()
 	{
-		return getDOM().getAttribute("role");
+		return m_role;
 	}
 }
