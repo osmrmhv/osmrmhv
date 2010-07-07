@@ -49,7 +49,16 @@
 		//@Override
 		public int compareTo(UserChangeNumber a_other)
 		{
-			return a_other.changes.compareTo(changes);
+			int ret = a_other.changes.compareTo(changes);
+			if(ret == 0)
+				ret = user.compareTo(a_other.user);
+			return ret;
+		}
+
+		//@Override
+		public boolean equals(Object a_other)
+		{
+			return a_other instanceof UserChangeNumber && ((UserChangeNumber)a_other).user.equals(user) && ((UserChangeNumber)a_other).changes.equals(changes);
 		}
 	}
 

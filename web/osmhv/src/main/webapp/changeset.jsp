@@ -106,7 +106,7 @@
 	else
 	{
 %>
-	<dd>changeset.getClosingDate().toString())%></dd>
+	<dd><%=htmlspecialchars(changeset.getClosingDate().toString())%></dd>
 <%
 	}
 %>
