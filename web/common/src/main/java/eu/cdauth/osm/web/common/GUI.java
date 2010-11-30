@@ -590,7 +590,7 @@ abstract public class GUI
 		PrintWriter out = m_resp.getWriter();
 		out.println("\t\t\t<hr />");
 		out.println("\t\t\t<p>All geographic data by <a href=\"http://www.openstreetmap.org/\">OpenStreetMap</a>, available under <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">cc-by-sa-2.0</a>.</p>");
-		out.println("\t\t\t<p><strong>Kindly hosted by <a href=\"http://teddy.ch/\">Teddy Engineering Gmbh</a>.</strong></p>");
+		out.println("\t\t\t<p><strong>Kindly hosted by <a href=\"http://www.teddy.ch/\">Teddy Engineering Gmbh</a>.</strong></p>");
 		out.println("\t\t\t<p>This program is free software: you can redistribute it and/or modify it under the terms of the <a href=\"http://www.gnu.org/licenses/agpl.html\">GNU Affero General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. Get the source code via <a href=\"http://gitorious.org/osmrmhv\">Git</a>.</p>");
 		out.println("\t</body>");
 		out.println("</html>");
