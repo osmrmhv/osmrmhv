@@ -8,6 +8,7 @@ package eu.cdauth.osm.lib;
 
 import javax.sql.DataSource;
 import java.io.*;
+import java.lang.ref.SoftReference;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -52,7 +53,7 @@ public class ItemCache<T extends Item>
 	
 	private static final Map<ItemCache<? extends Item>, java.lang.Object> sm_instances = Collections.synchronizedMap(new WeakHashMap<ItemCache<? extends Item>, java.lang.Object>());
 
-	private final Map<ID,T> m_cache = new Hashtable<ID,T>();
+	private final Map<ID,SoftReference<T>> m_cache = new Hashtable<ID,SoftReference<T>>();
 
 	/**
 	 * Caches the time stamp ({@link System#currentTimeMillis()}) when a entry is saved to the cache. Needed for all
@@ -99,7 +100,9 @@ public class ItemCache<T extends Item>
 		T ret = null;
 		synchronized(m_cache)
 		{
-			ret = m_cache.get(a_id);
+			SoftReference<T> ref = m_cache.get(a_id);
+			if(ref != null)
+				ret = ref.get();
 		}
 
 		if(ret == null)
@@ -159,9 +162,10 @@ public class ItemCache<T extends Item>
 		{
 			synchronized(m_cacheTimes)
 			{
-				T old = m_cache.get(id);
+				SoftReference<T> oldRef = m_cache.get(id);
+				T old = (oldRef == null ? null : oldRef.get());
 				if(old == null || !old.equals(a_object)) // Prevent additionally downloaded data (for example the content of a changeset) from being lost.
-					m_cache.put(id, a_object);
+					m_cache.put(id, new SoftReference<T>(a_object));
 				m_cacheTimes.put(id, System.currentTimeMillis());
 			}
 		}
@@ -232,14 +236,14 @@ public class ItemCache<T extends Item>
 						if(!a_completely && System.currentTimeMillis()-oldestTime <= MAX_AGE*1000 && m_cacheTimes.size() <= MAX_CACHED_VALUES)
 							break;
 						m_cacheTimes.remove(oldest);
-						item = m_cache.remove(oldest);
+						item = m_cache.remove(oldest).get();
 					}
 				}
 
 				affected++;
 
-				if(persistenceID != null && conn != null)
-				{
+				if(item != null && persistenceID != null && conn != null)
+				{ // Save the item to the database
 					try
 					{
 						synchronized(conn)

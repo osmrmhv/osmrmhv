@@ -6,6 +6,7 @@
 
 package eu.cdauth.osm.lib;
 
+import java.lang.ref.SoftReference;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
@@ -22,7 +23,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 {
 	private static final Logger sm_logger = Logger.getLogger(ItemCache.class.getName());
 
-	private final Hashtable<ID,TreeMap<Version,T>> m_history = new Hashtable<ID,TreeMap<Version,T>>();
+	private final Hashtable<ID,SoftReference<TreeMap<Version,T>>> m_history = new Hashtable<ID,SoftReference<TreeMap<Version,T>>>();
 	private final ValueSortedMap<ID,Long> m_historyTimes = new ValueSortedMap<ID,Long>();
 
 	private final Set<ID> m_databaseCache = Collections.synchronizedSet(new HashSet<ID>());
@@ -61,7 +62,8 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 	{
 		synchronized(m_history)
 		{
-			TreeMap<Version,T> history = m_history.get(a_id);
+			SoftReference<TreeMap<Version,T>> historyRef = m_history.get(a_id);
+			TreeMap<Version,T> history = (historyRef == null ? null : historyRef.get());
 			synchronized(m_databaseCache)
 			{
 				if(m_databaseCache.contains(a_id))
@@ -167,11 +169,12 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 		TreeMap<Version,T> history;
 		synchronized(m_history)
 		{
-			history = m_history.get(id);
+			SoftReference<TreeMap<Version,T>> historyRef = m_history.get(id);
+			history = (historyRef == null ? null : historyRef.get());
 			if(history == null)
 			{
 				history = new TreeMap<Version,T>();
-				m_history.put(id, history);
+				m_history.put(id, new SoftReference<TreeMap<Version,T>>(history));
 			}
 			
 			synchronized(m_historyTimes)
@@ -200,7 +203,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 
 		synchronized(m_history)
 		{
-			m_history.put(current.getID(), a_history);
+			m_history.put(current.getID(), new SoftReference<TreeMap<Version,T>>(a_history));
 		}
 	}
 
@@ -241,7 +244,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 							break;
 						id = oldest;
 						m_historyTimes.remove(oldest);
-						history = m_history.remove(id);
+						history = m_history.remove(id).get();
 					}
 				}
 				affected++;
@@ -378,8 +381,18 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 					{
 						ID id = new ID(res.getLong(1));
 						Version version = new Version(res.getLong(2));
-						if(!m_databaseCache.contains(id) && (!m_history.containsKey(id) || !m_history.get(id).containsKey(version)))
-							m_databaseCache.add(id);
+						if(!m_databaseCache.contains(id))
+						{
+							boolean inHistory = m_history.containsKey(id);
+							if(inHistory)
+							{
+								TreeMap<Version,T> ref = m_history.get(id).get();
+								if(ref == null || !ref.containsKey(version))
+									inHistory = false;
+							}
+							if(!inHistory)
+								m_databaseCache.add(id);
+						}
 					}
 				}
 			}
