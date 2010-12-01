@@ -6,7 +6,6 @@
 
 package eu.cdauth.osm.lib;
 
-import java.lang.ref.SoftReference;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
@@ -23,7 +22,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 {
 	private static final Logger sm_logger = Logger.getLogger(ItemCache.class.getName());
 
-	private final Hashtable<ID,SoftReference<TreeMap<Version,T>>> m_history = new Hashtable<ID,SoftReference<TreeMap<Version,T>>>();
+	private final Hashtable<ID,Reference<TreeMap<Version,T>>> m_history = new Hashtable<ID,Reference<TreeMap<Version,T>>>();
 	private final ValueSortedMap<ID,Long> m_historyTimes = new ValueSortedMap<ID,Long>();
 
 	private final Set<ID> m_databaseCache = Collections.synchronizedSet(new HashSet<ID>());
@@ -62,7 +61,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 	{
 		synchronized(m_history)
 		{
-			SoftReference<TreeMap<Version,T>> historyRef = m_history.get(a_id);
+			Reference<TreeMap<Version,T>> historyRef = m_history.get(a_id);
 			TreeMap<Version,T> history = (historyRef == null ? null : historyRef.get());
 			synchronized(m_databaseCache)
 			{
@@ -169,12 +168,12 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 		TreeMap<Version,T> history;
 		synchronized(m_history)
 		{
-			SoftReference<TreeMap<Version,T>> historyRef = m_history.get(id);
+			Reference<TreeMap<Version,T>> historyRef = m_history.get(id);
 			history = (historyRef == null ? null : historyRef.get());
 			if(history == null)
 			{
 				history = new TreeMap<Version,T>();
-				m_history.put(id, new SoftReference<TreeMap<Version,T>>(history));
+				m_history.put(id, makeReference(history));
 			}
 			
 			synchronized(m_historyTimes)
@@ -203,7 +202,7 @@ public class VersionedItemCache<T extends VersionedItem> extends ItemCache<T>
 
 		synchronized(m_history)
 		{
-			m_history.put(current.getID(), new SoftReference<TreeMap<Version,T>>(a_history));
+			m_history.put(current.getID(), makeReference(a_history));
 		}
 	}
 

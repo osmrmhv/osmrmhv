@@ -8,7 +8,6 @@ package eu.cdauth.osm.lib;
 
 import javax.sql.DataSource;
 import java.io.*;
-import java.lang.ref.SoftReference;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -27,6 +26,35 @@ import java.util.logging.Logger;
 
 public class ItemCache<T extends Item>
 {
+	protected static interface Reference<T>
+	{
+		public T get();
+	}
+
+	protected static class SoftReference<T> extends java.lang.ref.SoftReference<T> implements Reference<T>
+	{
+		public SoftReference(T referent)
+		{
+			super(referent);
+		}
+	}
+
+	protected static class StrongReference<T> implements Reference<T>
+	{
+		private final T m_referent;
+
+		public StrongReference(T referent)
+		{
+			m_referent = referent;
+		}
+
+		@Override
+		public T get()
+		{
+			return m_referent;
+		}
+	}
+
 	/**
 	 * How many entries may be in the cache?
 	 */
@@ -53,13 +81,21 @@ public class ItemCache<T extends Item>
 	
 	private static final Map<ItemCache<? extends Item>, java.lang.Object> sm_instances = Collections.synchronizedMap(new WeakHashMap<ItemCache<? extends Item>, java.lang.Object>());
 
-	private final Map<ID,SoftReference<T>> m_cache = new Hashtable<ID,SoftReference<T>>();
+	private final Map<ID,Reference<T>> m_cache = new Hashtable<ID,Reference<T>>();
 
 	/**
 	 * Caches the time stamp ({@link System#currentTimeMillis()}) when a entry is saved to the cache. Needed for all
 	 * clean up methods.
 	 */
 	private final ValueSortedMap<ID,Long> m_cacheTimes = new ValueSortedMap<ID,Long>();
+
+	private final static boolean USE_SOFT_REFERENCES = !System.getProperty("java.vm.name").equals("GNU libgcj");;
+
+	static
+	{
+		if(sm_logger.isLoggable(Level.INFO))
+			sm_logger.info((USE_SOFT_REFERENCES ? "Using" : "Not using")+" soft references for caching.");
+	}
 
 	/**
 	 * Creates a cache that does not use a database but only stores several items in the memory.
@@ -100,7 +136,7 @@ public class ItemCache<T extends Item>
 		T ret = null;
 		synchronized(m_cache)
 		{
-			SoftReference<T> ref = m_cache.get(a_id);
+			Reference<T> ref = m_cache.get(a_id);
 			if(ref != null)
 				ret = ref.get();
 		}
@@ -162,10 +198,10 @@ public class ItemCache<T extends Item>
 		{
 			synchronized(m_cacheTimes)
 			{
-				SoftReference<T> oldRef = m_cache.get(id);
+				Reference<T> oldRef = m_cache.get(id);
 				T old = (oldRef == null ? null : oldRef.get());
 				if(old == null || !old.equals(a_object)) // Prevent additionally downloaded data (for example the content of a changeset) from being lost.
-					m_cache.put(id, new SoftReference<T>(a_object));
+					m_cache.put(id, makeReference(a_object));
 				m_cacheTimes.put(id, System.currentTimeMillis());
 			}
 		}
@@ -463,5 +499,13 @@ public class ItemCache<T extends Item>
 		{
 			throw new SQLException("Could not serialize object.", e);
 		}
+	}
+	
+	protected <T> Reference<T> makeReference(T obj)
+	{
+		if(USE_SOFT_REFERENCES)
+			return new SoftReference<T>(obj);
+		else
+			return new StrongReference<T>(obj);
 	}
 }
