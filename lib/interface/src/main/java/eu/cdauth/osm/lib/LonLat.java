@@ -6,27 +6,19 @@
 
 package eu.cdauth.osm.lib;
 
-import java.io.*;
+import java.io.Serializable;
 
 /**
  * Represents a pair of coordinates in WGS 84 / EPSG 4326. This is immutable.
  */
 
-public class LonLat implements Externalizable
+public class LonLat implements Serializable
 {
-	private double m_lon;
-	private double m_lat;
+	private final double m_lon;
+	private final double m_lat;
 	
 	private static final short EARTH_RADIUS = 6367;
 
-	/**
-	 * Only used for serialization.
-	 */
-	@Deprecated
-	public LonLat()
-	{
-	}
-	
 	/**
 	 * Creates a pair of coordinates.
 	 * @param a_lon The longitude in degrees, a value greater than or equal -90 and less than or equal +90.
@@ -105,19 +97,5 @@ public class LonLat implements Externalizable
 	public String toString()
 	{
 		return getLat()+","+getLon();
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		out.writeDouble(m_lon);
-		out.writeDouble(m_lat);
-	}
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		m_lon = in.readDouble();
-		m_lat = in.readDouble();
 	}
 }

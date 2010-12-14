@@ -13,17 +13,9 @@ import java.io.*;
  * data types such as {@link Version} are 64-bit integers as well.
  * @author cdauth
  */
-public class ID implements Comparable<ID>, Externalizable
+public class ID implements Comparable<ID>, Serializable
 {
-	private Long m_id; // only mutable for externalization
-
-	/**
-	 * Only used for serialization.
-	 */
-	@Deprecated
-	public ID()
-	{
-	}
+	private final Long m_id;
 
 	/**
 	 * Creates an ID from a long.
@@ -90,17 +82,5 @@ public class ID implements Comparable<ID>, Externalizable
 		if(m_id == null)
 			return "";
 		return m_id.toString();
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		out.writeLong(m_id);
-	}
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		m_id = in.readLong();
 	}
 }

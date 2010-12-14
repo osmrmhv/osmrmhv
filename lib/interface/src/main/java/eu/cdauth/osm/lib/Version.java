@@ -14,17 +14,9 @@ import java.io.*;
  * 
  * @author cdauth
  */
-public class Version implements Comparable<Version>, Externalizable
+public class Version implements Comparable<Version>, Serializable
 {
-	private Long m_version; // only mutable for externalization
-
-	/**
-	 * Only used for serialization.
-	 */
-	@Deprecated
-	public Version()
-	{
-	}
+	private final Long m_version;
 
 	/**
 	 * Creates a version from a long.
@@ -91,17 +83,5 @@ public class Version implements Comparable<Version>, Externalizable
 		if(m_version == null)
 			return "";
 		return m_version.toString();
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		out.writeLong(m_version);
-	}
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		m_version = in.readLong();
 	}
 }

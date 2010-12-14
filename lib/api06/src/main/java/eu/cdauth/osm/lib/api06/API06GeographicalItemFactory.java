@@ -34,7 +34,7 @@ abstract public class API06GeographicalItemFactory<T extends VersionedItem> exte
 	{
 		super(a_api, a_type);
 
-		m_cache = new VersionedItemCache<T>(getAPI().getDatabaseCache(), getType());
+		m_cache = new VersionedItemCache<T>();
 	}
 	
 	@Override

@@ -38,7 +38,7 @@ abstract public class API06ItemFactory<T extends Item> implements ItemFactory<T>
 	{
 		m_api = a_api;
 		m_type = a_type;
-		m_cache = new ItemCache<T>(getAPI().getDatabaseCache(), getType());
+		m_cache = new ItemCache<T>();
 	}
 	
 	protected ItemCache<T> getCache()

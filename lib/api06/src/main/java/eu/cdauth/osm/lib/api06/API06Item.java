@@ -37,7 +37,6 @@ import eu.cdauth.osm.lib.Node;
 import eu.cdauth.osm.lib.Relation;
 import eu.cdauth.osm.lib.VersionedItem;
 import eu.cdauth.osm.lib.Way;
-import java.io.Externalizable;
 import java.util.Collections;
 
 /**
@@ -48,30 +47,6 @@ abstract public class API06Item extends API06XMLItem implements Item
 {
 	private ID m_id = null;
 	private Map<String,String> m_tags = null;
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		super.readExternal(in);
-		m_id = (ID)in.readObject();
-		m_tags = (Map<String,String>)in.readObject();
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		super.writeExternal(out);
-		out.writeObject(m_id);
-		out.writeObject(m_tags);
-	}
-
-	/**
-	 * Only for serialization.
-	 */
-	@Deprecated
-	public API06Item()
-	{
-	}
 
 	protected API06Item(Element a_dom, API06API a_api)
 	{

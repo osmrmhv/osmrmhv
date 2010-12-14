@@ -22,38 +22,15 @@
 package eu.cdauth.osm.lib.api06;
 
 import org.w3c.dom.Element;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSParser;
-import org.w3c.dom.ls.LSSerializer;
 
 import java.io.*;
 
 /**
  * Abstract class for all objects whose information is saved in an XML DOM element.
  */
-abstract public class API06XMLItem implements Externalizable
+abstract public class API06XMLItem implements Serializable
 {
 	private transient API06API m_api;
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-	}
-
-	/**
-	 * Only for serialization.
-	 */
-	@Deprecated
-	public API06XMLItem()
-	{
-	}
 	
 	/**
 	 * @param a_dom The DOM element.

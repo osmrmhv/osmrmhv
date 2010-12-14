@@ -31,36 +31,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import eu.cdauth.osm.lib.GeographicalItem;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Arrays;
 
 public class API06Relation extends API06GeographicalItem implements Relation
 {
 	private API06RelationMember[] m_members = null;
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		super.readExternal(in);
-		m_members = (API06RelationMember[])in.readObject();
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		super.writeExternal(out);
-		out.writeObject(m_members);
-	}
-
-	/**
-	 * Only for serialization.
-	 */
-	@Deprecated
-	public API06Relation()
-	{
-	}
 
 	protected API06Relation(Element a_dom, API06API a_api)
 	{

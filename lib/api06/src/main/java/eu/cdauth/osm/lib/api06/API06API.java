@@ -31,7 +31,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
-import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -57,31 +56,6 @@ public class API06API implements API
 	private static Logger sm_logger = Logger.getLogger(API06API.class.getName());
 
 	private String m_userAgent = "cdauth’s OSM library";
-
-	private final DataSource m_databaseCache;
-
-	public API06API()
-	{
-		m_databaseCache = null;
-	}
-
-	/**
-	 * Not only caches some Items in the memory, but also uses a database for caching.
-	 * @param a_databaseCache The database to use for caching.
-	 */
-	public API06API(DataSource a_databaseCache)
-	{
-		m_databaseCache = a_databaseCache;
-	}
-
-	/**
-	 * Returns the database connection source to use for Item caches.
-	 * @return The cache database connection source or null if no such is defined.
-	 */
-	public DataSource getDatabaseCache()
-	{
-		return m_databaseCache;
-	}
 	
 	/**
 	 * Sets the User-Agent HTTP request header for all future API requests.

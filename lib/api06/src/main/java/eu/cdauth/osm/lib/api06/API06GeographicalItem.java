@@ -48,36 +48,6 @@ abstract public class API06GeographicalItem extends API06Item implements Version
 	private Version m_version = null;
 	private ID m_changeset = null;
 	private ID[] m_containingRelations = null;
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		super.readExternal(in);
-		m_current = in.readBoolean();
-		m_timestamp = (Date)in.readObject();
-		m_version = (Version)in.readObject();
-		m_changeset = (ID)in.readObject();
-		m_containingRelations = (ID[])in.readObject();
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		super.writeExternal(out);
-		out.writeBoolean(m_current);
-		out.writeObject(m_timestamp);
-		out.writeObject(m_version);
-		out.writeObject(m_changeset);
-		out.writeObject(m_containingRelations);
-	}
-
-	/**
-	 * Only for serialization.
-	 */
-	@Deprecated
-	public API06GeographicalItem()
-	{
-	}
 	
 	protected static SimpleDateFormat getDateFormat()
 	{

@@ -115,24 +115,14 @@ abstract public class GUI
 	 */
 	public synchronized static API06API getAPI()
 	{
+		/*DataSource ds = null;
+		try {
+			ds = (DataSource) ((Context)new InitialContext().lookup("java:comp/env")).lookup("jdbc/osmrmhv");
+		} catch(NamingException e) {
+		}*/
+
 		if(sm_api == null)
-		{
-			DataSource ds = null;
-			try {
-				ds = (DataSource) ((Context)new InitialContext().lookup("java:comp/env")).lookup("jdbc/osmrmhv");
-			} catch(NamingException e) {
-			}
-			if(ds == null)
-			{
-				Logger.getLogger(GUI.class.getName()).info("Using API without database cache.");
-				sm_api = new eu.cdauth.osm.lib.api06.API06API();
-			}
-			else
-			{
-				Logger.getLogger(GUI.class.getName()).info("Using API with database cache.");
-				sm_api = new eu.cdauth.osm.lib.api06.API06API(ds);
-			}
-		}
+			sm_api = new eu.cdauth.osm.lib.api06.API06API();
 		return sm_api;
 	}
 

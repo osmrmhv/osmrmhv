@@ -29,9 +29,6 @@ import eu.cdauth.osm.lib.Node;
 import eu.cdauth.osm.lib.Relation;
 import eu.cdauth.osm.lib.RelationMember;
 import eu.cdauth.osm.lib.Way;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 
 public class API06RelationMember extends API06XMLItem implements RelationMember
 {
@@ -39,34 +36,6 @@ public class API06RelationMember extends API06XMLItem implements RelationMember
 	private ID m_referenceID = null;
 	private ID m_relationID = null;
 	private String m_role = null;
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		super.readExternal(in);
-		m_type = (String)in.readObject();
-		m_referenceID = (ID)in.readObject();
-		m_relationID = (ID)in.readObject();
-		m_role = (String)in.readObject();
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		super.writeExternal(out);
-		out.writeObject(m_type);
-		out.writeObject(m_referenceID);
-		out.writeObject(m_relationID);
-		out.writeObject(m_role);
-	}
-
-	/**
-	 * Only used for serialization.
-	 */
-	@Deprecated
-	public API06RelationMember()
-	{
-	}
 	
 	protected API06RelationMember(Element a_dom, API06API a_api, ID a_relation)
 	{

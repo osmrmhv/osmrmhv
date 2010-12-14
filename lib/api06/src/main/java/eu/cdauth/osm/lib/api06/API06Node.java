@@ -30,9 +30,6 @@ import eu.cdauth.osm.lib.LonLat;
 import eu.cdauth.osm.lib.Node;
 import eu.cdauth.osm.lib.VersionedItemCache;
 import eu.cdauth.osm.lib.Way;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Arrays;
 
 /**
@@ -43,30 +40,6 @@ public class API06Node extends API06GeographicalItem implements Node
 {
 	private LonLat m_lonlat = null;
 	private ID[] m_containingWays = null;
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		super.readExternal(in);
-		m_lonlat = (LonLat)in.readObject();
-		m_containingWays = (ID[])in.readObject();
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		super.writeExternal(out);
-		out.writeObject(m_lonlat);
-		out.writeObject(m_containingWays);
-	}
-
-	/**
-	 * Only for serialization.
-	 */
-	@Deprecated
-	public API06Node()
-	{
-	}
 
 	protected API06Node(Element a_dom, API06API a_api)
 	{

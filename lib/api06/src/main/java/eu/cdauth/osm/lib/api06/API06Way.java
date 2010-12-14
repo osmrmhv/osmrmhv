@@ -31,36 +31,11 @@ import eu.cdauth.osm.lib.ID;
 import eu.cdauth.osm.lib.LonLat;
 import eu.cdauth.osm.lib.Node;
 import eu.cdauth.osm.lib.Way;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Arrays;
 
 public class API06Way extends API06GeographicalItem implements Way
 {
 	private ID[] m_members = null;
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		super.readExternal(in);
-		m_members = (ID[])in.readObject();
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		super.writeExternal(out);
-		out.writeObject(m_members);
-	}
-
-	/**
-	 * Only for serialization.
-	 */
-	@Deprecated
-	public API06Way()
-	{
-	}
 
 	protected API06Way(Element a_dom, API06API a_api)
 	{

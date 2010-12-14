@@ -13,18 +13,10 @@ import java.io.*;
  *
  * @author cdauth
  */
-public class User implements Comparable<User>, Externalizable
+public class User implements Comparable<User>, Serializable
 {
-	private ID m_id; // Only mutable for externalization
-	private String m_name;
-
-	/**
-	 * Only used for serialization.
-	 */
-	@Deprecated
-	public User()
-	{
-	}
+	private final ID m_id;
+	private final String m_name;
 
 	/**
 	 * Create a new user object with the specified ID and user name.
@@ -77,19 +69,5 @@ public class User implements Comparable<User>, Externalizable
 	public String toString()
 	{
 		return getName();
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		out.writeObject(m_id);
-		out.writeObject(m_name);
-	}
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		m_id = (ID)in.readObject();
-		m_name = (String)in.readObject();
 	}
 }

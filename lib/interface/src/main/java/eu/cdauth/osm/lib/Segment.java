@@ -12,19 +12,11 @@ import java.io.*;
  * Represents a connection between two nodes.
  */
 
-public class Segment implements Externalizable
+public class Segment implements Serializable
 {
-	private Node m_node1;
-	private Node m_node2;
+	private final Node m_node1;
+	private final Node m_node2;
 
-	/**
-	 * Only used for serialization.
-	 */
-	@Deprecated
-	public Segment()
-	{
-	}
-	
 	public Segment(Node a_node1, Node a_node2)
 	{
 		m_node1 = a_node1;
@@ -56,19 +48,5 @@ public class Segment implements Externalizable
 	public Node getNode2()
 	{
 		return m_node2;
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		out.writeObject(m_node1);
-		out.writeObject(m_node2);
-	}
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		m_node1 = (Node)in.readObject();
-		m_node2 = (Node)in.readObject();
 	}
 }
