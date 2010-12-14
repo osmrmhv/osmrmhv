@@ -18,12 +18,14 @@
 --%>
 <%@page import="eu.cdauth.osm.lib.*"%>
 <%@page import="eu.cdauth.osm.web.osmrm.*"%>
+<%@page import="eu.cdauth.osm.web.common.Cache"%>
 <%@page import="static eu.cdauth.osm.web.osmrm.GUI.*"%>
 <%@page import="java.util.*" %>
 <%@page import="java.net.URL" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	private static final API api = GUI.getAPI();
+	private static final Cache cache = new Cache("/tmp/osmrm");
 
 	public void jspInit()
 	{
@@ -62,137 +64,6 @@
 		});
 
 	gui.head();
-
-	Relation relation = api.getRelationFactory().fetch(relationId); // request.getParameter("refresh") != null
-	RelationSegment[] segments = RouteManager.segmentate(relation);
-
-	double totalLength = 0;
-	List<Integer>[] connection1 = new List[segments.length];
-	List<Integer>[] connection2 = new List[segments.length];
-	double[] distance1 = new double[segments.length];
-	LonLat[] distance1Target = new LonLat[segments.length];
-	double[] distance2 = new double[segments.length];
-	LonLat[] distance2Target = new LonLat[segments.length];
-
-	for(int i=0; i<segments.length; i++)
-	{
-		connection1[i] = new ArrayList<Integer>();
-		connection2[i] = new ArrayList<Integer>();
-		distance1[i] = Double.MAX_VALUE;
-		distance2[i] = Double.MAX_VALUE;
-	}
-
-	// Calculate segment connections and lengthes
-	for(int i=0; i<segments.length; i++)
-	{
-		totalLength += segments[i].getDistance();
-
-		LonLat thisEnd1 = segments[i].getEnd1();
-		LonLat thisEnd2 = segments[i].getEnd2();
-		for(int j=i+1; j<segments.length; j++)
-		{
-			LonLat thatEnd1 = segments[j].getEnd1();
-			LonLat thatEnd2 = segments[j].getEnd2();
-
-			if(thisEnd1.equals(thatEnd1))
-			{
-				connection1[i].add(j);
-				connection1[j].add(i);
-			}
-			if(thisEnd1.equals(thatEnd2))
-			{
-				connection1[i].add(j);
-				connection2[j].add(i);
-			}
-			if(thisEnd2.equals(thatEnd1))
-			{
-				connection2[i].add(j);
-				connection1[j].add(i);
-			}
-			if(thisEnd2.equals(thatEnd2))
-			{
-				connection2[i].add(j);
-				connection2[j].add(i);
-			}
-
-			double it_distance11 = thisEnd1.getDistance(thatEnd1);
-			double it_distance12 = thisEnd1.getDistance(thatEnd2);
-			double it_distance21 = thisEnd2.getDistance(thatEnd1);
-			double it_distance22 = thisEnd2.getDistance(thatEnd2);
-
-			// distance1[i] = Math.min(distance1[i], Math.min(it_distance11, it_distance12));
-			if(it_distance11 < it_distance12)
-			{
-				if(it_distance11 < distance1[i])
-				{
-					distance1[i] = it_distance11;
-					distance1Target[i] = thatEnd1;
-				}
-			}
-			else
-			{
-				if(it_distance12 < distance1[i])
-				{
-					distance1[i] = it_distance12;
-					distance1Target[i] = thatEnd2;
-				}
-			}
-
-			// distance2[i] = Math.min(distance2[i], Math.min(it_distance21, it_distance22));
-			if(it_distance21 < it_distance22)
-			{
-				if(it_distance21 < distance2[i])
-				{
-					distance2[i] = it_distance21;
-					distance2Target[i] = thatEnd1;
-				}
-			}
-			else
-			{
-				if(it_distance22 < distance2[i])
-				{
-					distance2[i] = it_distance22;
-					distance2Target[i] = thatEnd2;
-				}
-			}
-
-			// distance1[j] = Math.min(distance1[j], Math.min(it_distance11, it_distance21));
-			if(it_distance11 < it_distance21)
-			{
-				if(it_distance11 < distance1[j])
-				{
-					distance1[j] = it_distance11;
-					distance1Target[j] = thisEnd1;
-				}
-			}
-			else
-			{
-				if(it_distance21 < distance1[j])
-				{
-					distance1[j] = it_distance21;
-					distance1Target[j] = thisEnd2;
-				}
-			}
-
-			// distance2[j] = Math.min(distance2[j], Math.min(it_distance12, it_distance22));
-			if(it_distance12 < it_distance22)
-			{
-				if(it_distance11 < distance2[j])
-				{
-					distance2[j] = it_distance12;
-					distance2Target[j] = thisEnd1;
-				}
-			}
-			else
-			{
-				if(it_distance22 < distance2[j])
-				{
-					distance2[j] = it_distance22;
-					distance2Target[j] = thisEnd2;
-				}
-			}
-		}
-	}
 %>
 <ul>
 	<li><a href="./"><%=htmlspecialchars(gui._("Back to home page"))%></a></li>
@@ -201,12 +72,24 @@
 	<li><a href="http://osm.cdauth.eu/history-viewer/blame.jsp?id=<%=htmlspecialchars(urlencode(relationId.toString()))%>"><%=htmlspecialchars(gui._("Blame with History Viewer"))%></a></li>
 </ul>
 <noscript><p><strong><%=htmlspecialchars(gui._("Note that many features of this page will not work without JavaScript."))%></strong></p></noscript>
-<%--<p><%=String.format(htmlspecialchars(gui._("The data was last refreshed on %s. The timestamp of the relation is %s. If you think one of the members might have been changed, %sreload the data manually%s.")), gmdate("Y-m-d\\TH:i:s\\Z", $segments[0]), $relation->getDOM()->getAttribute("timestamp"), "<a href=\"?id="+htmlspecialchars(urlencode(relationId.toString())+"&refresh=1")."\">", "</a>")%></p>--%>
+<%
+	RouteAnalyser route;
+	Cache.Entry cacheEntry = null;
+	if(request.getParameter("refresh") == null)
+		cacheEntry = cache.getEntry(relationId.toString());
+	if(cacheEntry != null)
+		route = (RouteAnalyser)cacheEntry.content;
+	else
+	{
+		route = new RouteAnalyser(api, relationId);
+		cache.saveEntry(relationId.toString(), route);
+	}
+%>
+<p><%=String.format(htmlspecialchars(gui._("The data was last refreshed on %s. The timestamp of the relation is %s. If you think something might have been changed, %sreload the data manually%s.")), gui.formatDate(cacheEntry == null ? null : cacheEntry.date), gui.formatDate(route.timestamp), "<a href=\"?id="+htmlspecialchars(urlencode(relationId.toString())+"&refresh=1")+"\">", "</a>")%></p>
 <h2><%=htmlspecialchars(gui._("Tags"))%></h2>
 <dl>
 <%
-	Map<String,String> tags = relation.getTags();
-	for(Map.Entry<String,String> tag : tags.entrySet())
+	for(Map.Entry<String,String> tag : route.tags.entrySet())
 	{
 %>
 	<dt><%=htmlspecialchars(tag.getKey())%></dt>
@@ -223,32 +106,23 @@
 %>
 </dl>
 <%
-	User user = api.getChangesetFactory().fetch(relation.getChangeset()).getUser();
+	User user = route.changeset.getUser();
 %>
 <h2><%=htmlspecialchars(gui._("Details"))%></h2>
 <dl>
 	<dt><%=htmlspecialchars(gui._("Last changed"))%></dt>
-	<dd><%=String.format(gui._("%s by %s"), relation.getTimestamp().toString(), "<a href=\"http://www.openstreetmap.org/user/"+urlencode(user.getName())+"\">"+htmlspecialchars(user.getName())+"</a>")%></dd>
+	<dd><%=String.format(gui._("%s by %s"), route.timestamp.toString(), "<a href=\"http://www.openstreetmap.org/user/"+urlencode(user.getName())+"\">"+htmlspecialchars(user.getName())+"</a>")%></dd>
 
 	<dt><%=htmlspecialchars(gui._("Total length"))%></dt>
-	<dd><%=gui.formatNumber(totalLength, 2)%>&thinsp;km</dd>
+	<dd><%=gui.formatNumber(route.totalLength, 2)%>&thinsp;km</dd>
 
 	<dt><%=htmlspecialchars(gui._("Sub-relations"))%></dt>
 	<dd><ul>
 <%
-	RelationMember[] members = relation.getMembers();
-	HashSet<ID> subRelationIDs = new HashSet<ID>();
-	for(RelationMember member : members)
-	{
-		if(member.getType() == Relation.class)
-			subRelationIDs.add(member.getReferenceID());
-	}
-	Map<ID,Relation> subRelations = api.getRelationFactory().fetch(subRelationIDs.toArray(new ID[subRelationIDs.size()]));
-
-	for(Map.Entry<ID,Relation> subRelation : subRelations.entrySet())
+	for(Map.Entry<ID,String> subRelation : route.subRelations.entrySet())
 	{
 %>
-		<li><a href="?id=<%=htmlspecialchars(urlencode(subRelation.getKey().toString()))%>"><%=htmlspecialchars(subRelation.getKey().toString())%> (<%=htmlspecialchars(subRelation.getValue().getTag("name"))%>)</a></li>
+		<li><a href="?id=<%=htmlspecialchars(urlencode(subRelation.getKey().toString()))%>"><%=htmlspecialchars(subRelation.getKey().toString())%> (<%=htmlspecialchars(subRelation.getValue())%>)</a></li>
 <%
 	}
 %>
@@ -257,11 +131,10 @@
 	<dt><%=htmlspecialchars(gui._("Parent relations"))%></dt>
 	<dd><ul>
 <%
-	Map<ID,Relation> parentRelations = api.getRelationFactory().fetch(relation.getContainingRelations());
-	for(Map.Entry<ID,Relation> parentRelation : parentRelations.entrySet())
+	for(Map.Entry<ID,String> parentRelation : route.parentRelations.entrySet())
 	{
 %>
-		<li><a href="?id=<%=htmlspecialchars(urlencode(parentRelation.getKey().toString()))%>"><%=htmlspecialchars(parentRelation.getKey().toString())%> (<%=htmlspecialchars(parentRelation.getValue().getTag("name"))%>)</a></li>
+		<li><a href="?id=<%=htmlspecialchars(urlencode(parentRelation.getKey().toString()))%>"><%=htmlspecialchars(parentRelation.getKey().toString())%> (<%=htmlspecialchars(parentRelation.getValue())%>)</a></li>
 <%
 	}
 %>
@@ -297,15 +170,15 @@
 		</thead>
 		<tbody>
 <%
-	for(int i=0; i<segments.length; i++)
+	for(int i=0; i<route.segments.length; i++)
 	{
-		LonLat end1 = segments[i].getEnd1();
-		LonLat end2 = segments[i].getEnd2();
+		LonLat end1 = route.segments[i].getEnd1();
+		LonLat end2 = route.segments[i].getEnd2();
 %>
 			<tr<% if(render){%> onmouseover="highlightSegment(<%=i%>);" onmouseout="unhighlightSegment(<%=i%>);"<% }%> id="tr-segment-<%=i%>" class="tr-segment-normal">
 				<td><%=htmlspecialchars(""+(i+1))%></td>
-				<td><%=gui.formatNumber(segments[i].getDistance(), 2)%>&thinsp;km</td>
-				<td><% if(segments.length > 1){%><a href="javascript:zoomToGap(new OpenLayers.LonLat(<%=end1.getLon()%>, <%=end1.getLat()%>), new OpenLayers.LonLat(<%=distance1Target[i].getLon()%>, <%=distance1Target[i].getLat()%>))"><%=gui.formatNumber(distance1[i], 2)%>&thinsp;km</a>, <a href="javascript:zoomToGap(new OpenLayers.LonLat(<%=end2.getLon()%>, <%=end2.getLat()%>), new OpenLayers.LonLat(<%=distance2Target[i].getLon()%>, <%=distance2Target[i].getLat()%>))"><%=gui.formatNumber(distance2[i], 2)%>&thinsp;km</a><% }%></td>
+				<td><%=gui.formatNumber(route.segments[i].getDistance(), 2)%>&thinsp;km</td>
+				<td><% if(route.segments.length > 1){%><a href="javascript:zoomToGap(new OpenLayers.LonLat(<%=end1.getLon()%>, <%=end1.getLat()%>), new OpenLayers.LonLat(<%=route.distance1Target[i].getLon()%>, <%=route.distance1Target[i].getLat()%>))"><%=gui.formatNumber(route.distance1[i], 2)%>&thinsp;km</a>, <a href="javascript:zoomToGap(new OpenLayers.LonLat(<%=end2.getLon()%>, <%=end2.getLat()%>), new OpenLayers.LonLat(<%=route.distance2Target[i].getLon()%>, <%=route.distance2Target[i].getLat()%>))"><%=gui.formatNumber(route.distance2[i], 2)%>&thinsp;km</a><% }%></td>
 <%
 		if(render)
 		{
@@ -359,7 +232,7 @@
 	var segments_data = [ ];
 	var projection = new OpenLayers.Projection("EPSG:4326");
 <%
-		for(int i=0; i<segments.length; i++)
+		for(int i=0; i<route.segments.length; i++)
 		{
 %>
 	segments[<%=i%>] = new OpenLayers.Layer.PointTrack(<%=jsescape(String.format(gui._("Segment %s"), i+1))%>, {
@@ -369,7 +242,7 @@
 	});
 	segments_data[<%=i%>] = [
 <%
-			LonLat[] nodes = segments[i].getNodes();
+			LonLat[] nodes = route.segments[i].getNodes();
 			for(int j=0; j<nodes.length; j++)
 			{
 %>
@@ -422,20 +295,20 @@
 	var pr_allowed = [
 		[
 <%
-	for(int i=0; i<segments.length; i++)
+	for(int i=0; i<route.segments.length; i++)
 	{
 %>
-			[ <%=implode(", ", connection2[i])%> ]<% if(i == segments.length-1){%> // <% }%>,
+			[ <%=implode(", ", route.connection2[i])%> ]<% if(i == route.segments.length-1){%> // <% }%>,
 <%
 	}
 %>
 		],
 		[
 <%
-	for(int i=0; i<segments.length; i++)
+	for(int i=0; i<route.segments.length; i++)
 	{
 %>
-			[ <%=implode(", ", connection1[i])%> ]<% if(i == segments.length-1){%> // <% }%>,
+			[ <%=implode(", ", route.connection1[i])%> ]<% if(i == route.segments.length-1){%> // <% }%>,
 <%
 	}
 %>

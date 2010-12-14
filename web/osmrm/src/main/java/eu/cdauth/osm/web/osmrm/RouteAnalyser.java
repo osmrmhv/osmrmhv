@@ -19,6 +19,7 @@
 
 package eu.cdauth.osm.web.osmrm;
 
+import eu.cdauth.osm.lib.API;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -27,14 +28,192 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import eu.cdauth.osm.lib.APIError;
+import eu.cdauth.osm.lib.Changeset;
+import eu.cdauth.osm.lib.ID;
 import eu.cdauth.osm.lib.LonLat;
 import eu.cdauth.osm.lib.Node;
 import eu.cdauth.osm.lib.Relation;
+import eu.cdauth.osm.lib.RelationMember;
 import eu.cdauth.osm.lib.Way;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Map;
 
-public class RouteManager
+public class RouteAnalyser implements Serializable
 {
-	private static Logger sm_logger = Logger.getLogger(RouteManager.class.getName());
+	private static Logger sm_logger = Logger.getLogger(RouteAnalyser.class.getName());
+
+	public final Map<String,String> tags;
+	public final Changeset changeset;
+	public final Date timestamp;
+	public final double totalLength;
+	public final Map<ID,String> subRelations;
+	public final Map<ID,String> parentRelations;
+	public final RelationSegment[] segments;
+	public final LonLat[] distance1Target;
+	public final LonLat[] distance2Target;
+	public final double[] distance1;
+	public final double[] distance2;
+	public final List<Integer>[] connection1;
+	public final List<Integer>[] connection2;
+
+	public RouteAnalyser(API a_api, ID a_id) throws APIError
+	{
+		Relation relation = a_api.getRelationFactory().fetch(a_id);
+
+		segments = segmentate(relation);
+
+		tags = relation.getTags();
+
+		subRelations = new Hashtable<ID,String>();
+		List<ID> subRelationIDs = new ArrayList<ID>();
+		RelationMember[] members = relation.getMembers();
+		for(RelationMember member : members)
+		{
+			if(member.getType() == Relation.class)
+				subRelationIDs.add(member.getReferenceID());
+		}
+		Map<ID,Relation> subRelationObjs = a_api.getRelationFactory().fetch(subRelationIDs.toArray(new ID[subRelationIDs.size()]));
+		for(Map.Entry<ID,Relation> subRelation : subRelationObjs.entrySet())
+			subRelations.put(subRelation.getKey(), subRelation.getValue().getTag("name"));
+
+		parentRelations = new Hashtable<ID,String>();
+		Map<ID,Relation> parentRelationObjs = a_api.getRelationFactory().fetch(relation.getContainingRelations());
+		for(Map.Entry<ID,Relation> parentRelation : parentRelationObjs.entrySet())
+			parentRelations.put(parentRelation.getKey(), parentRelation.getValue().getTag("name"));
+
+		changeset = a_api.getChangesetFactory().fetch(relation.getChangeset());
+		timestamp = relation.getTimestamp();
+
+		double ltotalLength = 0;
+		connection1 = new List[segments.length];
+		connection2 = new List[segments.length];
+		distance1 = new double[segments.length];
+		distance1Target = new LonLat[segments.length];
+		distance2 = new double[segments.length];
+		distance2Target = new LonLat[segments.length];
+
+		for(int i=0; i<segments.length; i++)
+		{
+			connection1[i] = new ArrayList<Integer>();
+			connection2[i] = new ArrayList<Integer>();
+			distance1[i] = Double.MAX_VALUE;
+			distance2[i] = Double.MAX_VALUE;
+		}
+
+		// Calculate segment connections and lengthes
+		for(int i=0; i<segments.length; i++)
+		{
+			ltotalLength += segments[i].getDistance();
+
+			LonLat thisEnd1 = segments[i].getEnd1();
+			LonLat thisEnd2 = segments[i].getEnd2();
+			for(int j=i+1; j<segments.length; j++)
+			{
+				LonLat thatEnd1 = segments[j].getEnd1();
+				LonLat thatEnd2 = segments[j].getEnd2();
+
+				if(thisEnd1.equals(thatEnd1))
+				{
+					connection1[i].add(j);
+					connection1[j].add(i);
+				}
+				if(thisEnd1.equals(thatEnd2))
+				{
+					connection1[i].add(j);
+					connection2[j].add(i);
+				}
+				if(thisEnd2.equals(thatEnd1))
+				{
+					connection2[i].add(j);
+					connection1[j].add(i);
+				}
+				if(thisEnd2.equals(thatEnd2))
+				{
+					connection2[i].add(j);
+					connection2[j].add(i);
+				}
+
+				double it_distance11 = thisEnd1.getDistance(thatEnd1);
+				double it_distance12 = thisEnd1.getDistance(thatEnd2);
+				double it_distance21 = thisEnd2.getDistance(thatEnd1);
+				double it_distance22 = thisEnd2.getDistance(thatEnd2);
+
+				// distance1[i] = Math.min(distance1[i], Math.min(it_distance11, it_distance12));
+				if(it_distance11 < it_distance12)
+				{
+					if(it_distance11 < distance1[i])
+					{
+						distance1[i] = it_distance11;
+						distance1Target[i] = thatEnd1;
+					}
+				}
+				else
+				{
+					if(it_distance12 < distance1[i])
+					{
+						distance1[i] = it_distance12;
+						distance1Target[i] = thatEnd2;
+					}
+				}
+
+				// distance2[i] = Math.min(distance2[i], Math.min(it_distance21, it_distance22));
+				if(it_distance21 < it_distance22)
+				{
+					if(it_distance21 < distance2[i])
+					{
+						distance2[i] = it_distance21;
+						distance2Target[i] = thatEnd1;
+					}
+				}
+				else
+				{
+					if(it_distance22 < distance2[i])
+					{
+						distance2[i] = it_distance22;
+						distance2Target[i] = thatEnd2;
+					}
+				}
+
+				// distance1[j] = Math.min(distance1[j], Math.min(it_distance11, it_distance21));
+				if(it_distance11 < it_distance21)
+				{
+					if(it_distance11 < distance1[j])
+					{
+						distance1[j] = it_distance11;
+						distance1Target[j] = thisEnd1;
+					}
+				}
+				else
+				{
+					if(it_distance21 < distance1[j])
+					{
+						distance1[j] = it_distance21;
+						distance1Target[j] = thisEnd2;
+					}
+				}
+
+				// distance2[j] = Math.min(distance2[j], Math.min(it_distance12, it_distance22));
+				if(it_distance12 < it_distance22)
+				{
+					if(it_distance11 < distance2[j])
+					{
+						distance2[j] = it_distance12;
+						distance2Target[j] = thisEnd1;
+					}
+				}
+				else
+				{
+					if(it_distance22 < distance2[j])
+					{
+						distance2[j] = it_distance22;
+						distance2Target[j] = thisEnd2;
+					}
+				}
+			}
+		}
+		totalLength = ltotalLength;
+	}
 	
 	/**
 	 * Makes segments out of the ways of this relation and its sub-relations. The return value is an array of segments. The segments consist of a list of coordinates that are connected via ways. The relation structure is irrelevant for the segmentation; a segment ends where a way is connected to two or more ways where it is not connected to any way. 
@@ -331,4 +510,6 @@ public class RouteManager
 		
 		return segmentsNodes;
 	}
+
+	
 }

@@ -20,9 +20,10 @@
 package eu.cdauth.osm.web.osmrm;
 
 import eu.cdauth.osm.lib.LonLat;
+import java.io.Serializable;
 
 
-public class RelationSegment implements Comparable<RelationSegment>
+public class RelationSegment implements Comparable<RelationSegment>,Serializable
 {
 	private LonLat[] m_nodes;
 	private double m_distance = -1;

@@ -27,19 +27,16 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 
 /**
  * Helper functions for HTML output in JSP. A GUI object represents one HTML document.
@@ -115,12 +112,6 @@ abstract public class GUI
 	 */
 	public synchronized static API06API getAPI()
 	{
-		/*DataSource ds = null;
-		try {
-			ds = (DataSource) ((Context)new InitialContext().lookup("java:comp/env")).lookup("jdbc/osmrmhv");
-		} catch(NamingException e) {
-		}*/
-
 		if(sm_api == null)
 			sm_api = new eu.cdauth.osm.lib.api06.API06API();
 		return sm_api;
@@ -502,6 +493,21 @@ abstract public class GUI
 	public String formatNumber(Number a_number, int a_decimals)
 	{
 		return String.format("%."+a_decimals+"f", a_number);
+	}
+
+	protected static final SimpleDateFormat sm_dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	static {
+		sm_dateFormat.setTimeZone(new SimpleTimeZone(0, "UTC"));
+	}
+
+	/**
+	 * Formats the given date with the user’s locale. Assumes that the date is in UTC.
+	 * @param a_date The date to format. null to take the current time.
+	 * @return The formatted date as a string.
+	 */
+	public String formatDate(Date a_date)
+	{
+		return sm_dateFormat.format(a_date == null ? new Date(System.currentTimeMillis()) : a_date);
 	}
 
 	/**
