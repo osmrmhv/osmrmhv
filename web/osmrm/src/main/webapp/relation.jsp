@@ -56,9 +56,9 @@
 		gui.setJavaScripts(new String[] {
 			"http://www.openlayers.org/api/OpenLayers.js",
 			"http://maps.google.com/maps?file=api&v=2&key=ABQIAAAApZR0PIISH23foUX8nxj4LxQe8fls808ouw55mfsb9VLPMfxZSBRAxMJl1CWns7WN__O20IuUSiDKng",
-			"http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=cdauths-map",
-			"http://osm.cdauth.de/map/prototypes.js",
-			"http://osm.cdauth.de/map/openstreetbugs.js"
+			"http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=osmrm",
+			"http://api.facilmap.org/facilmap.js",
+			"http://api.facilmap.org/osblayer/osblayer.js"
 		});
 
 	gui.head();
@@ -343,7 +343,7 @@
 	if(render)
 	{
 %>
-	var map = new OpenLayers.Map.cdauth("map");
+	var map = new FacilMap.Map("map");
 	map.addAllAvailableLayers();
 
 	map.addLayer(new OpenLayers.Layer.OpenStreetBugs("OpenStreetBugs", { visibility: false, shortName: "osb" }));
@@ -384,9 +384,9 @@
 %>
 	map.addLayers(segments);
 
-	var layerMarkers = new OpenLayers.Layer.cdauth.Markers.LonLat(<%=jsescape(gui._("Markers"))%>, { shortName : "m" });
+	var layerMarkers = new FacilMap.Layer.Markers.LonLat(<%=jsescape(gui._("Markers"))%>, { shortName : "m" });
 	map.addLayer(layerMarkers);
-	var clickControl = new OpenLayers.Control.cdauth.CreateMarker(layerMarkers);
+	var clickControl = new FacilMap.Control.CreateMarker(layerMarkers);
 	map.addControl(clickControl);
 	clickControl.activate();
 
@@ -406,9 +406,9 @@
 	else
 		map.zoomToMaxExtent();
 
-	var hashHandler = new OpenLayers.Control.cdauth.URLHashHandler();
+	var hashHandler = new FacilMap.Control.URLHashHandler();
 	hashHandler.updateMapView = function() {
-		var ret = OpenLayers.Control.cdauth.URLHashHandler.prototype.updateMapView.apply(this, arguments);
+		var ret = FacilMap.Control.URLHashHandler.prototype.updateMapView.apply(this, arguments);
 		for(var i=0; i<segments.length; i++)
 			document.getElementById("select-segment-"+i).checked = segments[i].getVisibility();
 		return ret;
@@ -571,7 +571,7 @@
 			map.addLayer(segments_highlighted[i]);
 		}
 
-		segments[i].cdauthDefaultVisibility = false;
+		segments[i].fmDefaultVisibility = false;
 		segments[i].setVisibility(false);
 		segments_highlighted[i].setVisibility(true);
 		document.getElementById("tr-segment-"+i).className = "tr-segment-highlight";
@@ -585,7 +585,7 @@
 		if(!segments_highlighted[i] || !segments_highlighted[i].getVisibility())
 			return;
 		segments_highlighted[i].setVisibility(false);
-		segments[i].cdauthDefaultVisibility = true;
+		segments[i].fmDefaultVisibility = true;
 		segments[i].setVisibility(true);
 	}
 
@@ -601,7 +601,7 @@
 			}
 			else if(!document.getElementById("select-segment-"+i).checked)
 			{
-				segments[i].cdauthDefaultVisibility = true;
+				segments[i].fmDefaultVisibility = true;
 				segments[i].setVisibility(false);
 				if(segments_highlighted[i])
 					segments_highlighted[i].setVisibility(false);
