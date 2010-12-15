@@ -26,6 +26,9 @@ import java.util.Map;
  */
 public class Queue
 {
+	/**
+	 * A callback function for the queue.
+	 */
 	public static interface Worker
 	{
 		public void work(ID a_id);
@@ -35,12 +38,57 @@ public class Queue
 	{
 		public final ID id;
 		public final Worker worker;
-		public final Object notify = new Object();
+		public final Notification notify = new Notification();
 
 		public ScheduledTask(Worker a_worker, ID a_id)
 		{
 			id = a_id;
 			worker = a_worker;
+		}
+	}
+
+	/**
+	 * Enables threads to wait for the execution of a worker.
+	 *
+	 * Once the worker has finished, the {@link #notified} method will return true and all executions of the {@link #sleep} method
+	 * will return.
+	 */
+	public static class Notification extends Object
+	{
+		private volatile boolean m_notified = false;
+		private final Object m_obj = new Object();
+
+		/**
+		 * Waits for the worker to be executed. If {@link #notified} already returns true, returns immediately.
+		 * @param a_timeout The maximum time to wait in milliseconds. 0 means no timeout.
+		 * @throws InterruptedException The current thread was interrupted while waiting.
+		 */
+		public void sleep(long a_timeout) throws InterruptedException
+		{
+			synchronized(m_obj)
+			{
+				if(m_notified)
+					return;
+				m_obj.wait(a_timeout);
+			}
+		}
+
+		/**
+		 * Returns true once the worker has been executed.
+		 * @return True if the worker has been executed.
+		 */
+		public boolean notified()
+		{
+			return m_notified;
+		}
+
+		protected void _notify()
+		{
+			synchronized(m_obj)
+			{
+				m_notified = true;
+				m_obj.notifyAll();
+			}
 		}
 	}
 
@@ -70,7 +118,7 @@ public class Queue
 
 					task.worker.work(task.id);
 					m_queue.taskFinished(task.worker, task.id);
-					task.notify.notifyAll();
+					task.notify._notify();
 
 					ItemCache.cleanUpAll(true);
 				}
@@ -83,19 +131,27 @@ public class Queue
 
 	private LinkedList<ScheduledTask> m_queue = new LinkedList<ScheduledTask>();
 	private Map<Worker,Map<ID,ScheduledTask>> m_ids = new Hashtable<Worker,Map<ID,ScheduledTask>>();
+	private static Queue sm_instance = null;
 
-	public Queue()
+	protected Queue()
 	{
 		new ExecutionThread(this).start();
+	}
+
+	public synchronized static Queue getInstance()
+	{
+		if(sm_instance == null)
+			sm_instance = new Queue();
+		return sm_instance;
 	}
 
 	/**
 	 * Schedule the execution of a worker with the specified ID.
 	 * @param a_worker The worker to call
 	 * @param a_id The ID to pass to the worker
-	 * @return An empty Object that you can {@link Object#wait} for until the worker has been executed
+	 * @return A notification object that enables threads to wait for the execution of the worker.
 	 */
-	public synchronized Object scheduleTask(Worker a_worker, ID a_id)
+	public synchronized Notification scheduleTask(Worker a_worker, ID a_id)
 	{
 		Map<ID,ScheduledTask> ids = m_ids.get(a_worker);
 		if(ids == null)
@@ -115,6 +171,32 @@ public class Queue
 		this.notify();
 
 		return task.notify;
+	}
+
+	/**
+	 * Returns the position of a scheduled task with the given worker and ID in the queue.
+	 * @param a_worker The worker to look for
+	 * @param a_id The ID to look for
+	 * @return The position in the queue or 0 if the task isn’t scheduled. 1 means that the item is currently being processed.
+	 */
+	public synchronized int getPosition(Worker a_worker, ID a_id)
+	{
+		Map<ID,ScheduledTask> ids = m_ids.get(a_worker);
+		if(ids == null || !ids.containsKey(a_id))
+			return 0;
+
+		boolean in = false;
+		int pos = 2;
+		for(ScheduledTask it : m_queue)
+		{
+			if(it.worker.equals(a_worker) && it.id.equals(a_id))
+			{
+				in = true;
+				break;
+			}
+			pos++;
+		}
+		return in ? pos : 1;
 	}
 
 	protected synchronized ScheduledTask getQueuedTask()

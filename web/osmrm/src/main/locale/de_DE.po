@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OSM Route Manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-14 13:53+0000\n"
+"POT-Creation-Date: 2010-12-15 09:08+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Candid Dauth <webmaster@cdauth.de>\n"
 "Language-Team: \n"
@@ -64,117 +64,127 @@ msgstr "Wert"
 msgid "Search using OSM API"
 msgstr "Mit der OSM-API suchen"
 
-#: ../webapp/relation.jsp:52
+#: ../webapp/relation.jsp:77
 #, php-format
 msgid "Relation %s"
 msgstr "Relation %s"
 
-#: ../webapp/relation.jsp:69
+#: ../webapp/relation.jsp:94
 msgid "Back to home page"
 msgstr "Zur Startseite"
 
-#: ../webapp/relation.jsp:70
+#: ../webapp/relation.jsp:95
 msgid "Open this in OSM Relation Analyzer"
 msgstr "Im OSM Relation Analyzer öffnen"
 
-#: ../webapp/relation.jsp:71
+#: ../webapp/relation.jsp:96
 msgid "Browse on OpenStreetMap"
 msgstr "Details auf OpenStreetMap nachschauen"
 
-#: ../webapp/relation.jsp:72
+#: ../webapp/relation.jsp:97
 msgid "Blame with History Viewer"
 msgstr "Täteranzeige im History Viewer"
 
-#: ../webapp/relation.jsp:74
+#: ../webapp/relation.jsp:99
 msgid "Note that many features of this page will not work without JavaScript."
 msgstr "Die Funktionalität dieser Seite ist ohne JavaScript stark eingeschränkt."
 
-#: ../webapp/relation.jsp:88
+#: ../webapp/relation.jsp:113
 #, php-format
-msgid "The data was last refreshed on %s. The timestamp of the relation is %s. If you think something might have been changed, %sreload the data manually%s."
-msgstr "Die Daten wurden zuletzt am %s vom OSM-Server heruntergeladen. Das Änderungsdatum der Relation ist %s. Falls Sie vermuten, dass sich in der Zwischenzeit etwas geändert hat, können Sie die Seite %smanuell neuladen%s."
+msgid "The data was last refreshed on %s. The timestamp of the relation is %s."
+msgstr "Die Daten wurden zuletzt am %s vom OSM-Server heruntergeladen. Das Änderungsdatum der Relation ist %s."
 
-#: ../webapp/relation.jsp:89
+#: ../webapp/relation.jsp:121
+#, php-format
+msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d."
+msgstr "Die Analyse der aktuellen Version der Relation wurde in Auftrag gegeben. Derzeit befindet sich der Auftrag an %d. Stelle in der Warteschlange."
+
+#: ../webapp/relation.jsp:127
+#, php-format
+msgid "If you think something might have been changed, %sreload the data manually%s."
+msgstr "Falls Sie vermuten, dass sich in der Zwischenzeit etwas geändert hat, können Sie die Seite %smanuell neuladen%s."
+
+#: ../webapp/relation.jsp:135
 msgid "Tags"
 msgstr "Tags"
 
-#: ../webapp/relation.jsp:111
+#: ../webapp/relation.jsp:157
 msgid "Details"
 msgstr "Details"
 
-#: ../webapp/relation.jsp:113
+#: ../webapp/relation.jsp:159
 msgid "Last changed"
 msgstr "Zuletzt geändert"
 
-#: ../webapp/relation.jsp:114
+#: ../webapp/relation.jsp:160
 #, php-format
 msgid "%s by %s"
 msgstr "%s von %s"
 
-#: ../webapp/relation.jsp:116
+#: ../webapp/relation.jsp:162
 msgid "Total length"
 msgstr "Gesamtlänge"
 
-#: ../webapp/relation.jsp:119
+#: ../webapp/relation.jsp:165
 msgid "Sub-relations"
 msgstr "Sub-Relationen"
 
-#: ../webapp/relation.jsp:131
+#: ../webapp/relation.jsp:177
 msgid "Parent relations"
 msgstr "Super-Relationen"
 
-#: ../webapp/relation.jsp:143
+#: ../webapp/relation.jsp:189
 msgid "Segments"
 msgstr "Abschnitte"
 
-#: ../webapp/relation.jsp:148
+#: ../webapp/relation.jsp:194
 msgid "Get GPS coordinates by clicking on the map."
 msgstr "GPS-Koordinaten lassen sich durch Klick auf die Karte feststellen."
 
-#: ../webapp/relation.jsp:156
+#: ../webapp/relation.jsp:202
 msgid "Segment #"
 msgstr "Abschnitts-Nr. "
 
-#: ../webapp/relation.jsp:157
+#: ../webapp/relation.jsp:203
 msgid "Length"
 msgstr "Länge"
 
-#: ../webapp/relation.jsp:158
+#: ../webapp/relation.jsp:204
 msgid "Distance to next segments"
 msgstr "Entfernung zum nächsten Abschnitt"
 
-#: ../webapp/relation.jsp:163
+#: ../webapp/relation.jsp:209
 msgid "Visible"
 msgstr "Anzeigen"
 
-#: ../webapp/relation.jsp:164
-#: ../webapp/relation.jsp:187
+#: ../webapp/relation.jsp:210
+#: ../webapp/relation.jsp:233
 msgid "Zoom"
 msgstr "Vergrößern"
 
-#: ../webapp/relation.jsp:168
+#: ../webapp/relation.jsp:214
 msgid "Add to personal route"
 msgstr "Zur persönlichen Route hinzufügen"
 
-#: ../webapp/relation.jsp:198
+#: ../webapp/relation.jsp:244
 msgid "Personal route"
 msgstr "Persönliche Route"
 
-#: ../webapp/relation.jsp:202
+#: ../webapp/relation.jsp:248
 msgid "Download GPX"
 msgstr "GPX herunterladen"
 
-#: ../webapp/relation.jsp:238
-#: ../webapp/relation.jsp:328
+#: ../webapp/relation.jsp:284
+#: ../webapp/relation.jsp:374
 #, php-format
 msgid "Segment %s"
 msgstr "Abschnitt %s"
 
-#: ../webapp/relation.jsp:260
+#: ../webapp/relation.jsp:306
 msgid "Markers"
 msgstr "Marker"
 
-#: ../webapp/relation.jsp:328
+#: ../webapp/relation.jsp:374
 #, php-format
 msgid "Segment %s (reversed)"
 msgstr "Segment %s (Rückweg)"

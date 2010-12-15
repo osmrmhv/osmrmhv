@@ -38,7 +38,7 @@ import java.util.zip.GZIPOutputStream;
  * or changeset is probably used) and a content (which is any serializable object containing all the information).
  * @author Candid Dauth
  */
-public class Cache
+public class Cache<T extends Serializable>
 {
 	/**
 	 * The interval in seconds how often the cleanup thread shall remove old cache entries.
@@ -56,7 +56,7 @@ public class Cache
 
 	private final File m_dir;
 
-	public static class Entry
+	public static class Entry<T>
 	{
 		/**
 		 * The ID of the cached item.
@@ -65,13 +65,13 @@ public class Cache
 		/**
 		 * The content of the cached item.
 		 */
-		public final Object content;
+		public final T content;
 		/**
 		 * The date when the item was cached in Unix milliseconds.
 		 */
 		public final Date date;
 
-		protected Entry(String a_id, Object a_content, Date a_date)
+		protected Entry(String a_id, T a_content, Date a_date)
 		{
 			id = a_id;
 			content = a_content;
@@ -168,15 +168,15 @@ public class Cache
 	 * @return The entry or null if it isn’t cached yet.
 	 * @throws IOException
 	 */
-	public synchronized Entry getEntry(String a_id) throws IOException
+	public synchronized Entry<T> getEntry(String a_id) throws IOException
 	{
 		File file = getFileByID(a_id);
 		try
 		{
 			ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(file)));
-			Object obj = in.readObject();
+			T obj = (T)in.readObject();
 			in.close();
-			return new Entry(a_id, obj, new Date(file.lastModified()));
+			return new Entry<T>(a_id, obj, new Date(file.lastModified()));
 		}
 		catch(FileNotFoundException e)
 		{
@@ -194,7 +194,7 @@ public class Cache
 	 * @param a_content The content of the entry
 	 * @throws IOException
 	 */
-	public synchronized void saveEntry(String a_id, Serializable a_content) throws IOException
+	public synchronized void saveEntry(String a_id, T a_content) throws IOException
 	{
 		File file = getFileByID(a_id);
 		file.delete();
