@@ -99,12 +99,16 @@
 <noscript><p><strong><%=htmlspecialchars(gui._("Note that many features of this page will not work without JavaScript."))%></strong></p></noscript>
 <%
 	Cache.Entry<RouteAnalyser> cacheEntry = cache.getEntry(relationId.toString());
+	int queuePosition = queue.getPosition(worker, relationId);
 	if(cacheEntry == null)
 	{
-		Queue.Notification notify = queue.scheduleTask(worker, relationId);
-		notify.wait(20000);
-
-		cacheEntry = cache.getEntry(relationId.toString());
+		if(queuePosition == 0)
+		{
+			Queue.Notification notify = queue.scheduleTask(worker, relationId);
+			notify.sleep(20000);
+			cacheEntry = cache.getEntry(relationId.toString());
+			queuePosition = queue.getPosition(worker, relationId);
+		}
 	}
 
 	if(cacheEntry != null)
@@ -114,7 +118,6 @@
 <%
 	}
 
-	int queuePosition = queue.getPosition(worker, relationId);
 	if(queuePosition > 0)
 	{
 %>
