@@ -68,12 +68,13 @@
 <p class="introduction"><strong><%=htmlspecialchars(gui._("Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."))%></strong></p>
 <%
 	response.getWriter().flush();
-	Changeset changeset = api.getChangesetFactory().fetch(changesetID);
+
+	ChangesetAnalyser changes = new ChangesetAnalyser(api, changesetID);
 %>
 <h2><%=htmlspecialchars(gui._("Tags"))%></h2>
 <dl>
 <%
-	for(Map.Entry<String,String> tag : changeset.getTags().entrySet())
+	for(Map.Entry<String,String> tag : changes.changeset.getTags().entrySet())
 	{
 %>
 	<dt><%=htmlspecialchars(tag.getKey())%></dt>
@@ -92,11 +93,11 @@
 <h2><%=htmlspecialchars(gui._("Details"))%></h2>
 <dl>
 	<dt><%=htmlspecialchars(gui._("Creation time"))%></dt>
-	<dd><%=htmlspecialchars(changeset.getCreationDate().toString())%></dd>
+	<dd><%=htmlspecialchars(changes.changeset.getCreationDate().toString())%></dd>
 
 	<dt><%=htmlspecialchars(gui._("Closing time"))%></dt>
 <%
-	Date closingDate = changeset.getClosingDate();
+	Date closingDate = changes.changeset.getClosingDate();
 	if(closingDate == null)
 	{
 %>
@@ -106,22 +107,17 @@
 	else
 	{
 %>
-	<dd><%=htmlspecialchars(changeset.getClosingDate().toString())%></dd>
+	<dd><%=htmlspecialchars(changes.changeset.getClosingDate().toString())%></dd>
 <%
 	}
 %>
 
 	<dt><%=htmlspecialchars(gui._("User"))%></dt>
-	<dd><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(urlencode(changeset.getUser().toString()))%>"><%=htmlspecialchars(changeset.getUser().toString())%></a></dd>
+	<dd><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(urlencode(changes.changeset.getUser().toString()))%>"><%=htmlspecialchars(changes.changeset.getUser().toString())%></a></dd>
 </dl>
-<%
-	response.getWriter().flush();
-	HistoryViewer.Changes changes = HistoryViewer.getNodeChanges(api, changeset);
-	Map<VersionedItem,VersionedItem> previousVersions = changeset.getPreviousVersions(true);
-%>
 <h2><%=htmlspecialchars(gui._("Changed object tags"))%></h2>
 <%
-	if(previousVersions.isEmpty())
+	if(changes.tagChanges.length == 0)
 	{
 %>
 <p class="nothing-to-do"><%=htmlspecialchars(gui._("No tags have been changed."))%></p>
@@ -133,22 +129,20 @@
 <p class="changed-object-tags-note"><%=htmlspecialchars(gui._("Hover the elements to view the changed tags."))%></p>
 <ul class="changed-object-tags">
 <%
-		for(Map.Entry<VersionedItem,VersionedItem> it : previousVersions.entrySet())
+		for(ChangesetAnalyser.TagChange it : changes.tagChanges)
 		{
-			VersionedItem oldItem = it.getValue();
-			VersionedItem newItem = it.getKey();
 			String type,browse;
-			if(oldItem instanceof Node)
+			if(it.type == Node.class)
 			{
 				type = gui._("Node");
 				browse = "node";
 			}
-			else if(oldItem instanceof Way)
+			else if(it.type == Way.class)
 			{
 				type = gui._("Way");
 				browse = "way";
 			}
-			else if(oldItem instanceof Relation)
+			else if(it.type == Relation.class)
 			{
 				type = gui._("Relation");
 				browse = "relation";
@@ -156,18 +150,23 @@
 			else
 				continue;
 %>
-	<li><%=htmlspecialchars(type+" "+oldItem.getID().toString())%> (<a href="http://www.openstreetmap.org/browse/<%=htmlspecialchars(browse+"/"+oldItem.getID().toString())%>"><%=htmlspecialchars(gui._("browse"))%></a>)
+	<li><%=htmlspecialchars(type+" "+it.id.toString())%> (<a href="http://www.openstreetmap.org/browse/<%=htmlspecialchars(browse+"/"+it.id.toString())%>"><%=htmlspecialchars(gui._("browse"))%></a>)
 		<table>
 			<tbody>
 <%
 			Set<String> tags = new HashSet<String>();
-			tags.addAll(oldItem.getTags().keySet());
-			tags.addAll(newItem.getTags().keySet());
+			tags.addAll(it.oldTags.keySet());
+			tags.addAll(it.newTags.keySet());
 
 			for(String key : tags)
 			{
-				String valueOld = oldItem.getTag(key);
-				String valueNew = newItem.getTag(key);
+				String valueOld = it.oldTags.get(key);
+				String valueNew = it.newTags.get(key);
+
+				if(valueOld == null)
+					valueOld = "";
+				if(valueNew == null)
+					valueNew = "";
 
 				String class1,class2;
 				if(valueOld.equals(valueNew))
