@@ -90,9 +90,9 @@
 	gui.setJavaScripts(new String[]{
 		"http://www.openlayers.org/api/OpenLayers.js",
 		"http://maps.google.com/maps?file=api&v=2&key=ABQIAAAApZR0PIISH23foUX8nxj4LxQe8fls808ouw55mfsb9VLPMfxZSBRAxMJl1CWns7WN__O20IuUSiDKng",
-		"http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=cdauths-map",
-		"http://osm.cdauth.de/map/prototypes.js",
-		"http://osm.cdauth.de/map/openstreetbugs.js"
+		"http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=osmhv",
+		"http://api.facilmap.org/facilmap.js",
+		"http://api.facilmap.org/osblayer/osblayer.js"
 	});
 
 	gui.head();
@@ -180,7 +180,7 @@
 </div>
 <script type="text/javascript">
 // <![CDATA[
-	var map = new OpenLayers.Map.cdauth("map");
+	var map = new FacilMap.Map("map");
 	map.addAllAvailableLayers();
 
 	window.onresize = function(){ document.getElementById("map").style.height = Math.round(window.innerHeight*.9)+"px"; map.updateSize(); }
@@ -190,9 +190,9 @@
 	map.addLayer(osbLayer);
 	osbLayer.setZIndex(500);
 
-	var layerMarkers = new OpenLayers.Layer.cdauth.Markers.LonLat("Markers", { shortName: "m" });
+	var layerMarkers = new FacilMap.Layer.Markers.LonLat("Markers", { shortName: "m" });
 	map.addLayer(layerMarkers);
-	var clickControl = new OpenLayers.Control.cdauth.CreateMarker(layerMarkers);
+	var clickControl = new FacilMap.Control.CreateMarker(layerMarkers);
 	map.addControl(clickControl);
 	clickControl.activate();
 
@@ -229,7 +229,7 @@
 	if(extent)
 		map.zoomToExtent(extent);
 
-	var hashHandler = new OpenLayers.Control.cdauth.URLHashHandler();
+	var hashHandler = new FacilMap.Control.URLHashHandler();
 	map.addControl(hashHandler);
 	hashHandler.activate();
 
