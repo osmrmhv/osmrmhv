@@ -38,11 +38,6 @@ public class API06Changeset extends API06Item implements Changeset
 	private Date m_creation = null;
 	private Date m_closing = null;
 	private User m_user = null;
-	
-	/**
-	 * Contains the uncleaned osmChange XML element.
-	 */
-	private Element m_uncleanedDom = null; // FIXME: Do not serialize
 
 	protected API06Changeset(Element a_dom, API06API a_api)
 	{
@@ -95,42 +90,12 @@ public class API06Changeset extends API06Item implements Changeset
 	@Override
 	public VersionedItem[] getMemberObjects(ChangeType a_type) throws APIError
 	{
-		if(m_content == null)
-			fixMemberObjects();
+		fixMemberObjects();
 		return m_content.get(a_type);
 	}
 	
 	/**
-	 * Returns an array of all objects that are part of one ChangeType of this changeset. The returned values are
-	 * _not_ clean of double entries.
-	 * @param a_type The ChangeType to return.
-	 * @return An array of all objects with the ChangeType
-	 * @throws APIError There was an error communicating with the API
-	 */
-	private VersionedItem[] getMemberObjectsUnfixed(ChangeType a_type) throws APIError
-	{
-		if(m_uncleanedDom == null)
-			m_uncleanedDom = getAPI().fetch("/changeset/"+getID()+"/download");
-
-		ArrayList<Item> ret = new ArrayList<Item>();
-		NodeList nodes = m_uncleanedDom.getElementsByTagName(a_type.toString());
-		for(int i=0; i<nodes.getLength(); i++)
-			ret.addAll(getAPI().makeObjects((Element) nodes.item(i)));
-		VersionedItem[] retArr = ret.toArray(new VersionedItem[ret.size()]);
-		for(VersionedItem object : retArr)
-		{
-			if(object instanceof Node)
-				(getAPI().getNodeFactory()).getCache().cacheObject((Node)object);
-			else if(object instanceof Way)
-				(getAPI().getWayFactory()).getCache().cacheObject((Way)object);
-			else if(object instanceof Relation)
-				(getAPI().getRelationFactory()).getCache().cacheObject((Relation)object);
-		}
-		return retArr;
-	}
-	
-	/**
-	 * Removes double entries in this Changeset.
+	 * Fetches the content of a changeset and removes double entries.
 	 * You can do very funny things in a changeset. You can create an object, modify it multiple times and then remove
 	 * it again, so that basically, you haven’t created nor modified nor removed anything in the changeset, because
 	 * afterwards everything is as it was.
@@ -141,13 +106,48 @@ public class API06Changeset extends API06Item implements Changeset
 	 * 4. If an object has been created and later removed in one changset, remove it from both the “create” and the “delete” part
 	 * @throws APIError There was an error communicating with the API
 	 */
-	private void fixMemberObjects() throws APIError
+	private synchronized void fixMemberObjects() throws APIError
 	{
-		Hashtable<Long, VersionedItem> created = new Hashtable<Long, VersionedItem>();
-		Hashtable<Long, VersionedItem> modified = new Hashtable<Long, VersionedItem>();
-		Hashtable<Long, VersionedItem> deleted = new Hashtable<Long, VersionedItem>();
-		
-		for(VersionedItem it : getMemberObjectsUnfixed(ChangeType.create))
+		if(m_content != null)
+			return;
+
+		Element uncleanedDom = getAPI().fetch("/changeset/"+getID()+"/download");
+
+		NodeList createdNodes = uncleanedDom.getElementsByTagName("create");
+		NodeList modifiedNodes = uncleanedDom.getElementsByTagName("modify");
+		NodeList deletedNodes = uncleanedDom.getElementsByTagName("delete");
+
+		ArrayList<Item> createdElements = new ArrayList<Item>();
+		ArrayList<Item> modifiedElements = new ArrayList<Item>();
+		ArrayList<Item> deletedElements = new ArrayList<Item>();
+
+		for(int i=0; i<createdNodes.getLength(); i++)
+			createdElements.addAll(getAPI().makeObjects((Element) createdNodes.item(i)));
+		for(int i=0; i<modifiedNodes.getLength(); i++)
+			modifiedElements.addAll(getAPI().makeObjects((Element) modifiedNodes.item(i)));
+		for(int i=0; i<deletedNodes.getLength(); i++)
+			deletedElements.addAll(getAPI().makeObjects((Element) deletedNodes.item(i)));
+
+		ArrayList<Item> all = new ArrayList<Item>();
+		all.addAll(createdElements);
+		all.addAll(modifiedElements);
+		all.addAll(deletedElements);
+
+		for(Item object : all)
+		{
+			if(object instanceof Node)
+				(getAPI().getNodeFactory()).getCache().cacheObject((Node)object);
+			else if(object instanceof Way)
+				(getAPI().getWayFactory()).getCache().cacheObject((Way)object);
+			else if(object instanceof Relation)
+				(getAPI().getRelationFactory()).getCache().cacheObject((Relation)object);
+		}
+
+		Hashtable<Long, Item> created = new Hashtable<Long, Item>();
+		Hashtable<Long, Item> modified = new Hashtable<Long, Item>();
+		Hashtable<Long, Item> deleted = new Hashtable<Long, Item>();
+
+		for(Item it : createdElements)
 		{
 			long id = it.getID().asLong() * 4;
 			if(it instanceof Node)
@@ -159,7 +159,7 @@ public class API06Changeset extends API06Item implements Changeset
 			created.put(id, it);
 		}
 		
-		for(VersionedItem it : getMemberObjectsUnfixed(ChangeType.modify))
+		for(Item it : modifiedElements)
 		{
 			long id = it.getID().asLong() * 4;
 			if(it instanceof Node)
@@ -170,20 +170,20 @@ public class API06Changeset extends API06Item implements Changeset
 				id += 3;
 			
 			// If an object has been created and then modified in one changeset, move the modified one to the “create” block
-			if(created.containsKey(id) && it.getVersion().compareTo(created.get(id).getVersion()) > 0)
+			if(created.containsKey(id) && ((VersionedItem)it).getVersion().compareTo(((VersionedItem)created.get(id)).getVersion()) > 0)
 			{
 				created.put(id, it);
 				continue;
 			}
 
 			// If an object has been modified multiple times in one changeset, only keep the newest one
-			if(modified.containsKey(id) && it.getVersion().compareTo(modified.get(id).getVersion()) <= 0)
+			if(modified.containsKey(id) && ((VersionedItem)it).getVersion().compareTo(((VersionedItem)modified.get(id)).getVersion()) <= 0)
 				continue;
 			
 			modified.put(id, it);
 		}
 		
-		for(VersionedItem it : getMemberObjectsUnfixed(ChangeType.delete))
+		for(Item it : deletedElements)
 		{
 			long id = it.getID().asLong() * 4;
 			if(it instanceof Node)
@@ -207,12 +207,10 @@ public class API06Changeset extends API06Item implements Changeset
 			deleted.put(id, it);
 		}
 		
-		Hashtable<ChangeType, VersionedItem[]> ret = new Hashtable<ChangeType, VersionedItem[]>();
-		ret.put(ChangeType.create, created.values().toArray(new VersionedItem[created.size()]));
-		ret.put(ChangeType.modify, modified.values().toArray(new VersionedItem[modified.size()]));
-		ret.put(ChangeType.delete, deleted.values().toArray(new VersionedItem[deleted.size()]));
-		
-		m_content = ret;
+		m_content = new Hashtable<ChangeType, VersionedItem[]>();
+		m_content.put(ChangeType.create, created.values().toArray(new VersionedItem[created.size()]));
+		m_content.put(ChangeType.modify, modified.values().toArray(new VersionedItem[modified.size()]));
+		m_content.put(ChangeType.delete, deleted.values().toArray(new VersionedItem[deleted.size()]));
 	}
 	
 	@Override
