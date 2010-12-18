@@ -119,7 +119,7 @@ public class Cache<T extends Serializable>
 	{
 		m_dir = new File(a_dir);
 		if(!m_dir.exists())
-			m_dir.mkdir();
+			m_dir.mkdirs();
 
 		synchronized(sm_instances)
 		{

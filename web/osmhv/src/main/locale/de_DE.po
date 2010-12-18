@@ -2,10 +2,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OSM Route Manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-01 06:06+0200\n"
+"POT-Creation-Date: 2010-12-18 16:57+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Candid Dauth <webmaster@cdauth.de>\n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -14,231 +15,256 @@ msgstr ""
 "X-Poedit-Country: GERMANY\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../webapp/blame.jsp:70
+#: ../webapp/blame.jsp:89
 #, php-format
 msgid "Relation %s"
 msgstr "Relation %s"
 
-#: ../webapp/blame.jsp:82
-#: ../webapp/changeset.jsp:56
+#: ../webapp/blame.jsp:101
+#: ../webapp/changeset.jsp:80
 msgid "Back to home page"
 msgstr "Zur Startseite"
 
-#: ../webapp/blame.jsp:83
-#: ../webapp/changeset.jsp:57
+#: ../webapp/blame.jsp:102
+#: ../webapp/changeset.jsp:81
 msgid "Browse on OpenStreetMap"
 msgstr "Details auf OpenStreetMap nachschauen"
 
-#: ../webapp/blame.jsp:85
-#: ../webapp/changeset.jsp:59
+#: ../webapp/blame.jsp:104
+#: ../webapp/changeset.jsp:83
 msgid "Note that many features of this page will not work without JavaScript."
 msgstr "Die Funktionalität dieser Seite ist ohne JavaScript stark eingeschränkt."
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Affecting changesets by user"
 msgstr "Auswirkende Changesets nach Benutzern"
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Hide all"
 msgstr "Alle verstecken"
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Show all"
 msgstr "Alle anzeigen"
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Zoom all"
 msgstr "Alle zoomen"
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 #, php-format
 msgid "“%s”"
 msgstr "„%s“"
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 msgid "No comment"
 msgstr "Kein Kommentar"
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 msgid "Zoom"
 msgstr "Vergrößern"
 
-#: ../webapp/blame.jsp:152
-#: ../webapp/changeset.jsp:152
+#: ../webapp/blame.jsp:171
+#: ../webapp/changeset.jsp:198
 msgid "browse"
 msgstr "browse"
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 msgid "view"
 msgstr "History Viewer"
 
-#: ../webapp/index.jsp:31
+#: ../webapp/index.jsp:41
 msgid "OSM History Viewer is a debugging tool for Changesets in OpenStreetMap."
 msgstr "OSM History Viewer ist ein Debugging-Werkzeug für Changesets aus OpenStreetMap."
 
-#: ../webapp/index.jsp:38
+#: ../webapp/index.jsp:48
 msgid "Visualise changeset"
 msgstr "Changeset darstellen"
 
-#: ../webapp/index.jsp:40
+#: ../webapp/index.jsp:50
 msgid "Changeset ID"
 msgstr "Changeset-ID"
 
-#: ../webapp/index.jsp:43
+#: ../webapp/index.jsp:53
 msgid "Lookup"
 msgstr "Analysieren"
 
-#: ../webapp/index.jsp:48
+#: ../webapp/index.jsp:58
 msgid "Relation Blame"
 msgstr "Relation-Täteranzeige"
 
-#: ../webapp/index.jsp:51
+#: ../webapp/index.jsp:61
 msgid "Relation ID"
 msgstr "Relation-ID"
 
-#: ../webapp/index.jsp:54
+#: ../webapp/index.jsp:64
 msgid "Blame"
 msgstr "„Täter“ anzeigen"
 
-#: ../webapp/index.jsp:69
+#: ../webapp/index.jsp:79
 msgid "ID"
 msgstr "ID"
 
-#: ../webapp/index.jsp:75
-#: ../webapp/index.jsp:90
+#: ../webapp/index.jsp:85
+#: ../webapp/index.jsp:100
 msgid "Open"
 msgstr "Öffnen"
 
-#: ../webapp/index.jsp:90
+#: ../webapp/index.jsp:100
 msgid "No map"
 msgstr "Ohne Karte"
 
-#: ../webapp/index.jsp:109
+#: ../webapp/index.jsp:119
 msgid "Key"
 msgstr "Schlüssel"
 
-#: ../webapp/index.jsp:116
+#: ../webapp/index.jsp:126
 msgid "Value"
 msgstr "Wert"
 
-#: ../webapp/index.jsp:119
+#: ../webapp/index.jsp:129
 msgid "Search using OSM API"
 msgstr "Mit der OSM-API suchen"
 
-#: ../webapp/changeset.jsp:44
+#: ../webapp/changeset.jsp:68
 #, php-format
 msgid "Changeset %s"
 msgstr "Changeset %s"
 
-#: ../webapp/changeset.jsp:60
+#: ../webapp/changeset.jsp:103
 #, php-format
 msgid "This analysation was created on %s."
 msgstr "Diese Analyse wurde am %s erstellt."
 
-#: ../webapp/changeset.jsp:61
+#: ../webapp/changeset.jsp:110
+#, php-format
+msgid "An analysation of this changeset is scheduled. The position in the queue is %d."
+msgstr "Die Analyse des Changesets wurde in Auftrag gegeben und befindet sich an %d. Stelle in der Warteschleife."
+
+#: ../webapp/changeset.jsp:118
 msgid "Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."
 msgstr "Grüne Darstellungen auf dieser Seite präsentieren den Zustand nach dem Hochladen des Changesets, rote den davor und Blau steht für unveränderte Dinge."
 
-#: ../webapp/changeset.jsp:66
+#: ../webapp/changeset.jsp:119
 msgid "Tags"
 msgstr "Tags"
 
-#: ../webapp/changeset.jsp:85
+#: ../webapp/changeset.jsp:138
 msgid "Details"
 msgstr "Details"
 
-#: ../webapp/changeset.jsp:87
+#: ../webapp/changeset.jsp:140
 msgid "Creation time"
 msgstr "Erstellt"
 
-#: ../webapp/changeset.jsp:90
+#: ../webapp/changeset.jsp:143
 msgid "Closing time"
 msgstr "Abgeschlossen"
 
-#: ../webapp/changeset.jsp:96
+#: ../webapp/changeset.jsp:149
 msgid "Still open"
 msgstr "Noch offen"
 
-#: ../webapp/changeset.jsp:107
+#: ../webapp/changeset.jsp:160
 msgid "User"
 msgstr "Benutzer"
 
-#: ../webapp/changeset.jsp:115
+#: ../webapp/changeset.jsp:163
 msgid "Changed object tags"
 msgstr "Geänderte Tags von Objekten"
 
-#: ../webapp/changeset.jsp:120
+#: ../webapp/changeset.jsp:168
 msgid "No tags have been changed."
 msgstr "Es wurden keine Tags verändert."
 
-#: ../webapp/changeset.jsp:126
+#: ../webapp/changeset.jsp:174
 msgid "Hover the elements to view the changed tags."
 msgstr "Fahren Sie mit der Maus über die Objekte, um deren geänderte Tags anzuzeigen."
 
-#: ../webapp/changeset.jsp:136
+#: ../webapp/changeset.jsp:182
 msgid "Node"
 msgstr "Node"
 
-#: ../webapp/changeset.jsp:141
+#: ../webapp/changeset.jsp:187
 msgid "Way"
 msgstr "Way"
 
-#: ../webapp/changeset.jsp:146
+#: ../webapp/changeset.jsp:192
 msgid "Relation"
 msgstr "Relation"
 
-#: ../webapp/changeset.jsp:195
+#: ../webapp/changeset.jsp:246
 msgid "Map"
 msgstr "Karte"
 
-#: ../webapp/changeset.jsp:200
+#: ../webapp/changeset.jsp:251
 msgid "No objects were changed in the changeset."
 msgstr "In diesem Changeset wurden keine Objekte verändert."
 
 #~ msgid "Changeset could not be analysed."
 #~ msgstr "Das Changeset konnte nicht analysiert werden."
+
 #~ msgid "Error during API request: "
 #~ msgstr "Fehler bei einer API-Anfrage:"
+
 #~ msgid "400 Bad Request"
 #~ msgstr "400 Bad Request"
+
 #~ msgid "401 Unauthorized"
 #~ msgstr "401 Unauthorized"
+
 #~ msgid "404 Not Found"
 #~ msgstr "404 Not Found"
+
 #~ msgid "405 Method Not Allowed"
 #~ msgstr "405 Method Not Allowed"
+
 #~ msgid "410 Gone"
 #~ msgstr "410 Gone"
+
 #~ msgid "412 Precondition Failed"
 #~ msgstr "412 Precondition Failed"
+
 #~ msgid "500 Internal Server Error"
 #~ msgstr "500 Internal Server Error"
+
 #~ msgid "503 Service Unavailable"
 #~ msgstr "503 Service Unavailable"
+
 #~ msgid "Unknown error code %s"
 #~ msgstr "Unbekannter Fehlercode %s"
+
 #~ msgid "API call was %s."
 #~ msgstr "Die Anfrage war %s."
+
 #~ msgid "Could not connect to the API server."
 #~ msgstr "Konnte nicht mit dem API-Server verbinden."
+
 #~ msgid "The OSM server sent no data."
 #~ msgstr "Der OSM-Server hat nichts gesendet."
+
 #~ msgid "This element could not be found."
 #~ msgstr "Das Element wurde nicht gefunden."
+
 #~ msgid "OSM History Viewer"
 #~ msgstr "OSM History Viewer"
+
 #~ msgid "OSM History Viewer: %s"
 #~ msgstr "OSM History Viewer: %s"
+
 #~ msgid "Search using XAPI"
 #~ msgstr "Mit der XAPI suchen"
+
 #~ msgid ""
 #~ "OSM API will probably be more current and a lot faster but won’t let you "
 #~ "use wildcards."
 #~ msgstr ""
 #~ "Die OSM-API ist normalerweise aktueller und deutlich schneller, aber man "
 #~ "kann keine Wildcards verwenden."
+
 #~ msgid "Open this in OSM Relation Analyzer"
 #~ msgstr "Im OSM Relation Analyzer öffnen"
+
 #~ msgid ""
 #~ "The data was last refreshed on %s. The timestamp of the relation is %s. "
 #~ "If you think one of the members might have been changed, %sreload the "
@@ -247,58 +273,84 @@ msgstr "In diesem Changeset wurden keine Objekte verändert."
 #~ "Die Daten wurden zuletzt am %s vom OSM-Server heruntergeladen. Das "
 #~ "Änderungsdatum der Relation ist %s. Einzelne Wege oder Subrelationen "
 #~ "könnten sich geändert haben, in diesem Fall %smanuell neuladen%s."
+
 #~ msgid "Last changed"
 #~ msgstr "Zuletzt geändert"
+
 #~ msgid "%s by %s"
 #~ msgstr "%s von %s"
+
 #~ msgid "Total length"
 #~ msgstr "Gesamtlänge"
+
 #~ msgid "Sub-relations"
 #~ msgstr "Sub-Relationen"
+
 #~ msgid "Parent relations"
 #~ msgstr "Super-Relationen"
+
 #~ msgid "Segments"
 #~ msgstr "Abschnitte"
+
 #~ msgid "Get GPS coordinates by clicking on the map."
 #~ msgstr "GPS-Koordinaten lassen sich durch Klick auf die Karte feststellen."
+
 #~ msgid "Segment #"
 #~ msgstr "Abschnitts-Nr. "
+
 #~ msgid "Length"
 #~ msgstr "Länge"
+
 #~ msgid "Distance to next segments"
 #~ msgstr "Entfernung zum nächsten Abschnitt"
+
 #~ msgid "Visible"
 #~ msgstr "Anzeigen"
+
 #~ msgid "Add to personal route"
 #~ msgstr "Zur persönlichen Route hinzufügen"
+
 #~ msgid "Personal route"
 #~ msgstr "Persönliche Route"
+
 #~ msgid "Download GPX"
 #~ msgstr "GPX herunterladen"
+
 #~ msgid "Segment %s"
 #~ msgstr "Abschnitt %s"
+
 #~ msgid "Longitude"
 #~ msgstr "Östl. Länge"
+
 #~ msgid "Latitude"
 #~ msgstr "Nördl. Breite"
+
 #~ msgid "OpenStreetMap Permalink"
 #~ msgstr "OpenStreetMap-Permalink"
+
 #~ msgid "OpenStreetMap Marker"
 #~ msgstr "OpenStreetMap-Marker"
+
 #~ msgid "Google Maps Marker"
 #~ msgstr "Google-Maps-Marker"
+
 #~ msgid "Yahoo Maps Permalink"
 #~ msgstr "Yahoo-Maps-Permalink"
+
 #~ msgid "Segment %s (reversed)"
 #~ msgstr "Segment %s (Rückweg)"
+
 #~ msgid "OSM Route Manager"
 #~ msgstr "OSM-Routen-Manager"
+
 #~ msgid "OSM Route Manager: %s"
 #~ msgstr "OSM-Routen-Manager: %s"
+
 #~ msgid "Lookup relation by ID"
 #~ msgstr "Relation-ID eingeben"
+
 #~ msgid "Don’t show map"
 #~ msgstr "Karte nicht anzeigen"
+
 #~ msgid "Search for relations"
 #~ msgstr "Relationen suchen"
-

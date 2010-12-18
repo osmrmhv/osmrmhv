@@ -8,189 +8,197 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-01 06:06+0200\n"
+"POT-Creation-Date: 2010-12-18 16:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../webapp/blame.jsp:70
+#: ../webapp/blame.jsp:89
 #, php-format
 msgid "Relation %s"
 msgstr ""
 
-#: ../webapp/blame.jsp:82 ../webapp/changeset.jsp:56
+#: ../webapp/blame.jsp:101 ../webapp/changeset.jsp:80
 msgid "Back to home page"
 msgstr ""
 
-#: ../webapp/blame.jsp:83 ../webapp/changeset.jsp:57
+#: ../webapp/blame.jsp:102 ../webapp/changeset.jsp:81
 msgid "Browse on OpenStreetMap"
 msgstr ""
 
-#: ../webapp/blame.jsp:85 ../webapp/changeset.jsp:59
+#: ../webapp/blame.jsp:104 ../webapp/changeset.jsp:83
 msgid "Note that many features of this page will not work without JavaScript."
 msgstr ""
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Affecting changesets by user"
 msgstr ""
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Hide all"
 msgstr ""
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Show all"
 msgstr ""
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Zoom all"
 msgstr ""
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 #, php-format
 msgid "“%s”"
 msgstr ""
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 msgid "No comment"
 msgstr ""
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 msgid "Zoom"
 msgstr ""
 
-#: ../webapp/blame.jsp:152 ../webapp/changeset.jsp:152
+#: ../webapp/blame.jsp:171 ../webapp/changeset.jsp:198
 msgid "browse"
 msgstr ""
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 msgid "view"
 msgstr ""
 
-#: ../webapp/index.jsp:31
+#: ../webapp/index.jsp:41
 msgid "OSM History Viewer is a debugging tool for Changesets in OpenStreetMap."
 msgstr ""
 
-#: ../webapp/index.jsp:38
+#: ../webapp/index.jsp:48
 msgid "Visualise changeset"
 msgstr ""
 
-#: ../webapp/index.jsp:40
+#: ../webapp/index.jsp:50
 msgid "Changeset ID"
 msgstr ""
 
-#: ../webapp/index.jsp:43
+#: ../webapp/index.jsp:53
 msgid "Lookup"
 msgstr ""
 
-#: ../webapp/index.jsp:48
+#: ../webapp/index.jsp:58
 msgid "Relation Blame"
 msgstr ""
 
-#: ../webapp/index.jsp:51
+#: ../webapp/index.jsp:61
 msgid "Relation ID"
 msgstr ""
 
-#: ../webapp/index.jsp:54
+#: ../webapp/index.jsp:64
 msgid "Blame"
 msgstr ""
 
-#: ../webapp/index.jsp:69
+#: ../webapp/index.jsp:79
 msgid "ID"
 msgstr ""
 
-#: ../webapp/index.jsp:75 ../webapp/index.jsp:90
+#: ../webapp/index.jsp:85 ../webapp/index.jsp:100
 msgid "Open"
 msgstr ""
 
-#: ../webapp/index.jsp:90
+#: ../webapp/index.jsp:100
 msgid "No map"
 msgstr ""
 
-#: ../webapp/index.jsp:109
+#: ../webapp/index.jsp:119
 msgid "Key"
 msgstr ""
 
-#: ../webapp/index.jsp:116
+#: ../webapp/index.jsp:126
 msgid "Value"
 msgstr ""
 
-#: ../webapp/index.jsp:119
+#: ../webapp/index.jsp:129
 msgid "Search using OSM API"
 msgstr ""
 
-#: ../webapp/changeset.jsp:44
+#: ../webapp/changeset.jsp:68
 #, php-format
 msgid "Changeset %s"
 msgstr ""
 
-#: ../webapp/changeset.jsp:60
+#: ../webapp/changeset.jsp:103
 #, php-format
 msgid "This analysation was created on %s."
 msgstr ""
 
-#: ../webapp/changeset.jsp:61
+#: ../webapp/changeset.jsp:110
+#, php-format
+msgid ""
+"An analysation of this changeset is scheduled. The position in the queue is "
+"%d."
+msgstr ""
+
+#: ../webapp/changeset.jsp:118
 msgid ""
 "Everything green on this page will show the status after the changeset was "
 "committed, red will be the status before, and things displayed in blue "
 "haven’t changed."
 msgstr ""
 
-#: ../webapp/changeset.jsp:66
+#: ../webapp/changeset.jsp:119
 msgid "Tags"
 msgstr ""
 
-#: ../webapp/changeset.jsp:85
+#: ../webapp/changeset.jsp:138
 msgid "Details"
 msgstr ""
 
-#: ../webapp/changeset.jsp:87
+#: ../webapp/changeset.jsp:140
 msgid "Creation time"
 msgstr ""
 
-#: ../webapp/changeset.jsp:90
+#: ../webapp/changeset.jsp:143
 msgid "Closing time"
 msgstr ""
 
-#: ../webapp/changeset.jsp:96
+#: ../webapp/changeset.jsp:149
 msgid "Still open"
 msgstr ""
 
-#: ../webapp/changeset.jsp:107
+#: ../webapp/changeset.jsp:160
 msgid "User"
 msgstr ""
 
-#: ../webapp/changeset.jsp:115
+#: ../webapp/changeset.jsp:163
 msgid "Changed object tags"
 msgstr ""
 
-#: ../webapp/changeset.jsp:120
+#: ../webapp/changeset.jsp:168
 msgid "No tags have been changed."
 msgstr ""
 
-#: ../webapp/changeset.jsp:126
+#: ../webapp/changeset.jsp:174
 msgid "Hover the elements to view the changed tags."
 msgstr ""
 
-#: ../webapp/changeset.jsp:136
+#: ../webapp/changeset.jsp:182
 msgid "Node"
 msgstr ""
 
-#: ../webapp/changeset.jsp:141
+#: ../webapp/changeset.jsp:187
 msgid "Way"
 msgstr ""
 
-#: ../webapp/changeset.jsp:146
+#: ../webapp/changeset.jsp:192
 msgid "Relation"
 msgstr ""
 
-#: ../webapp/changeset.jsp:195
+#: ../webapp/changeset.jsp:246
 msgid "Map"
 msgstr ""
 
-#: ../webapp/changeset.jsp:200
+#: ../webapp/changeset.jsp:251
 msgid "No objects were changed in the changeset."
 msgstr ""

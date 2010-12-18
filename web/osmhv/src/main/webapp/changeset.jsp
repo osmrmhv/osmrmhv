@@ -19,11 +19,15 @@
 <%@page import="eu.cdauth.osm.lib.*"%>
 <%@page import="eu.cdauth.osm.web.osmhv.*"%>
 <%@page import="static eu.cdauth.osm.web.osmhv.GUI.*"%>
+<%@page import="eu.cdauth.osm.web.common.Cache"%>
+<%@page import="eu.cdauth.osm.web.common.Queue"%>
 <%@page import="java.util.*" %>
 <%@page import="java.net.URL" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	protected static final API api = GUI.getAPI();
+	private static final Cache<ChangesetAnalyser> cache = new Cache<ChangesetAnalyser>(System.getProperty("java.io.tmpdir")+"/osmhv/changeset");
+	private static final Queue queue = Queue.getInstance();
 
 	public void jspInit()
 	{
@@ -34,6 +38,20 @@
 	{
 		GUI.servletStop();
 	}
+
+	private static final Queue.Worker worker = new Queue.Worker() {
+		public void work(ID a_id)
+		{
+			try
+			{
+				ChangesetAnalyser route = new ChangesetAnalyser(api, a_id);
+				cache.saveEntry(a_id.toString(), route);
+			}
+			catch(Exception e)
+			{
+			}
+		}
+	};
 %>
 <%
 	if(request.getParameter("id") == null)
@@ -44,10 +62,9 @@
 		return;
 	}
 
-	GUI gui = new GUI(request, response);
-
 	ID changesetID = new ID(request.getParameter("id").replace("^\\s*#?(.*)\\s*$", "$1"));
 
+	GUI gui = new GUI(request, response);
 	gui.setTitle(String.format(gui._("Changeset %s"), changesetID.toString()));
 	gui.setJavaScripts(new String[]{
 		"http://www.openlayers.org/api/OpenLayers.js",
@@ -64,30 +81,58 @@
 	<li><a href="http://www.openstreetmap.org/browse/changeset/<%=htmlspecialchars(changesetID.toString())%>"><%=htmlspecialchars(gui._("Browse on OpenStreetMap"))%></a></li>
 </ul>
 <noscript><p><strong><%=htmlspecialchars(gui._("Note that many features of this page will not work without JavaScript."))%></strong></p></noscript>
-<%--<p><%=String.format(htmlspecialchars(gui._("This analysation was created on %s.")), gmdate("Y-m-d\\TH:i:s\\Z", $information["analysed"]))%></p>--%>
-<p class="introduction"><strong><%=htmlspecialchars(gui._("Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."))%></strong></p>
 <%
 	response.getWriter().flush();
 
-	ChangesetAnalyser changes = new ChangesetAnalyser(api, changesetID);
+	Cache.Entry<ChangesetAnalyser> cacheEntry = cache.getEntry(changesetID.toString());
+	int queuePosition = queue.getPosition(worker, changesetID);
+	if(cacheEntry == null)
+	{
+		if(queuePosition == 0)
+		{
+			Queue.Notification notify = queue.scheduleTask(worker, changesetID);
+			notify.sleep(20000);
+			cacheEntry = cache.getEntry(changesetID.toString());
+			queuePosition = queue.getPosition(worker, changesetID);
+		}
+	}
+
+	if(cacheEntry != null)
+	{
 %>
+<p><%=String.format(htmlspecialchars(gui._("This analysation was created on %s.")), gui.formatDate(cacheEntry == null ? null : cacheEntry.date))%></p>
+<%
+	}
+
+	if(queuePosition > 0)
+	{
+%>
+<p><strong><%=htmlspecialchars(String.format(gui._("An analysation of this changeset is scheduled. The position in the queue is %d."), queuePosition))%></strong></p>
+<%
+	}
+
+	if(cacheEntry != null)
+	{
+		ChangesetAnalyser changes = cacheEntry.content;
+%>
+<p class="introduction"><strong><%=htmlspecialchars(gui._("Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."))%></strong></p>
 <h2><%=htmlspecialchars(gui._("Tags"))%></h2>
 <dl>
 <%
-	for(Map.Entry<String,String> tag : changes.changeset.getTags().entrySet())
-	{
+		for(Map.Entry<String,String> tag : changes.changeset.getTags().entrySet())
+		{
 %>
 	<dt><%=htmlspecialchars(tag.getKey())%></dt>
 <%
-		String format = getTagFormat(tag.getKey());
-		String[] values = tag.getValue().split("\\s*;\\s*");
-		for(String value : values)
-		{
+			String format = getTagFormat(tag.getKey());
+			String[] values = tag.getValue().split("\\s*;\\s*");
+			for(String value : values)
+			{
 %>
 	<dd><%=String.format(format, htmlspecialchars(value))%></dd>
 <%
+			}
 		}
-	}
 %>
 </dl>
 <h2><%=htmlspecialchars(gui._("Details"))%></h2>
@@ -97,19 +142,19 @@
 
 	<dt><%=htmlspecialchars(gui._("Closing time"))%></dt>
 <%
-	Date closingDate = changes.changeset.getClosingDate();
-	if(closingDate == null)
-	{
+		Date closingDate = changes.changeset.getClosingDate();
+		if(closingDate == null)
+		{
 %>
 	<dd><%=htmlspecialchars(gui._("Still open"))%></dd>
 <%
-	}
-	else
-	{
+		}
+		else
+		{
 %>
 	<dd><%=htmlspecialchars(changes.changeset.getClosingDate().toString())%></dd>
 <%
-	}
+		}
 %>
 
 	<dt><%=htmlspecialchars(gui._("User"))%></dt>
@@ -117,68 +162,68 @@
 </dl>
 <h2><%=htmlspecialchars(gui._("Changed object tags"))%></h2>
 <%
-	if(changes.tagChanges.length == 0)
-	{
+		if(changes.tagChanges.length == 0)
+		{
 %>
 <p class="nothing-to-do"><%=htmlspecialchars(gui._("No tags have been changed."))%></p>
 <%
-	}
-	else
-	{
+		}
+		else
+		{
 %>
 <p class="changed-object-tags-note"><%=htmlspecialchars(gui._("Hover the elements to view the changed tags."))%></p>
 <ul class="changed-object-tags">
 <%
-		for(ChangesetAnalyser.TagChange it : changes.tagChanges)
-		{
-			String type,browse;
-			if(it.type == Node.class)
+			for(ChangesetAnalyser.TagChange it : changes.tagChanges)
 			{
-				type = gui._("Node");
-				browse = "node";
-			}
-			else if(it.type == Way.class)
-			{
-				type = gui._("Way");
-				browse = "way";
-			}
-			else if(it.type == Relation.class)
-			{
-				type = gui._("Relation");
-				browse = "relation";
-			}
-			else
-				continue;
+				String type,browse;
+				if(it.type == Node.class)
+				{
+					type = gui._("Node");
+					browse = "node";
+				}
+				else if(it.type == Way.class)
+				{
+					type = gui._("Way");
+					browse = "way";
+				}
+				else if(it.type == Relation.class)
+				{
+					type = gui._("Relation");
+					browse = "relation";
+				}
+				else
+					continue;
 %>
 	<li><%=htmlspecialchars(type+" "+it.id.toString())%> (<a href="http://www.openstreetmap.org/browse/<%=htmlspecialchars(browse+"/"+it.id.toString())%>"><%=htmlspecialchars(gui._("browse"))%></a>)
 		<table>
 			<tbody>
 <%
-			Set<String> tags = new HashSet<String>();
-			tags.addAll(it.oldTags.keySet());
-			tags.addAll(it.newTags.keySet());
+				Set<String> tags = new HashSet<String>();
+				tags.addAll(it.oldTags.keySet());
+				tags.addAll(it.newTags.keySet());
 
-			for(String key : tags)
-			{
-				String valueOld = it.oldTags.get(key);
-				String valueNew = it.newTags.get(key);
-
-				if(valueOld == null)
-					valueOld = "";
-				if(valueNew == null)
-					valueNew = "";
-
-				String class1,class2;
-				if(valueOld.equals(valueNew))
+				for(String key : tags)
 				{
-					class1 = "unchanged";
-					class2 = "unchanged";
-				}
-				else
-				{
-					class1 = "old";
-					class2 = "new";
-				}
+					String valueOld = it.oldTags.get(key);
+					String valueNew = it.newTags.get(key);
+
+					if(valueOld == null)
+						valueOld = "";
+					if(valueNew == null)
+						valueNew = "";
+
+					String class1,class2;
+					if(valueOld.equals(valueNew))
+					{
+						class1 = "unchanged";
+						class2 = "unchanged";
+					}
+					else
+					{
+						class1 = "old";
+						class2 = "new";
+					}
 %>
 				<tr>
 					<th><%=htmlspecialchars(key)%></th>
@@ -186,28 +231,28 @@
 					<td class="<%=htmlspecialchars(class2)%>"><%=GUI.formatTag(key, valueNew)%></td>
 				</tr>
 <%
-			}
+				}
 %>
 			</tbody>
 		</table>
 	</li>
 <%
-		}
+			}
 %>
 </ul>
 <%
-	}
+		}
 %>
 <h2><%=htmlspecialchars(gui._("Map"))%></h2>
 <%
-	if(changes.removed.length == 0 && changes.created.length == 0 && changes.unchanged.length == 0)
-	{
+		if(changes.removed.length == 0 && changes.created.length == 0 && changes.unchanged.length == 0)
+		{
 %>
 <p class="nothing-to-do"><%=htmlspecialchars(gui._("No objects were changed in the changeset."))%></p>
 <%
-	}
-	else
-	{
+		}
+		else
+		{
 %>
 <div id="map"></div>
 <script type="text/javascript">
@@ -252,26 +297,26 @@
 		shortName: "unchanged"
 	});
 <%
-		for(Segment segment : changes.removed)
-		{
+			for(Segment segment : changes.removed)
+			{
 %>
 	layerRemoved.addNodes([new OpenLayers.Feature(layerRemoved, new OpenLayers.LonLat(<%=segment.getNode1().getLonLat().getLon()%>, <%=segment.getNode1().getLonLat().getLat()%>).transform(projection, map.getProjectionObject())),new OpenLayers.Feature(layerRemoved, new OpenLayers.LonLat(<%=segment.getNode2().getLonLat().getLon()%>, <%=segment.getNode2().getLonLat().getLat()%>).transform(projection, map.getProjectionObject()))]);
 <%
-		}
+			}
 
-		for(Segment segment : changes.created)
-		{
+			for(Segment segment : changes.created)
+			{
 %>
 	layerCreated.addNodes([new OpenLayers.Feature(layerRemoved, new OpenLayers.LonLat(<%=segment.getNode1().getLonLat().getLon()%>, <%=segment.getNode1().getLonLat().getLat()%>).transform(projection, map.getProjectionObject())),new OpenLayers.Feature(layerRemoved, new OpenLayers.LonLat(<%=segment.getNode2().getLonLat().getLon()%>, <%=segment.getNode2().getLonLat().getLat()%>).transform(projection, map.getProjectionObject()))]);
 <%
-		}
+			}
 
-		for(Segment segment : changes.unchanged)
-		{
+			for(Segment segment : changes.unchanged)
+			{
 %>
 	layerUnchanged.addNodes([new OpenLayers.Feature(layerRemoved, new OpenLayers.LonLat(<%=segment.getNode1().getLonLat().getLon()%>, <%=segment.getNode1().getLonLat().getLat()%>).transform(projection, map.getProjectionObject())),new OpenLayers.Feature(layerRemoved, new OpenLayers.LonLat(<%=segment.getNode2().getLonLat().getLon()%>, <%=segment.getNode2().getLonLat().getLat()%>).transform(projection, map.getProjectionObject()))]);
 <%
-		}
+			}
 %>
 
 	map.addLayer(layerUnchanged);
@@ -308,6 +353,7 @@
 // ]]>
 </script>
 <%
+		}
 	}
 
 	gui.foot();

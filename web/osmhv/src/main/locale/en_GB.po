@@ -2,10 +2,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OSM Relation Manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-01 06:06+0200\n"
+"POT-Creation-Date: 2010-12-18 16:57+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Candid Dauth <webmaster@cdauth.de>\n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -14,231 +15,256 @@ msgstr ""
 "X-Poedit-Country: UNITED KINGDOM\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../webapp/blame.jsp:70
+#: ../webapp/blame.jsp:89
 #, php-format
 msgid "Relation %s"
 msgstr "Relation %s"
 
-#: ../webapp/blame.jsp:82
-#: ../webapp/changeset.jsp:56
+#: ../webapp/blame.jsp:101
+#: ../webapp/changeset.jsp:80
 msgid "Back to home page"
 msgstr "Back to home page"
 
-#: ../webapp/blame.jsp:83
-#: ../webapp/changeset.jsp:57
+#: ../webapp/blame.jsp:102
+#: ../webapp/changeset.jsp:81
 msgid "Browse on OpenStreetMap"
 msgstr "Browse on OpenStreetMap"
 
-#: ../webapp/blame.jsp:85
-#: ../webapp/changeset.jsp:59
+#: ../webapp/blame.jsp:104
+#: ../webapp/changeset.jsp:83
 msgid "Note that many features of this page will not work without JavaScript."
 msgstr "Note that many features of this page will not work without JavaScript."
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Affecting changesets by user"
 msgstr "Affecting changesets by user"
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Hide all"
 msgstr "Hide all"
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Show all"
 msgstr "Show all"
 
-#: ../webapp/blame.jsp:139
+#: ../webapp/blame.jsp:158
 msgid "Zoom all"
 msgstr "Zoom all"
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 #, php-format
 msgid "“%s”"
 msgstr "“%s”"
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 msgid "No comment"
 msgstr "No comment"
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 msgid "Zoom"
 msgstr "Zoom"
 
-#: ../webapp/blame.jsp:152
-#: ../webapp/changeset.jsp:152
+#: ../webapp/blame.jsp:171
+#: ../webapp/changeset.jsp:198
 msgid "browse"
 msgstr "browse"
 
-#: ../webapp/blame.jsp:152
+#: ../webapp/blame.jsp:171
 msgid "view"
 msgstr "History Viewer"
 
-#: ../webapp/index.jsp:31
+#: ../webapp/index.jsp:41
 msgid "OSM History Viewer is a debugging tool for Changesets in OpenStreetMap."
 msgstr "OSM History Viewer is a debugging tool for Changesets in OpenStreetMap."
 
-#: ../webapp/index.jsp:38
+#: ../webapp/index.jsp:48
 msgid "Visualise changeset"
 msgstr "Visualise changeset"
 
-#: ../webapp/index.jsp:40
+#: ../webapp/index.jsp:50
 msgid "Changeset ID"
 msgstr "Changeset ID"
 
-#: ../webapp/index.jsp:43
+#: ../webapp/index.jsp:53
 msgid "Lookup"
 msgstr "Lookup"
 
-#: ../webapp/index.jsp:48
+#: ../webapp/index.jsp:58
 msgid "Relation Blame"
 msgstr "Relation Blame"
 
-#: ../webapp/index.jsp:51
+#: ../webapp/index.jsp:61
 msgid "Relation ID"
 msgstr "Relation ID"
 
-#: ../webapp/index.jsp:54
+#: ../webapp/index.jsp:64
 msgid "Blame"
 msgstr "Blame"
 
-#: ../webapp/index.jsp:69
+#: ../webapp/index.jsp:79
 msgid "ID"
 msgstr "ID"
 
-#: ../webapp/index.jsp:75
-#: ../webapp/index.jsp:90
+#: ../webapp/index.jsp:85
+#: ../webapp/index.jsp:100
 msgid "Open"
 msgstr "Open"
 
-#: ../webapp/index.jsp:90
+#: ../webapp/index.jsp:100
 msgid "No map"
 msgstr "No map"
 
-#: ../webapp/index.jsp:109
+#: ../webapp/index.jsp:119
 msgid "Key"
 msgstr "Key"
 
-#: ../webapp/index.jsp:116
+#: ../webapp/index.jsp:126
 msgid "Value"
 msgstr "Value"
 
-#: ../webapp/index.jsp:119
+#: ../webapp/index.jsp:129
 msgid "Search using OSM API"
 msgstr "Search using OSM API"
 
-#: ../webapp/changeset.jsp:44
+#: ../webapp/changeset.jsp:68
 #, php-format
 msgid "Changeset %s"
 msgstr "Changeset %s"
 
-#: ../webapp/changeset.jsp:60
+#: ../webapp/changeset.jsp:103
 #, php-format
 msgid "This analysation was created on %s."
 msgstr "This analysation was created on %s."
 
-#: ../webapp/changeset.jsp:61
+#: ../webapp/changeset.jsp:110
+#, php-format
+msgid "An analysation of this changeset is scheduled. The position in the queue is %d."
+msgstr "An analysation of this changeset is scheduled. The position in the queue is %d."
+
+#: ../webapp/changeset.jsp:118
 msgid "Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."
 msgstr "Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."
 
-#: ../webapp/changeset.jsp:66
+#: ../webapp/changeset.jsp:119
 msgid "Tags"
 msgstr "Tags"
 
-#: ../webapp/changeset.jsp:85
+#: ../webapp/changeset.jsp:138
 msgid "Details"
 msgstr "Details"
 
-#: ../webapp/changeset.jsp:87
+#: ../webapp/changeset.jsp:140
 msgid "Creation time"
 msgstr "Creation time"
 
-#: ../webapp/changeset.jsp:90
+#: ../webapp/changeset.jsp:143
 msgid "Closing time"
 msgstr "Closing time"
 
-#: ../webapp/changeset.jsp:96
+#: ../webapp/changeset.jsp:149
 msgid "Still open"
 msgstr "Still open"
 
-#: ../webapp/changeset.jsp:107
+#: ../webapp/changeset.jsp:160
 msgid "User"
 msgstr "User"
 
-#: ../webapp/changeset.jsp:115
+#: ../webapp/changeset.jsp:163
 msgid "Changed object tags"
 msgstr "Changed object tags"
 
-#: ../webapp/changeset.jsp:120
+#: ../webapp/changeset.jsp:168
 msgid "No tags have been changed."
 msgstr "No tags have been changed."
 
-#: ../webapp/changeset.jsp:126
+#: ../webapp/changeset.jsp:174
 msgid "Hover the elements to view the changed tags."
 msgstr "Hover the elements to view the changed tags."
 
-#: ../webapp/changeset.jsp:136
+#: ../webapp/changeset.jsp:182
 msgid "Node"
 msgstr "Node"
 
-#: ../webapp/changeset.jsp:141
+#: ../webapp/changeset.jsp:187
 msgid "Way"
 msgstr "Way"
 
-#: ../webapp/changeset.jsp:146
+#: ../webapp/changeset.jsp:192
 msgid "Relation"
 msgstr "Relation"
 
-#: ../webapp/changeset.jsp:195
+#: ../webapp/changeset.jsp:246
 msgid "Map"
 msgstr "Map"
 
-#: ../webapp/changeset.jsp:200
+#: ../webapp/changeset.jsp:251
 msgid "No objects were changed in the changeset."
 msgstr "No objects were changed in the changeset."
 
 #~ msgid "Changeset could not be analysed."
 #~ msgstr "Changeset could not be analysed."
+
 #~ msgid "Error during API request: "
 #~ msgstr "Error during API request: "
+
 #~ msgid "400 Bad Request"
 #~ msgstr "400 Bad Request"
+
 #~ msgid "401 Unauthorized"
 #~ msgstr "401 Unauthorized"
+
 #~ msgid "404 Not Found"
 #~ msgstr "404 Not Found"
+
 #~ msgid "405 Method Not Allowed"
 #~ msgstr "405 Method Not Allowed"
+
 #~ msgid "410 Gone"
 #~ msgstr "410 Gone"
+
 #~ msgid "412 Precondition Failed"
 #~ msgstr "412 Precondition Failed"
+
 #~ msgid "500 Internal Server Error"
 #~ msgstr "500 Internal Server Error"
+
 #~ msgid "503 Service Unavailable"
 #~ msgstr "503 Service Unavailable"
+
 #~ msgid "Unknown error code %s"
 #~ msgstr "Unknown error code %s"
+
 #~ msgid "API call was %s."
 #~ msgstr "API call was %s."
+
 #~ msgid "Could not connect to the API server."
 #~ msgstr "Could not connect to the API server."
+
 #~ msgid "The OSM server sent no data."
 #~ msgstr "The OSM server sent no data."
+
 #~ msgid "This element could not be found."
 #~ msgstr "This element could not be found."
+
 #~ msgid "OSM History Viewer"
 #~ msgstr "OSM History Viewer"
+
 #~ msgid "OSM History Viewer: %s"
 #~ msgstr "OSM History Viewer: %s"
+
 #~ msgid "Search using XAPI"
 #~ msgstr "Search using XAPI"
+
 #~ msgid ""
 #~ "OSM API will probably be more current and a lot faster but won’t let you "
 #~ "use wildcards."
 #~ msgstr ""
 #~ "OSM API will probably be more current and a lot faster but won’t let you "
 #~ "use wildcards."
+
 #~ msgid "Open this in OSM Relation Analyzer"
 #~ msgstr "Open this in OSM Relation Analyzer"
+
 #~ msgid ""
 #~ "The data was last refreshed on %s. The timestamp of the relation is %s. "
 #~ "If you think one of the members might have been changed, %sreload the "
@@ -247,58 +273,84 @@ msgstr "No objects were changed in the changeset."
 #~ "The data was last refreshed on %s. The timestamp of the relation is %s. "
 #~ "If you think one of the members might have been changed, %sreload the "
 #~ "data manually%s."
+
 #~ msgid "Last changed"
 #~ msgstr "Last changed"
+
 #~ msgid "%s by %s"
 #~ msgstr "%s by %s"
+
 #~ msgid "Total length"
 #~ msgstr "Total length"
+
 #~ msgid "Sub-relations"
 #~ msgstr "Sub-relations"
+
 #~ msgid "Parent relations"
 #~ msgstr "Parent relations"
+
 #~ msgid "Segments"
 #~ msgstr "Segments"
+
 #~ msgid "Get GPS coordinates by clicking on the map."
 #~ msgstr "Get GPS coordinates by clicking on the map."
+
 #~ msgid "Segment #"
 #~ msgstr "Segment #"
+
 #~ msgid "Length"
 #~ msgstr "Length"
+
 #~ msgid "Distance to next segments"
 #~ msgstr "Distance to next segments"
+
 #~ msgid "Visible"
 #~ msgstr "Visible"
+
 #~ msgid "Add to personal route"
 #~ msgstr "Add to personal route"
+
 #~ msgid "Personal route"
 #~ msgstr "Personal route"
+
 #~ msgid "Download GPX"
 #~ msgstr "Download GPX"
+
 #~ msgid "Segment %s"
 #~ msgstr "Segment %s"
+
 #~ msgid "Longitude"
 #~ msgstr "Longitude"
+
 #~ msgid "Latitude"
 #~ msgstr "Latitude"
+
 #~ msgid "OpenStreetMap Permalink"
 #~ msgstr "OpenStreetMap Permalink"
+
 #~ msgid "OpenStreetMap Marker"
 #~ msgstr "OpenStreetMap Marker"
+
 #~ msgid "Google Maps Marker"
 #~ msgstr "Google Maps Marker"
+
 #~ msgid "Yahoo Maps Permalink"
 #~ msgstr "Yahoo Maps Permalink"
+
 #~ msgid "Segment %s (reversed)"
 #~ msgstr "Segment %s (reversed)"
+
 #~ msgid "OSM Route Manager"
 #~ msgstr "OSM Route Manager"
+
 #~ msgid "OSM Route Manager: %s"
 #~ msgstr "OSM Route Manager: %s"
+
 #~ msgid "Lookup relation by ID"
 #~ msgstr "Lookup relation by ID"
+
 #~ msgid "Don’t show map"
 #~ msgstr "Don’t show map"
+
 #~ msgid "Search for relations"
 #~ msgstr "Search for relations"
-
