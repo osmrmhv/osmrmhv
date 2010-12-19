@@ -22,9 +22,6 @@
 package eu.cdauth.osm.lib.api06;
 
 import eu.cdauth.osm.lib.Changeset;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Hashtable;
 import java.util.Map;
 

@@ -29,9 +29,6 @@ import eu.cdauth.osm.lib.*;
 import org.w3c.dom.Element;
 
 import eu.cdauth.osm.lib.GeographicalItem;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Arrays;
 import java.util.SimpleTimeZone;
 
