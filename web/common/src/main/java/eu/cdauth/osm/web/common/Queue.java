@@ -10,6 +10,8 @@ import eu.cdauth.osm.lib.ItemCache;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A queue of callback functions to be called one at a time.
@@ -26,6 +28,8 @@ import java.util.Map;
  */
 public class Queue
 {
+	private static final Logger sm_logger = Logger.getLogger(Queue.class.getName());
+
 	/**
 	 * A callback function for the queue.
 	 */
@@ -120,7 +124,15 @@ public class Queue
 						}
 					}
 
-					task.worker.work(task.id);
+					try
+					{
+						task.worker.work(task.id);
+					}
+					catch(Exception e)
+					{
+						sm_logger.log(Level.WARNING, "Queue Worker aborted with exception.", e);
+					}
+
 					m_queue.taskFinished(task.worker, task.id);
 					task.notify._notify();
 
