@@ -29,8 +29,6 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
@@ -66,7 +64,6 @@ abstract public class GUI
 	private final HttpServletResponse m_resp;
 
 	private static API06API sm_api = null;
-	private static Thread sm_apiCleanUp = null;
 	
 	private static int sm_servletsRunning = 0;
 
@@ -74,25 +71,6 @@ abstract public class GUI
 	{
 		if(sm_servletsRunning++ == 0)
 		{
-			Logger.getLogger(GUI.class.getName()).info("Starting cache cleanup thread.");
-			sm_apiCleanUp = new Thread("osmrmhv cache cleanup") {
-				@Override public void run() {
-					while(true)
-					{
-						try {
-							Thread.sleep(60000);
-						} catch(InterruptedException e) {
-							break;
-						}
-						try {
-							ItemCache.cleanUpAll(false);
-						} catch(Exception e) {
-							Logger.getLogger(GUI.class.getName()).log(Level.WARNING, "Unexpected exception.", e);
-						}
-					}
-				}
-			};
-			sm_apiCleanUp.start();
 		}
 	}
 
@@ -100,9 +78,6 @@ abstract public class GUI
 	{
 		if(--sm_servletsRunning == 0)
 		{
-			Logger.getLogger(GUI.class.getName()).info("Stopping cache cleanup thread, completely clearing memory.");
-			sm_apiCleanUp.interrupt();
-			sm_apiCleanUp = null;
 			ItemCache.cleanUpAll(true);
 		}
 	}
