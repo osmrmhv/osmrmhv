@@ -52,14 +52,16 @@ public class ItemCache<T extends Item>
 		}
 	}
 
+	private final static boolean USE_SOFT_REFERENCES = !System.getProperty("java.vm.name").equals("GNU libgcj");;
+
 	/**
 	 * How many entries may be in the cache?
 	 */
-	public static final int MAX_CACHED_VALUES = 100;
+	public static final int MAX_CACHED_VALUES = USE_SOFT_REFERENCES ? Integer.MAX_VALUE : 500;
 	/**
 	 * How old may the entries in the cache be at most? (seconds)
 	 */
-	public static final int MAX_AGE = 600;
+	public static final int MAX_AGE = 1800;
 
 	private static final Logger sm_logger = Logger.getLogger(ItemCache.class.getName());
 	
@@ -72,8 +74,6 @@ public class ItemCache<T extends Item>
 	 * clean up methods.
 	 */
 	private final ValueSortedMap<ID,Long> m_cacheTimes = new ValueSortedMap<ID,Long>();
-
-	private final static boolean USE_SOFT_REFERENCES = !System.getProperty("java.vm.name").equals("GNU libgcj");;
 
 	static
 	{
