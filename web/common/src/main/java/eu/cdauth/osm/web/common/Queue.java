@@ -112,8 +112,12 @@ public class Queue
 					ScheduledTask task;
 					synchronized(m_queue)
 					{
-						m_queue.wait();
 						task = m_queue.getQueuedTask();
+						while(task == null)
+						{
+							m_queue.wait();
+							task = m_queue.getQueuedTask();
+						}
 					}
 
 					task.worker.work(task.id);
