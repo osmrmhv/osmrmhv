@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-19 08:39+0000\n"
+"POT-Creation-Date: 2010-12-19 09:22+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,19 +34,20 @@ msgstr ""
 msgid "Note that many features of this page will not work without JavaScript."
 msgstr ""
 
-#: ../webapp/blame.jsp:156
+#: ../webapp/blame.jsp:157
 #, php-format
 msgid "The data was last refreshed on %s. The timestamp of the relation is %s."
 msgstr ""
 
-#: ../webapp/blame.jsp:163
+#: ../webapp/blame.jsp:164
 #, php-format
 msgid ""
 "An analysation of the current version of the relation is scheduled. The "
-"position in the queue is %d."
+"position in the queue is %d. Reload this page after a while to see the "
+"updated version."
 msgstr ""
 
-#: ../webapp/blame.jsp:169
+#: ../webapp/blame.jsp:170
 #, php-format
 msgid ""
 "If you think something might have been changed, %sreload the data manually%s."
@@ -155,7 +156,7 @@ msgstr ""
 #, php-format
 msgid ""
 "An analysation of this changeset is scheduled. The position in the queue is "
-"%d."
+"%d. Reload this page after a while to see the updated version."
 msgstr ""
 
 #: ../webapp/changeset.jsp:120

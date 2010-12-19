@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OSM Route Manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-19 08:39+0000\n"
+"POT-Creation-Date: 2010-12-19 09:22+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Candid Dauth <webmaster@cdauth.de>\n"
 "Language-Team: \n"
@@ -35,17 +35,17 @@ msgstr "Details auf OpenStreetMap nachschauen"
 msgid "Note that many features of this page will not work without JavaScript."
 msgstr "Die Funktionalität dieser Seite ist ohne JavaScript stark eingeschränkt."
 
-#: ../webapp/blame.jsp:156
+#: ../webapp/blame.jsp:157
 #, php-format
 msgid "The data was last refreshed on %s. The timestamp of the relation is %s."
 msgstr "Die Daten wurden zuletzt am %s vom OSM-Server heruntergeladen. Das Änderungsdatum der Relation ist %s."
 
-#: ../webapp/blame.jsp:163
+#: ../webapp/blame.jsp:164
 #, php-format
-msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d."
-msgstr "Die Analyse der aktuellen Version der Relation wurde in Auftrag gegeben. Derzeit befindet sich der Auftrag an %d. Stelle in der Warteschlange."
+msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgstr "Die Analyse der aktuellen Version der Relation wurde in Auftrag gegeben. Derzeit befindet sich der Auftrag an %d. Stelle in der Warteschlange. Laden Sie die Seite nach einer Weile neu, um die neue Version zu sehen."
 
-#: ../webapp/blame.jsp:169
+#: ../webapp/blame.jsp:170
 #, php-format
 msgid "If you think something might have been changed, %sreload the data manually%s."
 msgstr "Falls Sie vermuten, dass sich in der Zwischenzeit etwas geändert hat, können Sie die Seite %smanuell neuladen%s."
@@ -153,8 +153,8 @@ msgstr "Diese Analyse wurde am %s erstellt."
 
 #: ../webapp/changeset.jsp:112
 #, php-format
-msgid "An analysation of this changeset is scheduled. The position in the queue is %d."
-msgstr "Die Analyse des Changesets wurde in Auftrag gegeben und befindet sich an %d. Stelle in der Warteschleife."
+msgid "An analysation of this changeset is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgstr "Die Analyse des Changesets wurde in Auftrag gegeben und befindet sich an %d. Stelle in der Warteschleife. Laden Sie die Seite nach einer Weile neu, um die neue Version zu sehen."
 
 #: ../webapp/changeset.jsp:120
 msgid "Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."

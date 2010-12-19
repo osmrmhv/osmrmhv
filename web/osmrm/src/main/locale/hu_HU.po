@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: osmrm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-15 09:08+0000\n"
+"POT-Creation-Date: 2010-12-19 09:21+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Candid Dauth <webmaster@cdauth.de>\n"
 "Language-Team: Hungarian <hu@li.org>\n"
@@ -65,127 +65,127 @@ msgstr "Érték"
 msgid "Search using OSM API"
 msgstr "Keresés az OSM API használatával"
 
-#: ../webapp/relation.jsp:77
+#: ../webapp/relation.jsp:83
 #, php-format
 msgid "Relation %s"
 msgstr "Kapcsolat: %s"
 
-#: ../webapp/relation.jsp:94
+#: ../webapp/relation.jsp:100
 msgid "Back to home page"
 msgstr "Vissza a honlapra"
 
-#: ../webapp/relation.jsp:95
+#: ../webapp/relation.jsp:101
 msgid "Open this in OSM Relation Analyzer"
 msgstr "Megnyitás OSM Relation Analyzerben"
 
-#: ../webapp/relation.jsp:96
+#: ../webapp/relation.jsp:102
 msgid "Browse on OpenStreetMap"
 msgstr "Böngészés az OpenStreetMapon"
 
-#: ../webapp/relation.jsp:97
+#: ../webapp/relation.jsp:103
 msgid "Blame with History Viewer"
 msgstr "Blame with History Viewer"
 
-#: ../webapp/relation.jsp:99
+#: ../webapp/relation.jsp:105
 msgid "Note that many features of this page will not work without JavaScript."
 msgstr "Vedd figyelembe, hogy az oldal számos jellemzője nem fog működni JavaScript nélkül."
 
-#: ../webapp/relation.jsp:113
+#: ../webapp/relation.jsp:123
 #, php-format
 msgid "The data was last refreshed on %s. The timestamp of the relation is %s."
 msgstr "Az adatok ekkor frissültek utoljára: %s. A kapcsolat időbélyege: %s."
 
-#: ../webapp/relation.jsp:121
-#, php-format
-msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d."
-msgstr "An analysation of the current version of the relation is scheduled. The position in the queue is %d."
+#: ../webapp/relation.jsp:130
+#, fuzzy, php-format
+msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgstr "An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
 
-#: ../webapp/relation.jsp:127
+#: ../webapp/relation.jsp:136
 #, php-format
 msgid "If you think something might have been changed, %sreload the data manually%s."
 msgstr "Ha úgy gondolod, hogy valamelyik tag változhatott, %stöltsd újra az adatokat kézzel%s."
 
-#: ../webapp/relation.jsp:135
+#: ../webapp/relation.jsp:144
 msgid "Tags"
 msgstr "Címkék"
 
-#: ../webapp/relation.jsp:157
+#: ../webapp/relation.jsp:166
 msgid "Details"
 msgstr "Részletek"
 
-#: ../webapp/relation.jsp:159
+#: ../webapp/relation.jsp:168
 msgid "Last changed"
 msgstr "Legutóbb változott"
 
-#: ../webapp/relation.jsp:160
+#: ../webapp/relation.jsp:169
 #, php-format
 msgid "%s by %s"
 msgstr "%s %s által"
 
-#: ../webapp/relation.jsp:162
+#: ../webapp/relation.jsp:171
 msgid "Total length"
 msgstr "Teljes hossz"
 
-#: ../webapp/relation.jsp:165
+#: ../webapp/relation.jsp:174
 msgid "Sub-relations"
 msgstr "Alkapcsolatok"
 
-#: ../webapp/relation.jsp:177
+#: ../webapp/relation.jsp:186
 msgid "Parent relations"
 msgstr "Szülőkapcsolatok"
 
-#: ../webapp/relation.jsp:189
+#: ../webapp/relation.jsp:198
 msgid "Segments"
 msgstr "Szakaszok"
 
-#: ../webapp/relation.jsp:194
+#: ../webapp/relation.jsp:203
 msgid "Get GPS coordinates by clicking on the map."
 msgstr "GPS koordinátákat a térképre kattintva kaphatsz."
 
-#: ../webapp/relation.jsp:202
+#: ../webapp/relation.jsp:211
 msgid "Segment #"
 msgstr "Szakasz #"
 
-#: ../webapp/relation.jsp:203
+#: ../webapp/relation.jsp:212
 msgid "Length"
 msgstr "Hossz"
 
-#: ../webapp/relation.jsp:204
+#: ../webapp/relation.jsp:213
 msgid "Distance to next segments"
 msgstr "Távolság a következő szakaszig"
 
-#: ../webapp/relation.jsp:209
+#: ../webapp/relation.jsp:218
 msgid "Visible"
 msgstr "Látható"
 
-#: ../webapp/relation.jsp:210
-#: ../webapp/relation.jsp:233
+#: ../webapp/relation.jsp:219
+#: ../webapp/relation.jsp:242
 msgid "Zoom"
 msgstr "Nagyítás"
 
-#: ../webapp/relation.jsp:214
+#: ../webapp/relation.jsp:223
 msgid "Add to personal route"
 msgstr "Hozzáadás a személyes útvonalhoz"
 
-#: ../webapp/relation.jsp:244
+#: ../webapp/relation.jsp:253
 msgid "Personal route"
 msgstr "Személyes útvonal"
 
-#: ../webapp/relation.jsp:248
+#: ../webapp/relation.jsp:257
 msgid "Download GPX"
 msgstr "GPX letöltése"
 
-#: ../webapp/relation.jsp:284
-#: ../webapp/relation.jsp:374
+#: ../webapp/relation.jsp:293
+#: ../webapp/relation.jsp:383
 #, php-format
 msgid "Segment %s"
 msgstr "Szakasz: %s"
 
-#: ../webapp/relation.jsp:306
+#: ../webapp/relation.jsp:315
 msgid "Markers"
 msgstr "Markers"
 
-#: ../webapp/relation.jsp:374
+#: ../webapp/relation.jsp:383
 #, php-format
 msgid "Segment %s (reversed)"
 msgstr "Szakasz: %s (fordított)"

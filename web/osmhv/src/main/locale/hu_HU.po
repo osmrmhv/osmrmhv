@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: osmhv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-19 08:39+0000\n"
+"POT-Creation-Date: 2010-12-19 09:22+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Candid Dauth <webmaster@cdauth.de>\n"
 "Language-Team: Hungarian <hu@li.org>\n"
@@ -36,17 +36,17 @@ msgstr "Böngészés az OpenStreetMapon"
 msgid "Note that many features of this page will not work without JavaScript."
 msgstr "Vedd figyelembe, hogy az oldal számos jellemzője nem fog működni JavaScript nélkül."
 
-#: ../webapp/blame.jsp:156
+#: ../webapp/blame.jsp:157
 #, php-format
 msgid "The data was last refreshed on %s. The timestamp of the relation is %s."
 msgstr "Az adatok ekkor frissültek utoljára: %s. A kapcsolat időbélyege: %s."
 
-#: ../webapp/blame.jsp:163
+#: ../webapp/blame.jsp:164
 #, fuzzy, php-format
-msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d."
-msgstr "An analysation of the current version of the relation is scheduled. The position in the queue is %d."
+msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgstr "An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
 
-#: ../webapp/blame.jsp:169
+#: ../webapp/blame.jsp:170
 #, php-format
 msgid "If you think something might have been changed, %sreload the data manually%s."
 msgstr "Ha úgy gondolod, hogy valamelyik tag változhatott, %stöltsd újra az adatokat kézzel%s."
@@ -154,8 +154,8 @@ msgstr "A vizsgálat ekkor készült: %s."
 
 #: ../webapp/changeset.jsp:112
 #, fuzzy, php-format
-msgid "An analysation of this changeset is scheduled. The position in the queue is %d."
-msgstr "An analysation of this changeset is scheduled. The position in the queue is %d."
+msgid "An analysation of this changeset is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgstr "An analysation of this changeset is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
 
 #: ../webapp/changeset.jsp:120
 msgid "Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."
