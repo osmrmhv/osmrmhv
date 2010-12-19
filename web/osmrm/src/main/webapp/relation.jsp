@@ -26,11 +26,17 @@
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	private static final API api = GUI.getAPI();
-	private static final Cache<RouteAnalyser> cache = new Cache<RouteAnalyser>("/tmp/osmrm");
+	private static Cache<RouteAnalyser> cache = null;
 	private static final Queue queue = Queue.getInstance();
 
 	public void jspInit()
 	{
+		if(cache == null)
+		{
+			cache = new Cache<RouteAnalyser>(GUI.getCacheDirectory(getServletContext())+"/osmrm");
+			cache.setMaxAge(86400);
+		}
+
 		GUI.servletStart();
 	}
 

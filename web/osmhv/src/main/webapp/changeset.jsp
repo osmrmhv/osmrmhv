@@ -26,11 +26,13 @@
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	protected static final API api = GUI.getAPI();
-	private static final Cache<ChangesetAnalyser> cache = new Cache<ChangesetAnalyser>(System.getProperty("java.io.tmpdir")+"/osmhv/changeset");
+	private static Cache<ChangesetAnalyser> cache = null;
 	private static final Queue queue = Queue.getInstance();
 
 	public void jspInit()
 	{
+		if(cache == null)
+			cache = new Cache<ChangesetAnalyser>(GUI.getCacheDirectory(getServletContext())+"/osmhv/changeset");
 		GUI.servletStart();
 	}
 

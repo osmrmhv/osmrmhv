@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.servlet.ServletContext;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -115,6 +116,14 @@ abstract public class GUI
 		if(sm_api == null)
 			sm_api = new eu.cdauth.osm.lib.api06.API06API();
 		return sm_api;
+	}
+
+	public static String getCacheDirectory(ServletContext a_context)
+	{
+		String dir = a_context.getInitParameter("cache_dir");
+		if(dir == null)
+			dir = System.getProperty("java.io.tmpdir");
+		return dir;
 	}
 
 	/**
