@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: osmhv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-18 16:57+0000\n"
+"POT-Creation-Date: 2010-12-19 08:39+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Candid Dauth <webmaster@cdauth.de>\n"
 "Language-Team: Hungarian <hu@li.org>\n"
@@ -16,61 +16,76 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../webapp/blame.jsp:89
-#, fuzzy, php-format
+#: ../webapp/blame.jsp:121
+#, php-format
 msgid "Relation %s"
-msgstr "Relation %s"
+msgstr "Kapcsolat: %s"
 
-#: ../webapp/blame.jsp:101
-#: ../webapp/changeset.jsp:80
+#: ../webapp/blame.jsp:133
+#: ../webapp/changeset.jsp:82
 msgid "Back to home page"
 msgstr "Vissza a honlapra"
 
-#: ../webapp/blame.jsp:102
-#: ../webapp/changeset.jsp:81
+#: ../webapp/blame.jsp:134
+#: ../webapp/changeset.jsp:83
 msgid "Browse on OpenStreetMap"
 msgstr "Böngészés az OpenStreetMapon"
 
-#: ../webapp/blame.jsp:104
-#: ../webapp/changeset.jsp:83
+#: ../webapp/blame.jsp:136
+#: ../webapp/changeset.jsp:85
 msgid "Note that many features of this page will not work without JavaScript."
 msgstr "Vedd figyelembe, hogy az oldal számos jellemzője nem fog működni JavaScript nélkül."
 
-#: ../webapp/blame.jsp:158
+#: ../webapp/blame.jsp:156
+#, php-format
+msgid "The data was last refreshed on %s. The timestamp of the relation is %s."
+msgstr "Az adatok ekkor frissültek utoljára: %s. A kapcsolat időbélyege: %s."
+
+#: ../webapp/blame.jsp:163
+#, fuzzy, php-format
+msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d."
+msgstr "An analysation of the current version of the relation is scheduled. The position in the queue is %d."
+
+#: ../webapp/blame.jsp:169
+#, php-format
+msgid "If you think something might have been changed, %sreload the data manually%s."
+msgstr "Ha úgy gondolod, hogy valamelyik tag változhatott, %stöltsd újra az adatokat kézzel%s."
+
+#: ../webapp/blame.jsp:225
 msgid "Affecting changesets by user"
 msgstr "Kapcsolódó módosításcsomagok felhasználónként"
 
-#: ../webapp/blame.jsp:158
+#: ../webapp/blame.jsp:225
 msgid "Hide all"
 msgstr "Összes elrejtése"
 
-#: ../webapp/blame.jsp:158
+#: ../webapp/blame.jsp:225
 msgid "Show all"
 msgstr "Összes megjelenítése"
 
-#: ../webapp/blame.jsp:158
+#: ../webapp/blame.jsp:225
 msgid "Zoom all"
 msgstr "Összes kinagyítása"
 
-#: ../webapp/blame.jsp:171
+#: ../webapp/blame.jsp:238
 #, fuzzy, php-format
 msgid "“%s”"
 msgstr "“%s”"
 
-#: ../webapp/blame.jsp:171
+#: ../webapp/blame.jsp:238
 msgid "No comment"
 msgstr "Nincs megjegyzés"
 
-#: ../webapp/blame.jsp:171
+#: ../webapp/blame.jsp:238
 msgid "Zoom"
 msgstr "Nagyítás"
 
-#: ../webapp/blame.jsp:171
-#: ../webapp/changeset.jsp:198
+#: ../webapp/blame.jsp:238
+#: ../webapp/changeset.jsp:200
 msgid "browse"
 msgstr "böngészés"
 
-#: ../webapp/blame.jsp:171
+#: ../webapp/blame.jsp:238
 msgid "view"
 msgstr "megjelenítés"
 
@@ -108,14 +123,12 @@ msgstr "Azonosító"
 
 #: ../webapp/index.jsp:85
 #: ../webapp/index.jsp:100
-#, fuzzy
 msgid "Open"
-msgstr "Open"
+msgstr "Megnyitás"
 
 #: ../webapp/index.jsp:100
-#, fuzzy
 msgid "No map"
-msgstr "No map"
+msgstr "Nincs térkép"
 
 #: ../webapp/index.jsp:119
 msgid "Key"
@@ -129,79 +142,79 @@ msgstr "Érték"
 msgid "Search using OSM API"
 msgstr "Keresés az OSM API használatával"
 
-#: ../webapp/changeset.jsp:68
+#: ../webapp/changeset.jsp:70
 #, php-format
 msgid "Changeset %s"
 msgstr "Módosításcsomag: %s"
 
-#: ../webapp/changeset.jsp:103
+#: ../webapp/changeset.jsp:105
 #, php-format
 msgid "This analysation was created on %s."
 msgstr "A vizsgálat ekkor készült: %s."
 
-#: ../webapp/changeset.jsp:110
+#: ../webapp/changeset.jsp:112
 #, fuzzy, php-format
 msgid "An analysation of this changeset is scheduled. The position in the queue is %d."
 msgstr "An analysation of this changeset is scheduled. The position in the queue is %d."
 
-#: ../webapp/changeset.jsp:118
+#: ../webapp/changeset.jsp:120
 msgid "Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."
 msgstr "Minden zöld ezen az oldalon a módosításcsomag beküldése utáni állapotot mutatja, a piros az az előttit; a kékkel megjelenő dolgok nem változtak."
 
-#: ../webapp/changeset.jsp:119
+#: ../webapp/changeset.jsp:121
 msgid "Tags"
 msgstr "Címkék"
 
-#: ../webapp/changeset.jsp:138
+#: ../webapp/changeset.jsp:140
 msgid "Details"
 msgstr "Részletek"
 
-#: ../webapp/changeset.jsp:140
+#: ../webapp/changeset.jsp:142
 msgid "Creation time"
 msgstr "Létrehozás ideje"
 
-#: ../webapp/changeset.jsp:143
+#: ../webapp/changeset.jsp:145
 msgid "Closing time"
 msgstr "Lezárás ideje"
 
-#: ../webapp/changeset.jsp:149
+#: ../webapp/changeset.jsp:151
 #, fuzzy
 msgid "Still open"
 msgstr "Still open"
 
-#: ../webapp/changeset.jsp:160
+#: ../webapp/changeset.jsp:162
 msgid "User"
 msgstr "Felhasználó"
 
-#: ../webapp/changeset.jsp:163
+#: ../webapp/changeset.jsp:165
 msgid "Changed object tags"
 msgstr "Módosult objektumcímkék"
 
-#: ../webapp/changeset.jsp:168
+#: ../webapp/changeset.jsp:170
 msgid "No tags have been changed."
 msgstr "Nem módosultak címkék."
 
-#: ../webapp/changeset.jsp:174
+#: ../webapp/changeset.jsp:176
 msgid "Hover the elements to view the changed tags."
 msgstr "A módosult címkék megtekintéséhez húzd az egeret az elemek fölé."
 
-#: ../webapp/changeset.jsp:182
+#: ../webapp/changeset.jsp:184
 msgid "Node"
 msgstr "Pont"
 
-#: ../webapp/changeset.jsp:187
+#: ../webapp/changeset.jsp:189
 msgid "Way"
 msgstr "Vonal"
 
-#: ../webapp/changeset.jsp:192
+#: ../webapp/changeset.jsp:194
 msgid "Relation"
 msgstr "Kapcsolat"
 
-#: ../webapp/changeset.jsp:246
+#: ../webapp/changeset.jsp:248
 msgid "Map"
 msgstr "Térkép"
 
-#: ../webapp/changeset.jsp:251
+#: ../webapp/changeset.jsp:253
 msgid "No objects were changed in the changeset."
 msgstr "Nincsenek módosult objektumok a módosításcsomagban."
 

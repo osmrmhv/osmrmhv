@@ -18,12 +18,16 @@
 --%>
 <%@page import="eu.cdauth.osm.lib.*"%>
 <%@page import="eu.cdauth.osm.web.osmhv.*"%>
+<%@page import="eu.cdauth.osm.web.common.Cache"%>
+<%@page import="eu.cdauth.osm.web.common.Queue"%>
 <%@page import="static eu.cdauth.osm.web.osmhv.GUI.*"%>
 <%@page import="java.util.*" %>
 <%@page import="java.net.URL" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	protected static final API api = GUI.getAPI();
+	private static Cache<RelationBlame> cache = null;
+	private static final Queue queue = Queue.getInstance();
 
 	protected static final String[] predefinedColours = new String[] {
 		"#000",
@@ -64,6 +68,12 @@
 
 	public void jspInit()
 	{
+		if(cache == null)
+		{
+			cache = new Cache<RelationBlame>(GUI.getCacheDirectory(getServletContext())+"/osmhv/blame");
+			cache.setMaxAge(86400*7);
+		}
+
 		GUI.servletStart();
 	}
 
@@ -71,6 +81,20 @@
 	{
 		GUI.servletStop();
 	}
+
+	private static final Queue.Worker worker = new Queue.Worker() {
+		public void work(ID a_id)
+		{
+			try
+			{
+				RelationBlame route = new RelationBlame(api, a_id);
+				cache.saveEntry(a_id.toString(), route);
+			}
+			catch(Exception e)
+			{
+			}
+		}
+	};
 %>
 <%
 	if(request.getParameter("id") == null)
@@ -81,10 +105,18 @@
 		return;
 	}
 
-	GUI gui = new GUI(request, response);
-
 	ID relationID = new ID(request.getParameter("id").replace("^\\s*#?(.*)\\s*$", "$1"));
 
+	if(request.getParameter("refresh") != null)
+	{
+		queue.scheduleTask(worker, relationID);
+		response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+		URL thisUrl = new URL(request.getRequestURL().toString());
+		response.setHeader("Location", new URL(thisUrl.getProtocol(), thisUrl.getHost(), thisUrl.getPort(), thisUrl.getPath()).toString()+"?id="+GUI.urlencode(request.getParameter("id")));
+		return;
+	}
+
+	GUI gui = new GUI(request, response);
 	if(relationID != null)
 		gui.setTitle(String.format(gui._("Relation %s"), relationID.toString()));
 	gui.setJavaScripts(new String[]{
@@ -105,76 +137,111 @@
 <%
 	response.getWriter().flush();
 
-	RelationBlame blame = new RelationBlame(api, relationID);
-
-	Map<User,Set<Changeset>> userChangesets = new HashMap<User,Set<Changeset>>();
-	Map<Changeset,List<Segment>> changesetSegments = new HashMap<Changeset,List<Segment>>();
-	for(Map.Entry<Segment,Changeset> segment : blame.segmentChangeset.entrySet())
+	Cache.Entry<RelationBlame> cacheEntry = cache.getEntry(relationID.toString());
+	int queuePosition = queue.getPosition(worker, relationID);
+	if(cacheEntry == null)
 	{
-		User user = segment.getValue().getUser();
-		Set<Changeset> changesets = userChangesets.get(user);
-		if(changesets == null)
+		if(queuePosition == 0)
 		{
-			changesets = new HashSet<Changeset>();
-			userChangesets.put(user, changesets);
-		}
-		List<Segment> segments = changesetSegments.get(segment.getValue());
-		if(segments == null)
-		{
-			segments = new ArrayList<Segment>();
-			changesetSegments.put(segment.getValue(), segments);
-		}
-
-		changesets.add(segment.getValue());
-		segments.add(segment.getKey());
-	}
-
-	TreeSet<UserChangeNumber> userChangeNumber = new TreeSet<UserChangeNumber>();
-	for(Map.Entry<User,Set<Changeset>> user : userChangesets.entrySet())
-	{
-		int number = 0;
-		for(Changeset changeset : user.getValue())
-			number += changesetSegments.get(changeset).size();
-		userChangeNumber.add(new UserChangeNumber(user.getKey(), number));
-	}
-
-	Map<User,String> userColours = new HashMap<User,String>();
-	int i = 0;
-	for(UserChangeNumber user : userChangeNumber)
-	{
-		if(i < predefinedColours.length)
-			userColours.put(user.user, predefinedColours[i++]);
-		else
-		{
-			long n1 = rand(6, 12);
-			long n2 = rand(12-n1, 12);
-			long n3 = 30-n1-n2;
-			userColours.put(user.user, String.format("#%x%x%x", n1, n2, n3));
+			Queue.Notification notify = queue.scheduleTask(worker, relationID);
+			notify.sleep(20000);
+			cacheEntry = cache.getEntry(relationID.toString());
+			queuePosition = queue.getPosition(worker, relationID);
 		}
 	}
+
+	if(cacheEntry != null)
+	{
 %>
 <div id="map" class="blame-map"></div>
+<p><%=String.format(htmlspecialchars(gui._("The data was last refreshed on %s. The timestamp of the relation is %s.")), gui.formatDate(cacheEntry == null ? null : cacheEntry.date), gui.formatDate(cacheEntry.content.timestamp))%></p>
+<%
+	}
+
+	if(queuePosition > 0)
+	{
+%>
+<p class="scheduled"><strong><%=htmlspecialchars(String.format(gui._("An analysation of the current version of the relation is scheduled. The position in the queue is %d."), queuePosition))%></strong></p>
+<%
+	}
+	else
+	{
+%>
+<p><%=String.format(htmlspecialchars(gui._("If you think something might have been changed, %sreload the data manually%s.")), "<a href=\"?id="+htmlspecialchars(urlencode(relationID.toString())+"&refresh=1")+"\">", "</a>")%></p>
+<%
+	}
+
+	if(cacheEntry != null)
+	{
+		RelationBlame blame = cacheEntry.content;
+
+		Map<User,Set<Changeset>> userChangesets = new HashMap<User,Set<Changeset>>();
+		Map<Changeset,List<Segment>> changesetSegments = new HashMap<Changeset,List<Segment>>();
+		for(Map.Entry<Segment,Changeset> segment : blame.segmentChangeset.entrySet())
+		{
+			User user = segment.getValue().getUser();
+			Set<Changeset> changesets = userChangesets.get(user);
+			if(changesets == null)
+			{
+				changesets = new HashSet<Changeset>();
+				userChangesets.put(user, changesets);
+			}
+			List<Segment> segments = changesetSegments.get(segment.getValue());
+			if(segments == null)
+			{
+				segments = new ArrayList<Segment>();
+				changesetSegments.put(segment.getValue(), segments);
+			}
+
+			changesets.add(segment.getValue());
+			segments.add(segment.getKey());
+		}
+
+		TreeSet<UserChangeNumber> userChangeNumber = new TreeSet<UserChangeNumber>();
+		for(Map.Entry<User,Set<Changeset>> user : userChangesets.entrySet())
+		{
+			int number = 0;
+			for(Changeset changeset : user.getValue())
+				number += changesetSegments.get(changeset).size();
+			userChangeNumber.add(new UserChangeNumber(user.getKey(), number));
+		}
+
+		Map<User,String> userColours = new HashMap<User,String>();
+		int i = 0;
+		for(UserChangeNumber user : userChangeNumber)
+		{
+			if(i < predefinedColours.length)
+				userColours.put(user.user, predefinedColours[i++]);
+			else
+			{
+				long n1 = rand(6, 12);
+				long n2 = rand(12-n1, 12);
+				long n3 = 30-n1-n2;
+				userColours.put(user.user, String.format("#%x%x%x", n1, n2, n3));
+			}
+		}
+%>
 <div class="blame-changesets">
 	<h2><%=htmlspecialchars(gui._("Affecting changesets by user"))%> (<a href="javascript:setGlobalVisibility(false)"><%=htmlspecialchars(gui._("Hide all"))%></a>) (<a href="javascript:setGlobalVisibility(true)"><%=htmlspecialchars(gui._("Show all"))%></a>) (<a href="javascript:map.zoomToExtent(extent)"><%=htmlspecialchars(gui._("Zoom all"))%></a>)</h2>
 	<ul>
 <%
-	for(UserChangeNumber user : userChangeNumber)
-	{
+		for(UserChangeNumber user : userChangeNumber)
+		{
 %>
 		<li><strong class="user-colour" style="color:<%=htmlspecialchars(userColours.get(user.user))%>;"><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(urlencode(user.user.toString()))%>"><%=htmlspecialchars(user.user.toString())%></a></strong><ul>
 <%
-		for(Changeset changeset : userChangesets.get(user.user))
-		{
-			String id = changeset.getID().toString();
-			String message = changeset.getTag("comment");
+			for(Changeset changeset : userChangesets.get(user.user))
+			{
+				String id = changeset.getID().toString();
+				String message = changeset.getTag("comment");
 %>
 			<li><input type="checkbox" id="checkbox-<%=id%>" onchange="layers[<%=id%>].setVisibility(this.checked);" /><label for="checkbox-<%=id%>"><%=id%>: <%=!message.equals("") ? String.format(gui._("“%s”"), htmlspecialchars(message)) : "<span class=\"nocomment\">"+htmlspecialchars(gui._("No comment"))+"</span>"%></label> (<a href="javascript:map.zoomToExtent(layers['<%=id%>'].getDataExtent())"><%=htmlspecialchars(gui._("Zoom"))%></a>) (<a href="http://www.openstreetmap.org/browse/changeset/<%=htmlspecialchars(urlencode(id))%>"><%=htmlspecialchars(gui._("browse"))%></a>) (<a href="changeset.jsp?id=<%=htmlspecialchars(urlencode(id))%>"><%=htmlspecialchars(gui._("view"))%></a>)</li>
 <%
-	}
+			}
 %>
 		</ul></li>
 <%
-}
+		}
 %>
 	</ul>
 </div>
@@ -202,20 +269,20 @@
 
 	var layers = { };
 <%
-	for(Map.Entry<Changeset,List<Segment>> changeset : changesetSegments.entrySet())
-	{
-		String id = changeset.getKey().getID().toString();
+		for(Map.Entry<Changeset,List<Segment>> changeset : changesetSegments.entrySet())
+		{
+			String id = changeset.getKey().getID().toString();
 %>
 	layers['<%=id%>'] = new OpenLayers.Layer.PointTrack("Changeset <%=id%>", { styleMap : new OpenLayers.StyleMap({strokeColor: "<%=userColours.get(changeset.getKey().getUser())%>", strokeWidth: 5, strokeOpacity: 0.6, shortName: "<%=id%>"}), projection : projection, zoomableInLayerSwitcher : true });
 <%
-		for(Segment segment : changeset.getValue())
-		{
-			LonLat node1 = segment.getNode1().getLonLat();
-			LonLat node2 = segment.getNode2().getLonLat();
+			for(Segment segment : changeset.getValue())
+			{
+				LonLat node1 = segment.getNode1().getLonLat();
+				LonLat node2 = segment.getNode2().getLonLat();
 %>
 	layers['<%=id%>'].addNodes([new OpenLayers.Feature(layers['<%=id%>'], new OpenLayers.LonLat(<%=node1.getLon()%>, <%=node1.getLat()%>).transform(projection, map.getProjectionObject())),new OpenLayers.Feature(layers['<%=id%>'], new OpenLayers.LonLat(<%=node2.getLon()%>, <%=node2.getLat()%>).transform(projection, map.getProjectionObject()))]);
 <%
-		}
+			}
 %>
 	map.addLayer(layers['<%=id%>']);
 	if(extent)
@@ -224,7 +291,7 @@
 		extent = layers['<%=id%>'].getDataExtent();
 
 <%
-	}
+		}
 %>
 	if(extent)
 		map.zoomToExtent(extent);
@@ -250,5 +317,7 @@
 // ]]>
 </script>
 <%
+	}
+
 	gui.foot();
 %>

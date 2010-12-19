@@ -47,6 +47,7 @@ import java.util.NavigableMap;
 public class RelationBlame implements Serializable
 {
 	public final Map<Segment,Changeset> segmentChangeset;
+	public final Date timestamp;
 
 	public RelationBlame(API a_api, ID a_relationId) throws APIError
 	{
@@ -56,6 +57,8 @@ public class RelationBlame implements Serializable
 		ChangesetFactory changesetFactory = a_api.getChangesetFactory();
 
 		Relation currentRelation = relationFactory.fetchHistory(a_relationId).lastEntry().getValue();
+
+		timestamp = currentRelation.getTimestamp();
 
 		Date currentDate = null;
 		Date nextDate = null;

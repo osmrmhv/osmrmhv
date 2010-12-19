@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-18 16:57+0000\n"
+"POT-Creation-Date: 2010-12-19 08:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,57 +17,75 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../webapp/blame.jsp:89
+#: ../webapp/blame.jsp:121
 #, php-format
 msgid "Relation %s"
 msgstr ""
 
-#: ../webapp/blame.jsp:101 ../webapp/changeset.jsp:80
+#: ../webapp/blame.jsp:133 ../webapp/changeset.jsp:82
 msgid "Back to home page"
 msgstr ""
 
-#: ../webapp/blame.jsp:102 ../webapp/changeset.jsp:81
+#: ../webapp/blame.jsp:134 ../webapp/changeset.jsp:83
 msgid "Browse on OpenStreetMap"
 msgstr ""
 
-#: ../webapp/blame.jsp:104 ../webapp/changeset.jsp:83
+#: ../webapp/blame.jsp:136 ../webapp/changeset.jsp:85
 msgid "Note that many features of this page will not work without JavaScript."
 msgstr ""
 
-#: ../webapp/blame.jsp:158
+#: ../webapp/blame.jsp:156
+#, php-format
+msgid "The data was last refreshed on %s. The timestamp of the relation is %s."
+msgstr ""
+
+#: ../webapp/blame.jsp:163
+#, php-format
+msgid ""
+"An analysation of the current version of the relation is scheduled. The "
+"position in the queue is %d."
+msgstr ""
+
+#: ../webapp/blame.jsp:169
+#, php-format
+msgid ""
+"If you think something might have been changed, %sreload the data manually%s."
+msgstr ""
+
+#: ../webapp/blame.jsp:225
 msgid "Affecting changesets by user"
 msgstr ""
 
-#: ../webapp/blame.jsp:158
+#: ../webapp/blame.jsp:225
 msgid "Hide all"
 msgstr ""
 
-#: ../webapp/blame.jsp:158
+#: ../webapp/blame.jsp:225
 msgid "Show all"
 msgstr ""
 
-#: ../webapp/blame.jsp:158
+#: ../webapp/blame.jsp:225
 msgid "Zoom all"
 msgstr ""
 
-#: ../webapp/blame.jsp:171
+#: ../webapp/blame.jsp:238
 #, php-format
 msgid "“%s”"
 msgstr ""
 
-#: ../webapp/blame.jsp:171
+#: ../webapp/blame.jsp:238
 msgid "No comment"
 msgstr ""
 
-#: ../webapp/blame.jsp:171
+#: ../webapp/blame.jsp:238
 msgid "Zoom"
 msgstr ""
 
-#: ../webapp/blame.jsp:171 ../webapp/changeset.jsp:198
+#: ../webapp/blame.jsp:238 ../webapp/changeset.jsp:200
 msgid "browse"
 msgstr ""
 
-#: ../webapp/blame.jsp:171
+#: ../webapp/blame.jsp:238
 msgid "view"
 msgstr ""
 
@@ -123,82 +141,82 @@ msgstr ""
 msgid "Search using OSM API"
 msgstr ""
 
-#: ../webapp/changeset.jsp:68
+#: ../webapp/changeset.jsp:70
 #, php-format
 msgid "Changeset %s"
 msgstr ""
 
-#: ../webapp/changeset.jsp:103
+#: ../webapp/changeset.jsp:105
 #, php-format
 msgid "This analysation was created on %s."
 msgstr ""
 
-#: ../webapp/changeset.jsp:110
+#: ../webapp/changeset.jsp:112
 #, php-format
 msgid ""
 "An analysation of this changeset is scheduled. The position in the queue is "
 "%d."
 msgstr ""
 
-#: ../webapp/changeset.jsp:118
+#: ../webapp/changeset.jsp:120
 msgid ""
 "Everything green on this page will show the status after the changeset was "
 "committed, red will be the status before, and things displayed in blue "
 "haven’t changed."
 msgstr ""
 
-#: ../webapp/changeset.jsp:119
+#: ../webapp/changeset.jsp:121
 msgid "Tags"
 msgstr ""
 
-#: ../webapp/changeset.jsp:138
+#: ../webapp/changeset.jsp:140
 msgid "Details"
 msgstr ""
 
-#: ../webapp/changeset.jsp:140
+#: ../webapp/changeset.jsp:142
 msgid "Creation time"
 msgstr ""
 
-#: ../webapp/changeset.jsp:143
+#: ../webapp/changeset.jsp:145
 msgid "Closing time"
 msgstr ""
 
-#: ../webapp/changeset.jsp:149
+#: ../webapp/changeset.jsp:151
 msgid "Still open"
 msgstr ""
 
-#: ../webapp/changeset.jsp:160
+#: ../webapp/changeset.jsp:162
 msgid "User"
 msgstr ""
 
-#: ../webapp/changeset.jsp:163
+#: ../webapp/changeset.jsp:165
 msgid "Changed object tags"
 msgstr ""
 
-#: ../webapp/changeset.jsp:168
+#: ../webapp/changeset.jsp:170
 msgid "No tags have been changed."
 msgstr ""
 
-#: ../webapp/changeset.jsp:174
+#: ../webapp/changeset.jsp:176
 msgid "Hover the elements to view the changed tags."
 msgstr ""
 
-#: ../webapp/changeset.jsp:182
+#: ../webapp/changeset.jsp:184
 msgid "Node"
 msgstr ""
 
-#: ../webapp/changeset.jsp:187
+#: ../webapp/changeset.jsp:189
 msgid "Way"
 msgstr ""
 
-#: ../webapp/changeset.jsp:192
+#: ../webapp/changeset.jsp:194
 msgid "Relation"
 msgstr ""
 
-#: ../webapp/changeset.jsp:246
+#: ../webapp/changeset.jsp:248
 msgid "Map"
 msgstr ""
 
-#: ../webapp/changeset.jsp:251
+#: ../webapp/changeset.jsp:253
 msgid "No objects were changed in the changeset."
 msgstr ""
