@@ -55,7 +55,7 @@ public class API06API implements API
 
 	private static Logger sm_logger = Logger.getLogger(API06API.class.getName());
 
-	private String m_userAgent = "cdauth’s OSM library";
+	private String m_userAgent = "OSM Route Manager and History Viewer";
 	
 	/**
 	 * Sets the User-Agent HTTP request header for all future API requests.
