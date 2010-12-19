@@ -105,11 +105,11 @@
 <%
 	response.getWriter().flush();
 
-	Map<Segment,Changeset> blame = HistoryViewer.blame(api, relationID);
+	RelationBlame blame = new RelationBlame(api, relationID);
 
 	Map<User,Set<Changeset>> userChangesets = new HashMap<User,Set<Changeset>>();
 	Map<Changeset,List<Segment>> changesetSegments = new HashMap<Changeset,List<Segment>>();
-	for(Map.Entry<Segment,Changeset> segment : blame.entrySet())
+	for(Map.Entry<Segment,Changeset> segment : blame.segmentChangeset.entrySet())
 	{
 		User user = segment.getValue().getUser();
 		Set<Changeset> changesets = userChangesets.get(user);

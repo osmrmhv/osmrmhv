@@ -19,23 +19,43 @@
 
 package eu.cdauth.osm.web.osmhv;
 
-import eu.cdauth.osm.lib.*;
-import java.util.*;
+import eu.cdauth.osm.lib.API;
+import eu.cdauth.osm.lib.APIError;
+import eu.cdauth.osm.lib.Changeset;
+import eu.cdauth.osm.lib.ChangesetFactory;
+import eu.cdauth.osm.lib.ID;
+import eu.cdauth.osm.lib.Node;
+import eu.cdauth.osm.lib.NodeFactory;
+import eu.cdauth.osm.lib.Relation;
+import eu.cdauth.osm.lib.RelationFactory;
+import eu.cdauth.osm.lib.Segment;
+import eu.cdauth.osm.lib.Version;
+import eu.cdauth.osm.lib.Way;
+import eu.cdauth.osm.lib.WayFactory;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
 
 /**
  * @author cdauth
  */
-
-public class HistoryViewer
+public class RelationBlame implements Serializable
 {
-	public static Map<Segment,Changeset> blame(API a_api, ID a_id) throws APIError
+	public final Map<Segment,Changeset> segmentChangeset;
+
+	public RelationBlame(API a_api, ID a_relationId) throws APIError
 	{
 		NodeFactory nodeFactory = a_api.getNodeFactory();
 		WayFactory wayFactory = a_api.getWayFactory();
 		RelationFactory relationFactory = a_api.getRelationFactory();
 		ChangesetFactory changesetFactory = a_api.getChangesetFactory();
 
-		Relation currentRelation = relationFactory.fetchHistory(a_id).lastEntry().getValue();
+		Relation currentRelation = relationFactory.fetchHistory(a_relationId).lastEntry().getValue();
 
 		Date currentDate = null;
 		Date nextDate = null;
@@ -61,8 +81,8 @@ public class HistoryViewer
 				nextDate = null;
 				currentChangeset = nextChangeset;
 				nextChangeset = null;
-				mainRelation = relationFactory.fetch(a_id, currentDate);
-				mainRelationOlder = relationFactory.fetch(a_id, new Date(currentDate.getTime()-1000));
+				mainRelation = relationFactory.fetch(a_relationId, currentDate);
+				mainRelationOlder = relationFactory.fetch(a_relationId, new Date(currentDate.getTime()-1000));
 			}
 
 			if(mainRelation == null)
@@ -134,10 +154,8 @@ public class HistoryViewer
 		}
 
 		Map<ID,Changeset> changesets = changesetFactory.fetch(blame.values().toArray(new ID[blame.size()]));
-		Hashtable<Segment,Changeset> ret = new Hashtable<Segment,Changeset>();
+		segmentChangeset = new Hashtable<Segment,Changeset>();
 		for(Map.Entry<Segment,ID> e : blame.entrySet())
-			ret.put(e.getKey(), changesets.get(e.getValue()));
-
-		return ret;
+			segmentChangeset.put(e.getKey(), changesets.get(e.getValue()));
 	}
 }
