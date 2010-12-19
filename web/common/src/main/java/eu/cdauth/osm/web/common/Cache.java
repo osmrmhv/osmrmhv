@@ -17,6 +17,7 @@
 
 package eu.cdauth.osm.web.common;
 
+import eu.cdauth.osm.lib.ValueSortedMap;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -44,10 +45,6 @@ public class Cache<T extends Serializable>
 	 * The interval in seconds how often the cleanup thread shall remove old cache entries.
 	 */
 	protected static final int CLEANUP_INTERVAL = 3600;
-	/**
-	 * The age in seconds how old an entry has to be in order to be removed.
-	 */
-	protected static final int MAX_LIFETIME = 86400;
 
 	private static final Logger sm_logger = Logger.getLogger(Cache.class.getName());
 
@@ -55,6 +52,8 @@ public class Cache<T extends Serializable>
 	protected static CleanupThread sm_cleanupThread = null;
 
 	private final File m_dir;
+	private int m_maxAge = 0;
+	private long m_maxSize = 50000000;
 
 	public static class Entry<T>
 	{
@@ -97,7 +96,7 @@ public class Cache<T extends Serializable>
 					{
 						for(Map.Entry<Cache,Object> instance : sm_instances.entrySet())
 						{
-							instance.getKey().clearOldEntries(MAX_LIFETIME);
+							instance.getKey().clearOldEntries();
 
 							if(isInterrupted())
 								return;
@@ -132,29 +131,94 @@ public class Cache<T extends Serializable>
 		}
 	}
 
+	/**
+	 * Returns the set maximum total size of this cache before items are deleted.
+	 * @return The maximum size in bytes, 0 means no limit
+	 */
+	public long getMaxSize()
+	{
+		return m_maxSize;
+	}
+
+	/**
+	 * Returns the set maximum age of entries in this cache before they are deleted.
+	 * @return The maximum age in seconds, 0 means no limit
+	 */
+	public int getMaxAge()
+	{
+		return m_maxAge;
+	}
+
+	/**
+	 * Sets the maximum size of this cache before entries are deleted.
+	 * @param a_maxSize The maximum size in bytes, 0 means no limit
+	 */
+	public void setMaxSize(long a_maxSize)
+	{
+		m_maxSize = a_maxSize;
+	}
+
+	/**
+	 * Sets the maximum age of entries in this cache before they are deleted.
+	 * @param a_maxAge The maximum age in seconds, 0 means no limit.
+	 */
+	public void setMaxAge(int a_maxAge)
+	{
+		m_maxAge = a_maxAge;
+	}
+
 	protected File getFileByID(String a_id)
 	{
 		return new File(m_dir, a_id+".ser.gz");
 	}
 
 	/**
-	 * Removes all cached files in the directory that are older than the specified age.
-	 * @param a_age The maximum age in seconds of the files to not be removed
+	 * Cleans up cached files if the cache is bigger than {@link #getMaxSize} or entries are older than {@link #getMaxAge}.
 	 */
-	public synchronized void clearOldEntries(long a_age)
+	public synchronized void clearOldEntries()
 	{
 		if(sm_logger.isLoggable(Level.INFO))
 			sm_logger.info("Cleaning up cache.");
 
-		long age = a_age*1000;
-		long now = System.currentTimeMillis();
+		long maxAge = getMaxAge()*1000;
+		long maxSize = getMaxSize();
 		int deleted = 0;
-		for(File entry : m_dir.listFiles())
+
+		if(maxAge > 0 || maxSize > 0)
 		{
-			if(now-entry.lastModified() > age)
+			long now = System.currentTimeMillis();
+
+			long totalSize = 0;
+			ValueSortedMap<File,Long> mtimes = null;
+			if(maxSize > 0)
+				mtimes = new ValueSortedMap<File,Long>();
+
+			for(File entry : m_dir.listFiles())
 			{
-				entry.delete();
-				deleted++;
+				if(maxAge > 0 && now-entry.lastModified() > maxAge)
+				{
+					entry.delete();
+					deleted++;
+					continue;
+				}
+
+				if(maxSize > 0 && entry.isFile())
+				{
+					totalSize += entry.length();
+					mtimes.put(entry, entry.lastModified());
+				}
+			}
+
+			if(maxAge > 0)
+			{
+				while(mtimes.size() > 0 && totalSize > maxAge)
+				{
+					File f = mtimes.firstKey();
+					totalSize -= f.length();
+					f.delete();
+					deleted++;
+					mtimes.remove(f);
+				}
 			}
 		}
 
