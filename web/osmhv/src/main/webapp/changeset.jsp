@@ -109,7 +109,7 @@
 	if(queuePosition > 0)
 	{
 %>
-<p><strong><%=htmlspecialchars(String.format(gui._("An analysation of this changeset is scheduled. The position in the queue is %d."), queuePosition))%></strong></p>
+<p class="scheduled"><strong><%=htmlspecialchars(String.format(gui._("An analysation of this changeset is scheduled. The position in the queue is %d."), queuePosition))%></strong></p>
 <%
 	}
 

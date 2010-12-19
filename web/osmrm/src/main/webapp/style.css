@@ -42,3 +42,5 @@ h1,h2,h3,h4,h5,h6 { clear:left; }
 
 #switch-lang { margin:0; padding:.3em; position:absolute; top:0; right:0; list-style-type:none; }
 #switch-lang li { margin:0; padding:0; }
+
+p.scheduled { font-size:1.2em; background-color:#fcc; padding:.2em .5em; }
