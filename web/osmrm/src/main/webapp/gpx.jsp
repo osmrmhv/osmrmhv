@@ -21,12 +21,15 @@
 <%@page import="eu.cdauth.osm.web.common.Cache"%>
 <%@page import="eu.cdauth.osm.web.common.Queue"%>
 <%@page import="java.util.*" %>
+<%@page import="java.util.logging.Logger"%>
+<%@page import="java.util.logging.Level"%>
 <%@page import="static eu.cdauth.osm.web.osmrm.GUI.*"%>
 <%@page contentType="text/xml; charset=UTF-8" buffer="none" session="false"%>
 <%!
 	private static final API api = GUI.getAPI();
 	private static Cache<RouteAnalyser> cache = null;
 	private static final Queue queue = Queue.getInstance();
+	private static Logger sm_logger = Logger.getLogger("gpx.jsp");
 
 	public void jspInit()
 	{
@@ -73,12 +76,14 @@
 
 	if(route != null)
 	{
-		String ref = route.tags.get("ref").trim();
+		String ref = route.tags.get("ref");
+		ref = (ref == null ? "" : ref.trim());
 		if(!ref.equals(""))
 			response.setHeader("Content-disposition", "attachment; filename="+urlencode(ref)+".gpx");
 		else
 		{
-			String name = route.tags.get("name").trim();
+			String name = route.tags.get("name");
+			name = (name == null ? "" : name.trim());
 			if(!name.equals(""))
 				response.setHeader("Content-disposition", "attachment; filename="+urlencode(name)+".gpx");
 		}
@@ -90,32 +95,37 @@
 <%
 	if(relationId != null && route != null)
 	{
+%>
+	<rte>
+<%
 		try
 		{
 %>
-	<rte>
 		<name><%=htmlspecialchars(route.tags.get("name"))%></name>
 <%
-			if(!route.tags.get("description").equals(""))
+			String desc = route.tags.get("description");
+			if(desc != null && !desc.equals(""))
 			{
 %>
-		<desc><%=htmlspecialchars(route.tags.get("description"))%></desc>
+		<desc><%=htmlspecialchars(desc)%></desc>
 <%
 			}
 %>
 		<src>OpenStreetMap.org</src>
 <%
-			if(!route.tags.get("url").equals(""))
+			String url = route.tags.get("url");
+			if(url != null && !url.equals(""))
 			{
 %>
-		<link href="<%=htmlspecialchars(route.tags.get("url"))%>" />
+		<link href="<%=htmlspecialchars(url)%>" />
 <%
 			}
 
-			if(!route.tags.get("route").equals(""))
+			String type = route.tags.get("route");
+			if(type != null && !type.equals(""))
 			{
 %>
-		<type><%=htmlspecialchars(route.tags.get("route"))%></type>
+		<type><%=htmlspecialchars(type)%></type>
 <%
 			}
 
@@ -183,13 +193,14 @@
 				}
 				lastPoint = nodes[reverse ? 0 : nodes.length-1];
 			}
-%>
-	</rte>
-<%
 		}
 		catch(Exception e)
 		{
+			sm_logger.log(Level.WARNING, "Exception creating GPX.", e);
 		}
+%>
+	</rte>
+<%
 	}
 %>
 </gpx>
