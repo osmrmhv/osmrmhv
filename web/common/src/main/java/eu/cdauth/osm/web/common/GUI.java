@@ -111,65 +111,70 @@ abstract public class GUI
 		m_req = a_req;
 		m_resp = a_resp;
 
-		ResourceBundle bundle = null;
-		if(m_req.getParameter("lang") != null)
+		if(m_req == null && m_resp == null)
+			m_bundle = null;
+		else
 		{
-			String[] lang = m_req.getParameter("lang").split("_");
-			Locale locale;
-			if(lang.length >= 2)
-				locale = new Locale(lang[0], lang[1]);
-			else
-				locale = new Locale(lang[0]);
-			bundle = ResourceBundle.getBundle(getResourceName(), locale);
-			if(!bundle.getLocale().getLanguage().equalsIgnoreCase(lang[0]))
-				bundle = null;
-			else
+			ResourceBundle bundle = null;
+			if(m_req.getParameter("lang") != null)
 			{
-				Cookie cookie = new Cookie("lang", m_req.getParameter("lang"));
-				cookie.setMaxAge(86400*365*2);
-				cookie.setPath(m_req.getContextPath());
-				m_resp.addCookie(cookie);
-			}
-		}
-
-		if(bundle == null)
-		{
-			Cookie[] cookies = m_req.getCookies();
-			if(cookies != null)
-			{
-				for(Cookie cookie : cookies)
+				String[] lang = m_req.getParameter("lang").split("_");
+				Locale locale;
+				if(lang.length >= 2)
+					locale = new Locale(lang[0], lang[1]);
+				else
+					locale = new Locale(lang[0]);
+				bundle = ResourceBundle.getBundle(getResourceName(), locale);
+				if(!bundle.getLocale().getLanguage().equalsIgnoreCase(lang[0]))
+					bundle = null;
+				else
 				{
-					if(cookie.getName().equals("lang"))
+					Cookie cookie = new Cookie("lang", m_req.getParameter("lang"));
+					cookie.setMaxAge(86400*365*2);
+					cookie.setPath(m_req.getContextPath());
+					m_resp.addCookie(cookie);
+				}
+			}
+
+			if(bundle == null)
+			{
+				Cookie[] cookies = m_req.getCookies();
+				if(cookies != null)
+				{
+					for(Cookie cookie : cookies)
 					{
-						String[] lang = cookie.getValue().split("_");
-						Locale locale;
-						if(lang.length >= 2)
-							locale = new Locale(lang[0], lang[1]);
-						else
-							locale = new Locale(lang[0]);
-						bundle = ResourceBundle.getBundle(getResourceName(), locale);
-						if(!bundle.getLocale().getLanguage().equalsIgnoreCase(lang[0]))
-							bundle = null;
+						if(cookie.getName().equals("lang"))
+						{
+							String[] lang = cookie.getValue().split("_");
+							Locale locale;
+							if(lang.length >= 2)
+								locale = new Locale(lang[0], lang[1]);
+							else
+								locale = new Locale(lang[0]);
+							bundle = ResourceBundle.getBundle(getResourceName(), locale);
+							if(!bundle.getLocale().getLanguage().equalsIgnoreCase(lang[0]))
+								bundle = null;
+						}
 					}
 				}
 			}
-		}
 
-		if(bundle == null)
-		{
-			Enumeration<Locale> locales = a_req.getLocales();
-			while(locales.hasMoreElements() && bundle == null)
+			if(bundle == null)
 			{
-				Locale locale = locales.nextElement();
-				bundle = ResourceBundle.getBundle(getResourceName(), locale);
-				if(!bundle.getLocale().getLanguage().equals(locale.getLanguage())) // Chose default locale
-					bundle = null;
+				Enumeration<Locale> locales = a_req.getLocales();
+				while(locales.hasMoreElements() && bundle == null)
+				{
+					Locale locale = locales.nextElement();
+					bundle = ResourceBundle.getBundle(getResourceName(), locale);
+					if(!bundle.getLocale().getLanguage().equals(locale.getLanguage())) // Chose default locale
+						bundle = null;
+				}
 			}
-		}
 
-		if(bundle == null)
-			bundle = ResourceBundle.getBundle(getResourceName());
-		m_bundle = bundle;
+			if(bundle == null)
+				bundle = ResourceBundle.getBundle(getResourceName());
+			m_bundle = bundle;
+		}
 	}
 
 	/**
@@ -476,7 +481,31 @@ abstract public class GUI
 	 */
 	public String formatNumber(Number a_number, int a_decimals)
 	{
-		return String.format("%."+a_decimals+"f", a_number);
+		// return String.format("%."+a_decimals+"f", a_number); // gcj 4.4 doesn’t support %f yet
+
+		int factor = 1;
+		for(int i=0; i<a_decimals; i++)
+			factor *= 10;
+		String numberString = ""+Math.abs((long)Math.round(a_number.doubleValue()*factor));
+		StringBuilder number = new StringBuilder(a_decimals+2);
+
+		int missingDigits = a_decimals+1-numberString.length();
+		for(int i=0; i<missingDigits; i++)
+			number.append('0');
+		number.append(numberString);
+
+		number.insert(number.length()-a_decimals, '.');
+
+		while(number.charAt(number.length()-1) == '0')
+			number.setLength(number.length()-1);
+
+		if(number.charAt(number.length()-1) == '.')
+			number.setLength(number.length()-1);
+
+		if(a_number.doubleValue() < 0)
+			number.insert(0, '−');
+
+		return number.toString();
 	}
 
 	protected static final SimpleDateFormat sm_dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
