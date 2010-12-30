@@ -18,14 +18,27 @@
 --%>
 <%@page import="eu.cdauth.osm.lib.*"%>
 <%@page import="eu.cdauth.osm.web.osmrm.*"%>
+<%@page import="eu.cdauth.osm.web.common.Cache"%>
+<%@page import="eu.cdauth.osm.web.common.Queue"%>
 <%@page import="java.util.*" %>
 <%@page import="static eu.cdauth.osm.web.osmrm.GUI.*"%>
 <%@page contentType="text/xml; charset=UTF-8" buffer="none" session="false"%>
 <%!
-	private static API api = GUI.getAPI();
+	private static final API api = GUI.getAPI();
+	private static Cache<RouteAnalyser> cache = null;
+	private static final Queue queue = Queue.getInstance();
 
 	public void jspInit()
 	{
+		if(cache == null)
+		{
+			cache = new Cache<RouteAnalyser>(GUI.getCacheDirectory(getServletContext())+"/osmrm");
+			cache.setMaxAge(86400);
+		}
+
+		RouteAnalyser.cache = cache;
+		RouteAnalyser.api = api;
+
 		GUI.servletStart();
 	}
 
@@ -38,19 +51,34 @@
 	response.setHeader("Content-disposition", "attachment; filename=route.gpx");
 
 	ID relationId = (request.getParameter("relation") != null ? new ID(request.getParameter("relation")) : null);
-	Relation relation = null;
-	RelationSegment[] segments = null;
+	RouteAnalyser route = null;
 	if(relationId != null)
 	{
-		relation = api.getRelationFactory().fetch(relationId);
-		segments = RouteManager.segmentate(relation);
+		Cache.Entry<RouteAnalyser> cacheEntry = cache.getEntry(relationId.toString());
+		int queuePosition = queue.getPosition(RouteAnalyser.WORKER, relationId);
+		if(cacheEntry == null)
+		{
+			if(queuePosition == 0)
+			{
+				Queue.Notification notify = queue.scheduleTask(RouteAnalyser.WORKER, relationId);
+				notify.sleep(0);
+				cacheEntry = cache.getEntry(relationId.toString());
+				queuePosition = queue.getPosition(RouteAnalyser.WORKER, relationId);
+			}
+		}
 
-		String ref = relation.getTag("ref").trim();
+		if(cacheEntry != null)
+			route = cacheEntry.content;
+	}
+
+	if(route != null)
+	{
+		String ref = route.tags.get("ref").trim();
 		if(!ref.equals(""))
 			response.setHeader("Content-disposition", "attachment; filename="+urlencode(ref)+".gpx");
 		else
 		{
-			String name = relation.getTag("name").trim();
+			String name = route.tags.get("name").trim();
 			if(!name.equals(""))
 				response.setHeader("Content-disposition", "attachment; filename="+urlencode(name)+".gpx");
 		}
@@ -60,34 +88,34 @@
 <gpx xmlns="http://www.topografix.com/GPX/1/1" creator="OSM Route Manager" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
 <!-- All data by OpenStreetMap, licensed under cc-by-sa-2.0 (http://creativecommons.org/licenses/by-sa/2.0/). -->
 <%
-	if(relationId != null)
+	if(relationId != null && route != null)
 	{
 		try
 		{
 %>
 	<rte>
-		<name><%=htmlspecialchars(relation.getTag("name"))%></name>
+		<name><%=htmlspecialchars(route.tags.get("name"))%></name>
 <%
-			if(!relation.getTag("description").equals(""))
+			if(!route.tags.get("description").equals(""))
 			{
 %>
-		<desc><%=htmlspecialchars(relation.getTag("description"))%></desc>
+		<desc><%=htmlspecialchars(route.tags.get("description"))%></desc>
 <%
 			}
 %>
 		<src>OpenStreetMap.org</src>
 <%
-			if(!relation.getTag("url").equals(""))
+			if(!route.tags.get("url").equals(""))
 			{
 %>
-		<link href="<%=htmlspecialchars(relation.getTag("url"))%>" />
+		<link href="<%=htmlspecialchars(route.tags.get("url"))%>" />
 <%
 			}
 
-			if(!relation.getTag("route").equals(""))
+			if(!route.tags.get("route").equals(""))
 			{
 %>
-		<type><%=htmlspecialchars(relation.getTag("route"))%></type>
+		<type><%=htmlspecialchars(route.tags.get("route"))%></type>
 <%
 			}
 
@@ -105,7 +133,7 @@
 						if(desiredSegment.length() < 2)
 							continue;
 						int number = Integer.parseInt(desiredSegment.substring(1));
-						if(number < 0 || number >= segments.length)
+						if(number < 0 || number >= route.segments.length)
 							continue;
 						if(desiredSegment.charAt(0) == '-')
 							desiredSegmentsReverse.add(true);
@@ -126,15 +154,15 @@
 				}
 			}
 
-			int maxI = (desiredSegments == null ? segments.length : desiredSegments.size());
+			int maxI = (desiredSegments == null ? route.segments.length : desiredSegments.size());
 			LonLat lastPoint = null;
 			for(int i=0; i<maxI; i++)
 			{
 				RelationSegment it;
 				if(desiredSegments == null)
-					it = segments[i];
+					it = route.segments[i];
 				else
-					it = segments[desiredSegments.get(i)];
+					it = route.segments[desiredSegments.get(i)];
 				LonLat[] nodes = it.getNodes();
 				boolean reverse = (desiredSegments != null && desiredSegmentsReverse.get(i));
 
@@ -159,7 +187,7 @@
 	</rte>
 <%
 		}
-		catch(Exception $e)
+		catch(Exception e)
 		{
 		}
 	}

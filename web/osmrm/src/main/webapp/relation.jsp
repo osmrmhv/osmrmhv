@@ -37,6 +37,9 @@
 			cache.setMaxAge(86400);
 		}
 
+		RouteAnalyser.cache = cache;
+		RouteAnalyser.api = api;
+
 		GUI.servletStart();
 	}
 
@@ -44,20 +47,6 @@
 	{
 		GUI.servletStop();
 	}
-
-	private static final Queue.Worker worker = new Queue.Worker() {
-		public void work(ID a_id)
-		{
-			try
-			{
-				RouteAnalyser route = new RouteAnalyser(api, a_id);
-				cache.saveEntry(a_id.toString(), route);
-			}
-			catch(Exception e)
-			{
-			}
-		}
-	};
 %>
 <%
 	if(request.getParameter("id") == null)
@@ -72,7 +61,7 @@
 	
 	if(request.getParameter("refresh") != null)
 	{
-		queue.scheduleTask(worker, relationId);
+		queue.scheduleTask(RouteAnalyser.WORKER, relationId);
 		response.setStatus(HttpServletResponse.SC_SEE_OTHER);
 		URL thisUrl = new URL(request.getRequestURL().toString());
 		response.setHeader("Location", new URL(thisUrl.getProtocol(), thisUrl.getHost(), thisUrl.getPort(), thisUrl.getPath()).toString()+"?id="+GUI.urlencode(request.getParameter("id")));
@@ -105,15 +94,15 @@
 <noscript><p><strong><%=htmlspecialchars(gui._("Note that many features of this page will not work without JavaScript."))%></strong></p></noscript>
 <%
 	Cache.Entry<RouteAnalyser> cacheEntry = cache.getEntry(relationId.toString());
-	int queuePosition = queue.getPosition(worker, relationId);
+	int queuePosition = queue.getPosition(RouteAnalyser.WORKER, relationId);
 	if(cacheEntry == null)
 	{
 		if(queuePosition == 0)
 		{
-			Queue.Notification notify = queue.scheduleTask(worker, relationId);
+			Queue.Notification notify = queue.scheduleTask(RouteAnalyser.WORKER, relationId);
 			notify.sleep(20000);
 			cacheEntry = cache.getEntry(relationId.toString());
-			queuePosition = queue.getPosition(worker, relationId);
+			queuePosition = queue.getPosition(RouteAnalyser.WORKER, relationId);
 		}
 	}
 

@@ -35,6 +35,8 @@ import eu.cdauth.osm.lib.Node;
 import eu.cdauth.osm.lib.Relation;
 import eu.cdauth.osm.lib.RelationMember;
 import eu.cdauth.osm.lib.Way;
+import eu.cdauth.osm.web.common.Cache;
+import eu.cdauth.osm.web.common.Queue;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
@@ -42,6 +44,24 @@ import java.util.Map;
 public class RouteAnalyser implements Serializable
 {
 	private static Logger sm_logger = Logger.getLogger(RouteAnalyser.class.getName());
+
+	public static API api = null;
+	public static Cache<RouteAnalyser> cache = null;
+
+	public static final Queue.Worker WORKER = new Queue.Worker() {
+		@Override
+		public void work(ID a_id)
+		{
+			try
+			{
+				RouteAnalyser route = new RouteAnalyser(api, a_id);
+				cache.saveEntry(a_id.toString(), route);
+			}
+			catch(Exception e)
+			{
+			}
+		}
+	};
 
 	public final Map<String,String> tags;
 	public final Changeset changeset;
