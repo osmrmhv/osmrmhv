@@ -48,41 +48,41 @@ public class GUITest
 		assertEquals("0.616", gui.formatNumber(0.616, 3));
 		assertEquals("1", gui.formatNumber(0.616, 0));
 		assertEquals("0.62", gui.formatNumber(0.616, 2));
-		assertEquals("0.616", gui.formatNumber(0.616, 5));
+		assertEquals("0.61600", gui.formatNumber(0.616, 5));
 
 		assertEquals("0.612", gui.formatNumber(0.612, 3));
 		assertEquals("1", gui.formatNumber(0.612, 0));
 		assertEquals("0.61", gui.formatNumber(0.612, 2));
-		assertEquals("0.612", gui.formatNumber(0.612, 5));
+		assertEquals("0.61200", gui.formatNumber(0.612, 5));
 
 		assertEquals("143.616", gui.formatNumber(143.616, 3));
 		assertEquals("144", gui.formatNumber(143.616, 0));
 		assertEquals("143.62", gui.formatNumber(143.616, 2));
-		assertEquals("143.616", gui.formatNumber(143.616, 5));
+		assertEquals("143.61600", gui.formatNumber(143.616, 5));
 
 		assertEquals("143.612", gui.formatNumber(143.612, 3));
 		assertEquals("144", gui.formatNumber(143.612, 0));
 		assertEquals("143.61", gui.formatNumber(143.612, 2));
-		assertEquals("143.612", gui.formatNumber(143.612, 5));
+		assertEquals("143.61200", gui.formatNumber(143.612, 5));
 
 		assertEquals("−0.616", gui.formatNumber(-0.616, 3));
 		assertEquals("−1", gui.formatNumber(-0.616, 0));
 		assertEquals("−0.62", gui.formatNumber(-0.616, 2));
-		assertEquals("−0.616", gui.formatNumber(-0.616, 5));
+		assertEquals("−0.61600", gui.formatNumber(-0.616, 5));
 
 		assertEquals("−0.612", gui.formatNumber(-0.612, 3));
 		assertEquals("−1", gui.formatNumber(-0.612, 0));
 		assertEquals("−0.61", gui.formatNumber(-0.612, 2));
-		assertEquals("−0.612", gui.formatNumber(-0.612, 5));
+		assertEquals("−0.61200", gui.formatNumber(-0.612, 5));
 
 		assertEquals("−143.616", gui.formatNumber(-143.616, 3));
 		assertEquals("−144", gui.formatNumber(-143.616, 0));
 		assertEquals("−143.62", gui.formatNumber(-143.616, 2));
-		assertEquals("−143.616", gui.formatNumber(-143.616, 5));
+		assertEquals("−143.61600", gui.formatNumber(-143.616, 5));
 
 		assertEquals("−143.612", gui.formatNumber(-143.612, 3));
 		assertEquals("−144", gui.formatNumber(-143.612, 0));
 		assertEquals("−143.61", gui.formatNumber(-143.612, 2));
-		assertEquals("−143.612", gui.formatNumber(-143.612, 5));
+		assertEquals("−143.61200", gui.formatNumber(-143.612, 5));
 	}
 }
