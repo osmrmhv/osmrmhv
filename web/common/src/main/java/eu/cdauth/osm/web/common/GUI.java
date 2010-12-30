@@ -494,13 +494,8 @@ abstract public class GUI
 			number.append('0');
 		number.append(numberString);
 
-		number.insert(number.length()-a_decimals, '.');
-
-		while(number.charAt(number.length()-1) == '0')
-			number.setLength(number.length()-1);
-
-		if(number.charAt(number.length()-1) == '.')
-			number.setLength(number.length()-1);
+		if(a_decimals > 0)
+			number.insert(number.length()-a_decimals, '.');
 
 		if(a_number.doubleValue() < 0)
 			number.insert(0, '−');
