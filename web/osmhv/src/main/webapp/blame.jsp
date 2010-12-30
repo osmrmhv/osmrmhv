@@ -121,7 +121,7 @@
 		gui.setTitle(String.format(gui._("Relation %s"), relationID.toString()));
 	gui.setJavaScripts(new String[]{
 		"http://www.openlayers.org/api/OpenLayers.js",
-		"http://maps.google.com/maps?file=api&v=2&key=ABQIAAAApZR0PIISH23foUX8nxj4LxS8NUQFcZ1bqJDZDJKH2YPZutbv6BQlk1uBrKkr2JOwOrR4WAupqtWm8g",
+		"http://maps.google.com/maps?file=api&v=2&key=ABQIAAAApZR0PIISH23foUX8nxj4LxQThUMYtIDw2iC2eUfTIWgH1b-HoBTSr3REfzI5VMINqd64RXBrAV696w",
 		"http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=osmhv",
 		"http://api.facilmap.org/facilmap.js",
 		"http://api.facilmap.org/osblayer/osblayer.js"
