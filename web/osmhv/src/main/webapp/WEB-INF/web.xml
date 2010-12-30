@@ -22,7 +22,7 @@
 
 	<context-param>
 		<param-name>cache_dir</param-name>
-		<param-value>/tmp</param-value>
+		<param-value>/osm/route-manager/cache</param-value>
 	</context-param>
 
 	<filter>
