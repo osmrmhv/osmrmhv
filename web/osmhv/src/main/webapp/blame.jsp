@@ -101,7 +101,7 @@
 	if(request.getParameter("id") != null)
 	{
 		try {
-			relationID = new ID(request.getParameter("id").replace("^\\s*#?(.*)\\s*$", "$1"));
+			relationID = new ID(request.getParameter("id").replaceFirst("^\\s*#?(.*?)\\s*$", "$1"));
 		}
 		catch(NumberFormatException e) {
 		}
