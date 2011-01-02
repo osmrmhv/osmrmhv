@@ -60,7 +60,7 @@
 	if(request.getParameter("id") != null)
 	{
 		try {
-			changesetID = new ID(request.getParameter("id").replace("^\\s*#?(.*)\\s*$", "$1"));
+			changesetID = new ID(request.getParameter("id").replaceFirst("^\\s*#?(.*?)\\s*$", "$1"));
 		}
 		catch(NumberFormatException e) {
 		}
