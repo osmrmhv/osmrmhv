@@ -49,7 +49,17 @@
 	}
 %>
 <%
-	if(request.getParameter("id") == null)
+	ID relationId = null;
+	if(request.getParameter("id") != null)
+	{
+		try {
+			relationId = new ID(request.getParameter("id").replace("^\\s*#?(.*)\\s*$", "$1"));
+		}
+		catch(NumberFormatException e) {
+		}
+	}
+
+	if(relationId == null)
 	{
 		response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
 		URL thisUrl = new URL(request.getRequestURL().toString());
@@ -57,8 +67,6 @@
 		return;
 	}
 
-	ID relationId = new ID(request.getParameter("id").trim());
-	
 	if(request.getParameter("refresh") != null)
 	{
 		queue.scheduleTask(RouteAnalyser.WORKER, relationId);

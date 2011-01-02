@@ -56,15 +56,23 @@
 	};
 %>
 <%
-	if(request.getParameter("id") == null)
+	ID changesetID = null;
+	if(request.getParameter("id") != null)
+	{
+		try {
+			changesetID = new ID(request.getParameter("id").replace("^\\s*#?(.*)\\s*$", "$1"));
+		}
+		catch(NumberFormatException e) {
+		}
+	}
+
+	if(changesetID == null)
 	{
 		response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
 		URL thisUrl = new URL(request.getRequestURL().toString());
 		response.setHeader("Location", new URL(thisUrl.getProtocol(), thisUrl.getHost(), thisUrl.getPort(), request.getContextPath()).toString());
 		return;
 	}
-
-	ID changesetID = new ID(request.getParameter("id").replace("^\\s*#?(.*)\\s*$", "$1"));
 
 	GUI gui = new GUI(request, response);
 	gui.setTitle(String.format(gui._("Changeset %s"), changesetID.toString()));

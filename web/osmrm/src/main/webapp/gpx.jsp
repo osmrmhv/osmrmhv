@@ -53,7 +53,16 @@
 <%
 	response.setHeader("Content-disposition", "attachment; filename=route.gpx");
 
-	ID relationId = (request.getParameter("relation") != null ? new ID(request.getParameter("relation")) : null);
+	ID relationId = null;
+	if(request.getParameter("relation") != null)
+	{
+		try {
+			relationId = new ID(request.getParameter("relation").replace("^\\s*#?(.*)\\s*$", "$1"));
+		}
+		catch(NumberFormatException e) {
+		}
+	}
+
 	RouteAnalyser route = null;
 	if(relationId != null)
 	{
