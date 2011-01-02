@@ -97,15 +97,23 @@
 	};
 %>
 <%
-	if(request.getParameter("id") == null)
+	ID relationID = null;
+	if(request.getParameter("id") != null)
+	{
+		try {
+			relationID = new ID(request.getParameter("id").replace("^\\s*#?(.*)\\s*$", "$1"));
+		}
+		catch(NumberFormatException e) {
+		}
+	}
+
+	if(relationID == null)
 	{
 		response.setStatus(response.SC_MOVED_PERMANENTLY);
 		URL thisUrl = new URL(request.getRequestURL().toString());
 		response.setHeader("Location", new URL(thisUrl.getProtocol(), thisUrl.getHost(), thisUrl.getPort(), request.getContextPath()).toString());
 		return;
 	}
-
-	ID relationID = new ID(request.getParameter("id").replace("^\\s*#?(.*)\\s*$", "$1"));
 
 	if(request.getParameter("refresh") != null)
 	{
