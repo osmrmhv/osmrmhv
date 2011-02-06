@@ -82,6 +82,7 @@ public class Cache<T extends Serializable>
 	{
 		public CleanupThread()
 		{
+			super("osmrmhv cache cleanup");
 			setDaemon(true);
 		}
 

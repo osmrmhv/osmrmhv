@@ -102,6 +102,7 @@ public class Queue
 
 		public ExecutionThread(Queue a_queue)
 		{
+			super("osmrmhv Queue");
 			setDaemon(true);
 			m_queue = a_queue;
 		}

@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /gpx.jsp
+Disallow: /relation.jsp
