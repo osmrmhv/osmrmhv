@@ -26,28 +26,16 @@
 <%@page import="static eu.cdauth.osm.web.osmrm.GUI.*"%>
 <%@page contentType="text/xml; charset=UTF-8" buffer="none" session="false"%>
 <%!
-	private static final API api = GUI.getAPI();
-	private static Cache<RouteAnalyser> cache = null;
 	private static final Queue queue = Queue.getInstance();
 	private static Logger sm_logger = Logger.getLogger("gpx.jsp");
 
 	public void jspInit()
 	{
-		if(cache == null)
+		if(RouteAnalyser.cache == null)
 		{
-			cache = new Cache<RouteAnalyser>(GUI.getCacheDirectory(getServletContext())+"/osmrm");
-			cache.setMaxAge(86400);
+			RouteAnalyser.cache = new Cache<RouteAnalyser>(GUI.getCacheDirectory(getServletContext())+"/osmrm");
+			RouteAnalyser.cache.setMaxAge(86400);
 		}
-
-		RouteAnalyser.cache = cache;
-		RouteAnalyser.api = api;
-
-		GUI.servletStart();
-	}
-
-	public void jspDestroy()
-	{
-		GUI.servletStop();
 	}
 %>
 <%
@@ -66,7 +54,7 @@
 	RouteAnalyser route = null;
 	if(relationId != null)
 	{
-		Cache.Entry<RouteAnalyser> cacheEntry = cache.getEntry(relationId.toString());
+		Cache.Entry<RouteAnalyser> cacheEntry = RouteAnalyser.cache.getEntry(relationId.toString());
 		int queuePosition = queue.getPosition(RouteAnalyser.WORKER, relationId);
 		if(cacheEntry == null)
 		{
@@ -74,7 +62,7 @@
 			{
 				Queue.Notification notify = queue.scheduleTask(RouteAnalyser.WORKER, relationId);
 				notify.sleep(0);
-				cacheEntry = cache.getEntry(relationId.toString());
+				cacheEntry = RouteAnalyser.cache.getEntry(relationId.toString());
 				queuePosition = queue.getPosition(RouteAnalyser.WORKER, relationId);
 			}
 		}
@@ -102,7 +90,7 @@
 <gpx xmlns="http://www.topografix.com/GPX/1/1" creator="OSM Route Manager" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
 <!-- All data by OpenStreetMap, licensed under cc-by-sa-2.0 (http://creativecommons.org/licenses/by-sa/2.0/). -->
 <%
-	if(relationId != null && route != null)
+	if(relationId != null && route != null && route.exception == null)
 	{
 %>
 	<rte>

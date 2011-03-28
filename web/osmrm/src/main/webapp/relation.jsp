@@ -16,6 +16,8 @@
 
 	Copyright © 2010 Candid Dauth
 --%>
+<%@page import="java.io.PrintWriter"%>
+<%@page import="java.io.StringWriter"%>
 <%@page import="eu.cdauth.osm.lib.*"%>
 <%@page import="eu.cdauth.osm.web.osmrm.*"%>
 <%@page import="eu.cdauth.osm.web.common.Cache"%>
@@ -25,27 +27,15 @@
 <%@page import="java.net.URL" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
 <%!
-	private static final API api = GUI.getAPI();
-	private static Cache<RouteAnalyser> cache = null;
 	private static final Queue queue = Queue.getInstance();
 
 	public void jspInit()
 	{
-		if(cache == null)
+		if(RouteAnalyser.cache == null)
 		{
-			cache = new Cache<RouteAnalyser>(GUI.getCacheDirectory(getServletContext())+"/osmrm");
-			cache.setMaxAge(86400);
+			RouteAnalyser.cache = new Cache<RouteAnalyser>(GUI.getCacheDirectory(getServletContext())+"/osmrm");
+			RouteAnalyser.cache.setMaxAge(86400);
 		}
-
-		RouteAnalyser.cache = cache;
-		RouteAnalyser.api = api;
-
-		GUI.servletStart();
-	}
-
-	public void jspDestroy()
-	{
-		GUI.servletStop();
 	}
 %>
 <%
@@ -101,7 +91,7 @@
 </ul>
 <noscript><p><strong><%=htmlspecialchars(gui._("Note that many features of this page will not work without JavaScript."))%></strong></p></noscript>
 <%
-	Cache.Entry<RouteAnalyser> cacheEntry = cache.getEntry(relationId.toString());
+	Cache.Entry<RouteAnalyser> cacheEntry = RouteAnalyser.cache.getEntry(relationId.toString());
 	int queuePosition = queue.getPosition(RouteAnalyser.WORKER, relationId);
 	if(cacheEntry == null)
 	{
@@ -109,7 +99,7 @@
 		{
 			Queue.Notification notify = queue.scheduleTask(RouteAnalyser.WORKER, relationId);
 			notify.sleep(20000);
-			cacheEntry = cache.getEntry(relationId.toString());
+			cacheEntry = RouteAnalyser.cache.getEntry(relationId.toString());
 			queuePosition = queue.getPosition(RouteAnalyser.WORKER, relationId);
 		}
 	}
@@ -137,28 +127,37 @@
 	if(cacheEntry != null)
 	{
 		RouteAnalyser route = cacheEntry.content;
+
+		if(route.exception != null)
+		{
+%>
+<p class="error"><strong><%=htmlspecialchars(route.exception.toString())%></strong></p>
+<%
+		}
+		else
+		{
 %>
 <h2><%=htmlspecialchars(gui._("Tags"))%></h2>
 <dl>
 <%
-		for(Map.Entry<String,String> tag : route.tags.entrySet())
-		{
+			for(Map.Entry<String,String> tag : route.tags.entrySet())
+			{
 %>
 	<dt><%=htmlspecialchars(tag.getKey())%></dt>
 <%
-			String format = getTagFormat(tag.getKey());
-			String[] values = tag.getValue().split("\\s*;\\s*");
-			for(String value : values)
-			{
+				String format = getTagFormat(tag.getKey());
+				String[] values = tag.getValue().split("\\s*;\\s*");
+				for(String value : values)
+				{
 %>
 	<dd><%=String.format(format, htmlspecialchars(value))%></dd>
 <%
+				}
 			}
-		}
 %>
 </dl>
 <%
-		User user = route.changeset.getUser();
+			User user = route.changeset.getUser();
 %>
 <h2><%=htmlspecialchars(gui._("Details"))%></h2>
 <dl>
@@ -171,35 +170,35 @@
 	<dt><%=htmlspecialchars(gui._("Sub-relations"))%></dt>
 	<dd><ul>
 <%
-		for(Map.Entry<ID,String> subRelation : route.subRelations.entrySet())
-		{
+			for(Map.Entry<ID,String> subRelation : route.subRelations.entrySet())
+			{
 %>
 		<li><a href="?id=<%=htmlspecialchars(urlencode(subRelation.getKey().toString()))%>"><%=htmlspecialchars(subRelation.getKey().toString())%> (<%=htmlspecialchars(subRelation.getValue())%>)</a></li>
 <%
-		}
+			}
 %>
 	</ul></dd>
 
 	<dt><%=htmlspecialchars(gui._("Parent relations"))%></dt>
 	<dd><ul>
 <%
-		for(Map.Entry<ID,String> parentRelation : route.parentRelations.entrySet())
-		{
+			for(Map.Entry<ID,String> parentRelation : route.parentRelations.entrySet())
+			{
 %>
 		<li><a href="?id=<%=htmlspecialchars(urlencode(parentRelation.getKey().toString()))%>"><%=htmlspecialchars(parentRelation.getKey().toString())%> (<%=htmlspecialchars(parentRelation.getValue())%>)</a></li>
 <%
-		}
+			}
 %>
 	</ul></dd>
 </dl>
 <h2><%=htmlspecialchars(gui._("Segments"))%></h2>
 <%
-		if(render)
-		{
+			if(render)
+			{
 %>
 <p><%=htmlspecialchars(gui._("Get GPS coordinates by clicking on the map."))%></p>
 <%
-		}
+			}
 %>
 <div id="segment-list">
 	<table>
@@ -209,41 +208,41 @@
 				<th><%=htmlspecialchars(gui._("Length"))%></th>
 				<th><%=htmlspecialchars(gui._("Distance to next segments"))%></th>
 <%
-		if(render)
-		{
+			if(render)
+			{
 %>
 				<th><%=htmlspecialchars(gui._("Visible"))%></th>
 				<th><%=htmlspecialchars(gui._("Zoom"))%></th>
 <%
-		}
+			}
 %>
 				<th><%=htmlspecialchars(gui._("Add to personal route"))%></th>
 			</tr>
 		</thead>
 		<tbody>
 <%
-		for(int i=0; i<route.segments.length; i++)
-		{
-			LonLat end1 = route.segments[i].getEnd1();
-			LonLat end2 = route.segments[i].getEnd2();
+			for(int i=0; i<route.segments.length; i++)
+			{
+				LonLat end1 = route.segments[i].getEnd1();
+				LonLat end2 = route.segments[i].getEnd2();
 %>
 			<tr<% if(render){%> onmouseover="highlightSegment(<%=i%>);" onmouseout="unhighlightSegment(<%=i%>);"<% }%> id="tr-segment-<%=i%>" class="tr-segment-normal">
 				<td><%=htmlspecialchars(""+(i+1))%></td>
 				<td><%=gui.formatNumber(route.segments[i].getDistance(), 2)%>&thinsp;km</td>
 				<td><% if(route.segments.length > 1){%><a href="javascript:zoomToGap(new OpenLayers.LonLat(<%=end1.getLon()%>, <%=end1.getLat()%>), new OpenLayers.LonLat(<%=route.distance1Target[i].getLon()%>, <%=route.distance1Target[i].getLat()%>))"><%=gui.formatNumber(route.distance1[i], 2)%>&thinsp;km</a>, <a href="javascript:zoomToGap(new OpenLayers.LonLat(<%=end2.getLon()%>, <%=end2.getLat()%>), new OpenLayers.LonLat(<%=route.distance2Target[i].getLon()%>, <%=route.distance2Target[i].getLat()%>))"><%=gui.formatNumber(route.distance2[i], 2)%>&thinsp;km</a><% }%></td>
 <%
-			if(render)
-			{
+				if(render)
+				{
 %>
 				<td><input type="checkbox" name="select-segment[<%=i%>]" id="select-segment-<%=i%>" checked="checked" onclick="refreshSelected()" /></td>
 				<td><a href="javascript:zoomToSegment(<%=i%>);"><%=htmlspecialchars(gui._("Zoom"))%></a></td>
 <%
-			}
+				}
 %>
 				<td><button disabled="disabled" id="pr-button-<%=i%>" onclick="if(this.osmroutemanager) addPRSegment(this.osmroutemanager.i, this.osmroutemanager.reversed);">+</button></td>
 			</tr>
 <%
-		}
+			}
 %>
 		</tbody>
 	</table>
@@ -255,18 +254,18 @@
 	</ul>
 </div>
 <%
-		if(render)
-		{
+			if(render)
+			{
 %>
 <div id="map"></div>
 <%
-		}
+			}
 %>
 <script type="text/javascript">
 // <![CDATA[
 <%
-		if(render)
-		{
+			if(render)
+			{
 %>
 	var map = new FacilMap.Map("map");
 	map.addAllAvailableLayers();
@@ -284,8 +283,8 @@
 	var segments_data = [ ];
 	var projection = new OpenLayers.Projection("EPSG:4326");
 <%
-			for(int i=0; i<route.segments.length; i++)
-			{
+				for(int i=0; i<route.segments.length; i++)
+				{
 %>
 	segments[<%=i%>] = new OpenLayers.Layer.PointTrack(<%=jsescape(String.format(gui._("Segment %s"), i+1))%>, {
 		styleMap: styleMapNormal,
@@ -294,18 +293,18 @@
 	});
 	segments_data[<%=i%>] = [
 <%
-				LonLat[] nodes = route.segments[i].getNodes();
-				for(int j=0; j<nodes.length; j++)
-				{
+					LonLat[] nodes = route.segments[i].getNodes();
+					for(int j=0; j<nodes.length; j++)
+					{
 %>
 		new OpenLayers.Feature(segments[<%=i%>], new OpenLayers.LonLat(<%=nodes[j].getLon()%>, <%=nodes[j].getLat()%>).transform(projection, map.getProjectionObject())) <% if(j == nodes.length-1){%> // <% }%>,
 <%
-				}
+					}
 %>
 	];
 	segments[<%=i%>].addNodes(segments_data[<%=i%>]);
 <%
-			}
+				}
 %>
 	map.addLayers(segments);
 
@@ -342,27 +341,27 @@
 	hashHandler.activate();
 
 <%
-		}
+			}
 %>
 	var pr_allowed = [
 		[
 <%
-		for(int i=0; i<route.segments.length; i++)
-		{
+			for(int i=0; i<route.segments.length; i++)
+			{
 %>
 			[ <%=implode(", ", route.connection2[i])%> ]<% if(i == route.segments.length-1){%> // <% }%>,
 <%
-		}
+			}
 %>
 		],
 		[
 <%
-		for(int i=0; i<route.segments.length; i++)
-		{
+			for(int i=0; i<route.segments.length; i++)
+			{
 %>
 			[ <%=implode(", ", route.connection1[i])%> ]<% if(i == route.segments.length-1){%> // <% }%>,
 <%
-		}
+			}
 %>
 		]
 	];
@@ -474,8 +473,8 @@
 	updatePRButtons();
 
 <%
-		if(render)
-		{
+			if(render)
+			{
 %>
 	function highlightSegment(i)
 	{
@@ -550,11 +549,12 @@
 		map.zoomToExtent(bbox.transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()));
 	}
 <%
-		}
+			}
 %>
 // ]]>
 </script>
 <%
+		}
 	}
 
 	gui.foot();

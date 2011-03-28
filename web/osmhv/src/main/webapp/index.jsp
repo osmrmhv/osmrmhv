@@ -16,24 +16,12 @@
 
 	Copyright © 2010 Candid Dauth
 --%>
+<%@page import="eu.cdauth.osm.lib.api06.API06API"%>
 <%@page import="eu.cdauth.osm.lib.*"%>
 <%@page import="eu.cdauth.osm.web.osmhv.*"%>
 <%@page import="static eu.cdauth.osm.web.osmhv.GUI.*"%>
 <%@page import="java.util.*" %>
 <%@page contentType="text/html; charset=UTF-8" buffer="none" session="false"%>
-<%!
-	protected static final API api = GUI.getAPI();
-
-	public void jspInit()
-	{
-		GUI.servletStart();
-	}
-
-	public void jspDestroy()
-	{
-		GUI.servletStop();
-	}
-%>
 <%
 	GUI gui = new GUI(request, response);
 
@@ -71,7 +59,7 @@
 	{
 		try
 		{
-			Set<Relation> results = api.getRelationFactory().search(new HashMap<String,String>(){{ put(searchKey, searchValue); }});
+			Set<Relation> results = new API06API().getRelationFactory().search(new HashMap<String,String>(){{ put(searchKey, searchValue); }});
 %>
 		<table class="result sortable" id="resultTable">
 			<thead>

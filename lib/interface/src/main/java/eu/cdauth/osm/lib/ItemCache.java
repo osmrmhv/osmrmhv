@@ -52,20 +52,18 @@ public class ItemCache<T extends Item>
 		}
 	}
 
-	private final static boolean USE_SOFT_REFERENCES = !System.getProperty("java.vm.name").equals("GNU libgcj");;
+	private final static boolean USE_SOFT_REFERENCES = false; //!System.getProperty("java.vm.name").equals("GNU libgcj");
 
 	/**
 	 * How many entries may be in the cache?
 	 */
-	public static final int MAX_CACHED_VALUES = USE_SOFT_REFERENCES ? Integer.MAX_VALUE : 500;
+	public static final int MAX_CACHED_VALUES = Integer.MAX_VALUE; //USE_SOFT_REFERENCES ? Integer.MAX_VALUE : 500;
 	/**
 	 * How old may the entries in the cache be at most? (seconds)
 	 */
-	public static final int MAX_AGE = 1800;
+	public static final int MAX_AGE = Integer.MAX_VALUE;
 
 	private static final Logger sm_logger = Logger.getLogger(ItemCache.class.getName());
-	
-	private static final Map<ItemCache<? extends Item>, java.lang.Object> sm_instances = Collections.synchronizedMap(new WeakHashMap<ItemCache<? extends Item>, java.lang.Object>());
 
 	private final Map<ID,Reference<T>> m_cache = new Hashtable<ID,Reference<T>>();
 
@@ -86,10 +84,6 @@ public class ItemCache<T extends Item>
 	 */
 	public ItemCache()
 	{
-		synchronized(sm_instances)
-		{
-			sm_instances.put(this, null);
-		}
 	}
 
 	/**
@@ -165,41 +159,6 @@ public class ItemCache<T extends Item>
 		}
 
 		sm_logger.info("Removed "+affected+" entries from the memory.");
-	}
-
-	/**
-	 * Runs {@link #cleanUpMemory()} on all instances of this class.
-	 * @param a_completely If set to true, the memory cache is cleared completely instead of just to {@link #MAX_CACHED_VALUES}.
-	 */
-	public static void cleanUpAll(boolean a_completely)
-	{
-		ItemCache<? extends Item>[] instances;
-		synchronized(sm_instances)
-		{ // Copy the list of instances to avoid locking the instances list (and thus preventing the creation of new
-		  // instances) during the cleanup process.
-			if(sm_logger.isLoggable(Level.FINER))
-				sm_logger.finer("There seem to be "+sm_instances.size()+" ItemCache instances.");
-
-			instances = sm_instances.keySet().toArray(new ItemCache[sm_instances.size()]);
-		}
-		int number = 0;
-		for(ItemCache<? extends Item> instance : instances)
-		{
-			if(instance == null) // sm_instances.size() can be larger that the actual size in a WeakHashMap()
-				continue;
-			number++;
-			try
-			{
-				instance.cleanUpMemory(a_completely);
-			}
-			catch(Exception e)
-			{
-				sm_logger.log(Level.WARNING, "Could not clean up cache.", e);
-			}
-		}
-
-		if(sm_logger.isLoggable(Level.FINER))
-			sm_logger.finer("There were actually "+number+" ItemCache instances.");
 	}
 
 	protected <T> Reference<T> makeReference(T obj)
