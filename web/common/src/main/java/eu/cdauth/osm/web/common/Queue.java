@@ -136,8 +136,6 @@ public class Queue
 
 					m_queue.taskFinished(task.worker, task.id);
 					task.notify._notify();
-
-					ItemCache.cleanUpAll(true);
 				}
 			}
 			catch(InterruptedException e)

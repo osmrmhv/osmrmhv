@@ -31,6 +31,9 @@ import eu.cdauth.osm.lib.Segment;
 import eu.cdauth.osm.lib.Version;
 import eu.cdauth.osm.lib.VersionedItem;
 import eu.cdauth.osm.lib.Way;
+import eu.cdauth.osm.lib.api06.API06API;
+import eu.cdauth.osm.web.common.Cache;
+import eu.cdauth.osm.web.common.Queue;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
@@ -39,16 +42,38 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ChangesetAnalyser implements Serializable
 {
-	public final Segment[] removed;
-	public final Segment[] created;
-	public final Segment[] unchanged;
+	private static final Logger sm_logger = Logger.getLogger(ChangesetAnalyser.class.getName());
+	
+	public static Cache<ChangesetAnalyser> cache = null;
+	public static final Queue.Worker worker = new Queue.Worker() {
+		public void work(ID a_id)
+		{
+			try
+			{
+				ChangesetAnalyser route = new ChangesetAnalyser(a_id);
+				cache.saveEntry(a_id.toString(), route);
+			}
+			catch(Exception e)
+			{
+				sm_logger.log(Level.WARNING, "Could not save analysation of changeset "+a_id+".", e);
+			}
+		}
+	};
 
-	public final Changeset changeset;
+	public Segment[] removed = null;
+	public Segment[] created = null;
+	public Segment[] unchanged = null;
 
-	public final TagChange[] tagChanges;
+	public Changeset changeset = null;
+
+	public TagChange[] tagChanges = null;
+
+	public Throwable exception = null;
 
 	public static class TagChange implements Serializable
 	{
@@ -80,256 +105,264 @@ public class ChangesetAnalyser implements Serializable
 	 * @throws APIError The API threw an error.
 	 */
 
-	public ChangesetAnalyser(API a_api, ID a_changesetId) throws APIError
+	public ChangesetAnalyser(ID a_changesetId)
 	{
-		changeset = a_api.getChangesetFactory().fetch(a_changesetId);
-
-		Map<VersionedItem,VersionedItem> previousVersions = changeset.getPreviousVersions(true);
-		tagChanges = new TagChange[previousVersions.size()];
-		int i = 0;
-		for(Map.Entry<VersionedItem,VersionedItem> it : previousVersions.entrySet())
+		try
 		{
-			VersionedItem oldItem = it.getValue();
-			VersionedItem newItem = it.getKey();
+			API api = new API06API();
 
-			Class<? extends GeographicalItem> type;
-			if(oldItem instanceof Node)
-				type = Node.class;
-			else if(oldItem instanceof Way)
-				type = Way.class;
-			else if(oldItem instanceof Relation)
-				type = Relation.class;
-			else
-				continue;
+			changeset = api.getChangesetFactory().fetch(a_changesetId);
 
-			tagChanges[i++] = new TagChange(oldItem.getID(), type, oldItem.getTags(), newItem.getTags());
-		}
-
-		Map<VersionedItem, VersionedItem> old = changeset.getPreviousVersions(false);
-
-		Hashtable<ID,Node> nodesRemoved = new Hashtable<ID,Node>(); // All removed nodes and the old versions of all moved nodes
-		Hashtable<ID,Node> nodesAdded = new Hashtable<ID,Node>(); // All created nodes and the new versions of all moved nodes
-		Hashtable<ID,Node> nodesChanged = new Hashtable<ID,Node>(); // Only the new versions of all moved nodes
-
-		for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.delete))
-		{
-			if(obj instanceof Node)
-				nodesRemoved.put(obj.getID(), (Node) obj);
-		}
-
-		for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.create))
-		{
-			if(obj instanceof Node)
-				nodesAdded.put(obj.getID(), (Node) obj);
-		}
-
-		for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.modify))
-		{
-			if(!(obj instanceof Node))
-				continue;
-			Node newVersion = (Node)obj;
-
-			Node oldVersion = (Node)old.get(obj);
-			if(oldVersion == null)
-				continue;
-
-			nodesRemoved.put(oldVersion.getID(), oldVersion);
-			nodesAdded.put(newVersion.getID(), newVersion);
-			if(!oldVersion.getLonLat().equals(newVersion.getLonLat()))
-				nodesChanged.put(newVersion.getID(), newVersion);
-		}
-
-		Hashtable<Way,List<ID>> containedWays = new Hashtable<Way,List<ID>>();
-		for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.modify))
-		{
-			if(!(obj instanceof Way))
-				continue;
-			Way way = (Way) obj;
-			containedWays.put(way, Arrays.asList(way.getMembers()));
-		}
-
-		// If only one node is moved in a changeset, that node might be a member of one or more
-		// ways and thus change these. As there is no real way to find out the parent ways
-		// of a node at the time of the changeset, we have to guess them.
-		Date changesetDate = changeset.getCreationDate();
-		changesetDate.setTime(changesetDate.getTime()-1000);
-
-		Hashtable<ID,Way> waysChanged = new Hashtable<ID,Way>();
-		for(Node node : nodesChanged.values())
-		{
-			ID nodeID = node.getID();
-			// First guess: Ways that have been changed in the changeset
-			/*for(Map.Entry<Way,List<String>> entry : containedWays.entrySet())
+			Map<VersionedItem,VersionedItem> previousVersions = changeset.getPreviousVersions(true);
+			tagChanges = new TagChange[previousVersions.size()];
+			int i = 0;
+			for(Map.Entry<VersionedItem,VersionedItem> it : previousVersions.entrySet())
 			{
-				if(entry.getValue().contains(nodeID))
-				{
-					String id = entry.getKey().getDOM().getAttribute("id");
-					waysChanged.put(id, previousWays.get(id));
-				}
-			}*/
+				VersionedItem oldItem = it.getValue();
+				VersionedItem newItem = it.getKey();
 
-			// Second guess: Current parent nodes of the node
-			for(Way obj : a_api.getWayFactory().fetch(node.getContainingWays()).values())
+				Class<? extends GeographicalItem> type;
+				if(oldItem instanceof Node)
+					type = Node.class;
+				else if(oldItem instanceof Way)
+					type = Way.class;
+				else if(oldItem instanceof Relation)
+					type = Relation.class;
+				else
+					continue;
+
+				tagChanges[i++] = new TagChange(oldItem.getID(), type, oldItem.getTags(), newItem.getTags());
+			}
+
+			Map<VersionedItem, VersionedItem> old = changeset.getPreviousVersions(false);
+
+			Hashtable<ID,Node> nodesRemoved = new Hashtable<ID,Node>(); // All removed nodes and the old versions of all moved nodes
+			Hashtable<ID,Node> nodesAdded = new Hashtable<ID,Node>(); // All created nodes and the new versions of all moved nodes
+			Hashtable<ID,Node> nodesChanged = new Hashtable<ID,Node>(); // Only the new versions of all moved nodes
+
+			for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.delete))
 			{
-				if(waysChanged.containsKey(obj.getID()))
+				if(obj instanceof Node)
+					nodesRemoved.put(obj.getID(), (Node) obj);
+			}
+
+			for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.create))
+			{
+				if(obj instanceof Node)
+					nodesAdded.put(obj.getID(), (Node) obj);
+			}
+
+			for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.modify))
+			{
+				if(!(obj instanceof Node))
 					continue;
-				if(containedWays.containsKey(obj))
+				Node newVersion = (Node)obj;
+
+				Node oldVersion = (Node)old.get(obj);
+				if(oldVersion == null)
 					continue;
-				NavigableMap<Version,Way> history = a_api.getWayFactory().fetchHistory(obj.getID());
-				for(Way historyEntry : history.descendingMap().values())
+
+				nodesRemoved.put(oldVersion.getID(), oldVersion);
+				nodesAdded.put(newVersion.getID(), newVersion);
+				if(!oldVersion.getLonLat().equals(newVersion.getLonLat()))
+					nodesChanged.put(newVersion.getID(), newVersion);
+			}
+
+			Hashtable<Way,List<ID>> containedWays = new Hashtable<Way,List<ID>>();
+			for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.modify))
+			{
+				if(!(obj instanceof Way))
+					continue;
+				Way way = (Way) obj;
+				containedWays.put(way, Arrays.asList(way.getMembers()));
+			}
+
+			// If only one node is moved in a changeset, that node might be a member of one or more
+			// ways and thus change these. As there is no real way to find out the parent ways
+			// of a node at the time of the changeset, we have to guess them.
+			Date changesetDate = changeset.getCreationDate();
+			changesetDate.setTime(changesetDate.getTime()-1000);
+
+			Hashtable<ID,Way> waysChanged = new Hashtable<ID,Way>();
+			for(Node node : nodesChanged.values())
+			{
+				ID nodeID = node.getID();
+				// First guess: Ways that have been changed in the changeset
+				/*for(Map.Entry<Way,List<String>> entry : containedWays.entrySet())
 				{
-					if(historyEntry.getTimestamp().compareTo(changesetDate) < 0)
+					if(entry.getValue().contains(nodeID))
 					{
-						if(Arrays.asList(historyEntry.getMembers()).contains(nodeID))
-							waysChanged.put(historyEntry.getID(), historyEntry);
-						break;
+						String id = entry.getKey().getDOM().getAttribute("id");
+						waysChanged.put(id, previousWays.get(id));
+					}
+				}*/
+
+				// Second guess: Current parent nodes of the node
+				for(Way obj : api.getWayFactory().fetch(node.getContainingWays()).values())
+				{
+					if(waysChanged.containsKey(obj.getID()))
+						continue;
+					if(containedWays.containsKey(obj))
+						continue;
+					NavigableMap<Version,Way> history = api.getWayFactory().fetchHistory(obj.getID());
+					for(Way historyEntry : history.descendingMap().values())
+					{
+						if(historyEntry.getTimestamp().compareTo(changesetDate) < 0)
+						{
+							if(Arrays.asList(historyEntry.getMembers()).contains(nodeID))
+								waysChanged.put(historyEntry.getID(), historyEntry);
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		// Now make an array of node arrays to represent the old and the new form of the changed ways
-		Hashtable<ID,Node> nodesCache = new Hashtable<ID,Node>();
-		HashSet<Segment> segmentsOld = new HashSet<Segment>();
-		HashSet<Segment> segmentsNew = new HashSet<Segment>();
+			// Now make an array of node arrays to represent the old and the new form of the changed ways
+			Hashtable<ID,Node> nodesCache = new Hashtable<ID,Node>();
+			HashSet<Segment> segmentsOld = new HashSet<Segment>();
+			HashSet<Segment> segmentsNew = new HashSet<Segment>();
 
-		for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.create))
-		{
-			if(!(obj instanceof Way))
-				continue;
-			Node lastNode = null;
-			for(ID id : ((Way)obj).getMembers())
+			for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.create))
 			{
-				Node thisNode;
-				if(nodesAdded.containsKey(id))
-					thisNode = nodesAdded.get(id);
-				else
+				if(!(obj instanceof Way))
+					continue;
+				Node lastNode = null;
+				for(ID id : ((Way)obj).getMembers())
 				{
-					if(!nodesCache.containsKey(id))
-						nodesCache.put(id, a_api.getNodeFactory().fetch(id, changesetDate));
-					thisNode = nodesCache.get(id);
+					Node thisNode;
+					if(nodesAdded.containsKey(id))
+						thisNode = nodesAdded.get(id);
+					else
+					{
+						if(!nodesCache.containsKey(id))
+							nodesCache.put(id, api.getNodeFactory().fetch(id, changesetDate));
+						thisNode = nodesCache.get(id);
+					}
+
+					if(lastNode != null)
+						segmentsNew.add(new Segment(lastNode, thisNode));
+					lastNode = thisNode;
 				}
-
-				if(lastNode != null)
-					segmentsNew.add(new Segment(lastNode, thisNode));
-				lastNode = thisNode;
-			}
-		}
-
-		for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.delete))
-		{
-			if(!(obj instanceof Way))
-				continue;
-			Node lastNode = null;
-			for(ID id : ((Way)obj).getMembers())
-			{
-				Node thisNode;
-				if(nodesRemoved.containsKey(id))
-					thisNode = nodesRemoved.get(id);
-				else
-				{
-					if(!nodesCache.containsKey(id))
-						nodesCache.put(id, a_api.getNodeFactory().fetch(id, changesetDate));
-					thisNode = nodesCache.get(id);
-				}
-
-				if(lastNode != null)
-					segmentsOld.add(new Segment(lastNode, thisNode));
-				lastNode = thisNode;
-			}
-		}
-
-		for(Item obj : changeset.getMemberObjects(Changeset.ChangeType.modify))
-		{
-			if(!(obj instanceof Way))
-				continue;
-
-			Node lastNode = null;
-			for(ID id : ((Way)old.get((Way)obj)).getMembers())
-			{
-				Node thisNode;
-				if(nodesRemoved.containsKey(id))
-					thisNode = nodesRemoved.get(id);
-				else
-				{
-					if(!nodesCache.containsKey(id))
-						nodesCache.put(id, a_api.getNodeFactory().fetch(id, changesetDate));
-					thisNode = nodesCache.get(id);
-				}
-
-				if(lastNode != null)
-					segmentsOld.add(new Segment(lastNode, thisNode));
-				lastNode = thisNode;
 			}
 
-			lastNode = null;
-			for(ID id : ((Way)obj).getMembers())
+			for(VersionedItem obj : changeset.getMemberObjects(Changeset.ChangeType.delete))
 			{
-				Node thisNode;
-				if(nodesAdded.containsKey(id))
-					thisNode = nodesAdded.get(id);
-				else
+				if(!(obj instanceof Way))
+					continue;
+				Node lastNode = null;
+				for(ID id : ((Way)obj).getMembers())
 				{
-					if(!nodesCache.containsKey(id))
-						nodesCache.put(id, a_api.getNodeFactory().fetch(id, changesetDate));
-					thisNode = nodesCache.get(id);
+					Node thisNode;
+					if(nodesRemoved.containsKey(id))
+						thisNode = nodesRemoved.get(id);
+					else
+					{
+						if(!nodesCache.containsKey(id))
+							nodesCache.put(id, api.getNodeFactory().fetch(id, changesetDate));
+						thisNode = nodesCache.get(id);
+					}
+
+					if(lastNode != null)
+						segmentsOld.add(new Segment(lastNode, thisNode));
+					lastNode = thisNode;
+				}
+			}
+
+			for(Item obj : changeset.getMemberObjects(Changeset.ChangeType.modify))
+			{
+				if(!(obj instanceof Way))
+					continue;
+
+				Node lastNode = null;
+				for(ID id : ((Way)old.get((Way)obj)).getMembers())
+				{
+					Node thisNode;
+					if(nodesRemoved.containsKey(id))
+						thisNode = nodesRemoved.get(id);
+					else
+					{
+						if(!nodesCache.containsKey(id))
+							nodesCache.put(id, api.getNodeFactory().fetch(id, changesetDate));
+						thisNode = nodesCache.get(id);
+					}
+
+					if(lastNode != null)
+						segmentsOld.add(new Segment(lastNode, thisNode));
+					lastNode = thisNode;
 				}
 
-				if(lastNode != null)
-					segmentsNew.add(new Segment(lastNode, thisNode));
-				lastNode = thisNode;
-			}
-		}
-
-		for(Way way : waysChanged.values())
-		{
-			Node lastNodeOld = null;
-			Node lastNodeNew = null;
-			for(ID id : way.getMembers())
-			{
-				Node thisNodeOld = null;
-				Node thisNodeNew = null;
-				if(nodesAdded.containsKey(id))
-					thisNodeNew = nodesAdded.get(id);
-				if(nodesRemoved.containsKey(id))
-					thisNodeOld = nodesRemoved.get(id);
-
-				if(thisNodeOld == null || thisNodeNew == null)
+				lastNode = null;
+				for(ID id : ((Way)obj).getMembers())
 				{
-					if(!nodesCache.containsKey(id))
-						nodesCache.put(id, a_api.getNodeFactory().fetch(id, changesetDate));
-					if(thisNodeOld == null)
-						thisNodeOld = nodesCache.get(id);
-					if(thisNodeNew == null)
-						thisNodeNew = nodesCache.get(id);
+					Node thisNode;
+					if(nodesAdded.containsKey(id))
+						thisNode = nodesAdded.get(id);
+					else
+					{
+						if(!nodesCache.containsKey(id))
+							nodesCache.put(id, api.getNodeFactory().fetch(id, changesetDate));
+						thisNode = nodesCache.get(id);
+					}
+
+					if(lastNode != null)
+						segmentsNew.add(new Segment(lastNode, thisNode));
+					lastNode = thisNode;
 				}
-
-				if(lastNodeOld != null)
-					segmentsOld.add(new Segment(lastNodeOld, thisNodeOld));
-				if(lastNodeNew != null)
-					segmentsNew.add(new Segment(lastNodeNew, thisNodeNew));
-
-				lastNodeOld = thisNodeOld;
-				lastNodeNew = thisNodeNew;
 			}
+
+			for(Way way : waysChanged.values())
+			{
+				Node lastNodeOld = null;
+				Node lastNodeNew = null;
+				for(ID id : way.getMembers())
+				{
+					Node thisNodeOld = null;
+					Node thisNodeNew = null;
+					if(nodesAdded.containsKey(id))
+						thisNodeNew = nodesAdded.get(id);
+					if(nodesRemoved.containsKey(id))
+						thisNodeOld = nodesRemoved.get(id);
+
+					if(thisNodeOld == null || thisNodeNew == null)
+					{
+						if(!nodesCache.containsKey(id))
+							nodesCache.put(id, api.getNodeFactory().fetch(id, changesetDate));
+						if(thisNodeOld == null)
+							thisNodeOld = nodesCache.get(id);
+						if(thisNodeNew == null)
+							thisNodeNew = nodesCache.get(id);
+					}
+
+					if(lastNodeOld != null)
+						segmentsOld.add(new Segment(lastNodeOld, thisNodeOld));
+					if(lastNodeNew != null)
+						segmentsNew.add(new Segment(lastNodeNew, thisNodeNew));
+
+					lastNodeOld = thisNodeOld;
+					lastNodeNew = thisNodeNew;
+				}
+			}
+
+			// Create one-node entries for node changes
+			for(Node node : nodesRemoved.values())
+				segmentsOld.add(new Segment(node, node));
+			for(Node node : nodesAdded.values())
+				segmentsNew.add(new Segment(node, node));
+
+			HashSet<Segment> segmentsUnchanged = new HashSet<Segment>();
+			segmentsUnchanged.addAll(segmentsOld);
+			segmentsUnchanged.retainAll(segmentsNew);
+
+			segmentsOld.removeAll(segmentsUnchanged);
+			segmentsNew.removeAll(segmentsUnchanged);
+
+			removed = segmentsOld.toArray(new Segment[segmentsOld.size()]);
+			created = segmentsNew.toArray(new Segment[segmentsNew.size()]);
+			unchanged = segmentsUnchanged.toArray(new Segment[segmentsUnchanged.size()]);
 		}
-
-		// Create one-node entries for node changes
-		for(Node node : nodesRemoved.values())
-			segmentsOld.add(new Segment(node, node));
-		for(Node node : nodesAdded.values())
-			segmentsNew.add(new Segment(node, node));
-
-		HashSet<Segment> segmentsUnchanged = new HashSet<Segment>();
-		segmentsUnchanged.addAll(segmentsOld);
-		segmentsUnchanged.retainAll(segmentsNew);
-
-		segmentsOld.removeAll(segmentsUnchanged);
-		segmentsNew.removeAll(segmentsUnchanged);
-
-		removed = segmentsOld.toArray(new Segment[segmentsOld.size()]);
-		created = segmentsNew.toArray(new Segment[segmentsNew.size()]);
-		unchanged = segmentsUnchanged.toArray(new Segment[segmentsUnchanged.size()]);
-
+		catch(Throwable e)
+		{ // Including OutOfMemoryError
+			exception = e;
+		}
 	}
 }

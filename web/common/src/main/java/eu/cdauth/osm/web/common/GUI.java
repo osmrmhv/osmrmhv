@@ -63,36 +63,6 @@ abstract public class GUI
 	private final HttpServletRequest m_req;
 	private final HttpServletResponse m_resp;
 
-	private static API06API sm_api = null;
-	
-	private static int sm_servletsRunning = 0;
-
-	public synchronized static void servletStart()
-	{
-		if(sm_servletsRunning++ == 0)
-		{
-		}
-	}
-
-	public synchronized static void servletStop()
-	{
-		if(--sm_servletsRunning == 0)
-		{
-			ItemCache.cleanUpAll(true);
-		}
-	}
-
-	/**
-	 * Returns an {@link eu.cdauth.osm.lib.API} object to use.
-	 * @return The API object to use.
-	 */
-	public synchronized static API06API getAPI()
-	{
-		if(sm_api == null)
-			sm_api = new eu.cdauth.osm.lib.api06.API06API();
-		return sm_api;
-	}
-
 	public static String getCacheDirectory(ServletContext a_context)
 	{
 		String dir = a_context.getInitParameter("cache_dir");

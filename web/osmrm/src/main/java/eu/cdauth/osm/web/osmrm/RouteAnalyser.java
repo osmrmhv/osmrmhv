@@ -35,17 +35,18 @@ import eu.cdauth.osm.lib.Node;
 import eu.cdauth.osm.lib.Relation;
 import eu.cdauth.osm.lib.RelationMember;
 import eu.cdauth.osm.lib.Way;
+import eu.cdauth.osm.lib.api06.API06API;
 import eu.cdauth.osm.web.common.Cache;
 import eu.cdauth.osm.web.common.Queue;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
 public class RouteAnalyser implements Serializable
 {
-	private static Logger sm_logger = Logger.getLogger(RouteAnalyser.class.getName());
+	private static final Logger sm_logger = Logger.getLogger(RouteAnalyser.class.getName());
 
-	public static API api = null;
 	public static Cache<RouteAnalyser> cache = null;
 
 	public static final Queue.Worker WORKER = new Queue.Worker() {
@@ -54,185 +55,193 @@ public class RouteAnalyser implements Serializable
 		{
 			try
 			{
-				RouteAnalyser route = new RouteAnalyser(api, a_id);
+				RouteAnalyser route = new RouteAnalyser(a_id);
 				cache.saveEntry(a_id.toString(), route);
 			}
 			catch(Exception e)
 			{
+				sm_logger.log(Level.WARNING, "Could not save analysation of relation "+a_id+".", e);
 			}
 		}
 	};
 
-	public final Map<String,String> tags;
-	public final Changeset changeset;
-	public final Date timestamp;
-	public final double totalLength;
-	public final Map<ID,String> subRelations;
-	public final Map<ID,String> parentRelations;
-	public final RelationSegment[] segments;
-	public final LonLat[] distance1Target;
-	public final LonLat[] distance2Target;
-	public final double[] distance1;
-	public final double[] distance2;
-	public final List<Integer>[] connection1;
-	public final List<Integer>[] connection2;
+	public Map<String,String> tags = null;
+	public Changeset changeset = null;
+	public Date timestamp = null;
+	public double totalLength = -1;
+	public Map<ID,String> subRelations = null;
+	public Map<ID,String> parentRelations = null;
+	public RelationSegment[] segments = null;
+	public LonLat[] distance1Target = null;
+	public LonLat[] distance2Target = null;
+	public double[] distance1 = null;
+	public double[] distance2 = null;
+	public List<Integer>[] connection1 = null;
+	public List<Integer>[] connection2 = null;
+	public Throwable exception = null;
 
-	public RouteAnalyser(API a_api, ID a_id) throws APIError
+	public RouteAnalyser(ID a_id)
 	{
-		Relation relation = a_api.getRelationFactory().fetch(a_id);
-
-		segments = segmentate(relation);
-
-		tags = relation.getTags();
-
-		subRelations = new Hashtable<ID,String>();
-		List<ID> subRelationIDs = new ArrayList<ID>();
-		RelationMember[] members = relation.getMembers();
-		for(RelationMember member : members)
+		try
 		{
-			if(member.getType() == Relation.class)
-				subRelationIDs.add(member.getReferenceID());
-		}
-		Map<ID,Relation> subRelationObjs = a_api.getRelationFactory().fetch(subRelationIDs.toArray(new ID[subRelationIDs.size()]));
-		for(Map.Entry<ID,Relation> subRelation : subRelationObjs.entrySet())
-			subRelations.put(subRelation.getKey(), subRelation.getValue().getTag("name"));
+			API api = new API06API();
 
-		parentRelations = new Hashtable<ID,String>();
-		Map<ID,Relation> parentRelationObjs = a_api.getRelationFactory().fetch(relation.getContainingRelations());
-		for(Map.Entry<ID,Relation> parentRelation : parentRelationObjs.entrySet())
-			parentRelations.put(parentRelation.getKey(), parentRelation.getValue().getTag("name"));
+			Relation relation = api.getRelationFactory().fetch(a_id);
+			segments = segmentate(relation);
 
-		changeset = a_api.getChangesetFactory().fetch(relation.getChangeset());
-		timestamp = relation.getTimestamp();
+			tags = relation.getTags();
 
-		double ltotalLength = 0;
-		connection1 = new List[segments.length];
-		connection2 = new List[segments.length];
-		distance1 = new double[segments.length];
-		distance1Target = new LonLat[segments.length];
-		distance2 = new double[segments.length];
-		distance2Target = new LonLat[segments.length];
-
-		for(int i=0; i<segments.length; i++)
-		{
-			connection1[i] = new ArrayList<Integer>();
-			connection2[i] = new ArrayList<Integer>();
-			distance1[i] = Double.MAX_VALUE;
-			distance2[i] = Double.MAX_VALUE;
-		}
-
-		// Calculate segment connections and lengthes
-		for(int i=0; i<segments.length; i++)
-		{
-			ltotalLength += segments[i].getDistance();
-
-			LonLat thisEnd1 = segments[i].getEnd1();
-			LonLat thisEnd2 = segments[i].getEnd2();
-			for(int j=i+1; j<segments.length; j++)
+			subRelations = new Hashtable<ID,String>();
+			List<ID> subRelationIDs = new ArrayList<ID>();
+			RelationMember[] members = relation.getMembers();
+			for(RelationMember member : members)
 			{
-				LonLat thatEnd1 = segments[j].getEnd1();
-				LonLat thatEnd2 = segments[j].getEnd2();
+				if(member.getType() == Relation.class)
+					subRelationIDs.add(member.getReferenceID());
+			}
+			Map<ID,Relation> subRelationObjs = api.getRelationFactory().fetch(subRelationIDs.toArray(new ID[subRelationIDs.size()]));
+			for(Map.Entry<ID,Relation> subRelation : subRelationObjs.entrySet())
+				subRelations.put(subRelation.getKey(), subRelation.getValue().getTag("name"));
 
-				if(thisEnd1.equals(thatEnd1))
-				{
-					connection1[i].add(j);
-					connection1[j].add(i);
-				}
-				if(thisEnd1.equals(thatEnd2))
-				{
-					connection1[i].add(j);
-					connection2[j].add(i);
-				}
-				if(thisEnd2.equals(thatEnd1))
-				{
-					connection2[i].add(j);
-					connection1[j].add(i);
-				}
-				if(thisEnd2.equals(thatEnd2))
-				{
-					connection2[i].add(j);
-					connection2[j].add(i);
-				}
+			parentRelations = new Hashtable<ID,String>();
+			Map<ID,Relation> parentRelationObjs = api.getRelationFactory().fetch(relation.getContainingRelations());
+			for(Map.Entry<ID,Relation> parentRelation : parentRelationObjs.entrySet())
+				parentRelations.put(parentRelation.getKey(), parentRelation.getValue().getTag("name"));
 
-				double it_distance11 = thisEnd1.getDistance(thatEnd1);
-				double it_distance12 = thisEnd1.getDistance(thatEnd2);
-				double it_distance21 = thisEnd2.getDistance(thatEnd1);
-				double it_distance22 = thisEnd2.getDistance(thatEnd2);
+			changeset = api.getChangesetFactory().fetch(relation.getChangeset());
+			timestamp = relation.getTimestamp();
 
-				// distance1[i] = Math.min(distance1[i], Math.min(it_distance11, it_distance12));
-				if(it_distance11 < it_distance12)
-				{
-					if(it_distance11 < distance1[i])
-					{
-						distance1[i] = it_distance11;
-						distance1Target[i] = thatEnd1;
-					}
-				}
-				else
-				{
-					if(it_distance12 < distance1[i])
-					{
-						distance1[i] = it_distance12;
-						distance1Target[i] = thatEnd2;
-					}
-				}
+			connection1 = new List[segments.length];
+			connection2 = new List[segments.length];
+			distance1 = new double[segments.length];
+			distance1Target = new LonLat[segments.length];
+			distance2 = new double[segments.length];
+			distance2Target = new LonLat[segments.length];
 
-				// distance2[i] = Math.min(distance2[i], Math.min(it_distance21, it_distance22));
-				if(it_distance21 < it_distance22)
-				{
-					if(it_distance21 < distance2[i])
-					{
-						distance2[i] = it_distance21;
-						distance2Target[i] = thatEnd1;
-					}
-				}
-				else
-				{
-					if(it_distance22 < distance2[i])
-					{
-						distance2[i] = it_distance22;
-						distance2Target[i] = thatEnd2;
-					}
-				}
+			for(int i=0; i<segments.length; i++)
+			{
+				connection1[i] = new ArrayList<Integer>();
+				connection2[i] = new ArrayList<Integer>();
+				distance1[i] = Double.MAX_VALUE;
+				distance2[i] = Double.MAX_VALUE;
+			}
 
-				// distance1[j] = Math.min(distance1[j], Math.min(it_distance11, it_distance21));
-				if(it_distance11 < it_distance21)
-				{
-					if(it_distance11 < distance1[j])
-					{
-						distance1[j] = it_distance11;
-						distance1Target[j] = thisEnd1;
-					}
-				}
-				else
-				{
-					if(it_distance21 < distance1[j])
-					{
-						distance1[j] = it_distance21;
-						distance1Target[j] = thisEnd2;
-					}
-				}
+			// Calculate segment connections and lengthes
+			for(int i=0; i<segments.length; i++)
+			{
+				totalLength += segments[i].getDistance();
 
-				// distance2[j] = Math.min(distance2[j], Math.min(it_distance12, it_distance22));
-				if(it_distance12 < it_distance22)
+				LonLat thisEnd1 = segments[i].getEnd1();
+				LonLat thisEnd2 = segments[i].getEnd2();
+				for(int j=i+1; j<segments.length; j++)
 				{
-					if(it_distance11 < distance2[j])
+					LonLat thatEnd1 = segments[j].getEnd1();
+					LonLat thatEnd2 = segments[j].getEnd2();
+
+					if(thisEnd1.equals(thatEnd1))
 					{
-						distance2[j] = it_distance12;
-						distance2Target[j] = thisEnd1;
+						connection1[i].add(j);
+						connection1[j].add(i);
 					}
-				}
-				else
-				{
-					if(it_distance22 < distance2[j])
+					if(thisEnd1.equals(thatEnd2))
 					{
-						distance2[j] = it_distance22;
-						distance2Target[j] = thisEnd2;
+						connection1[i].add(j);
+						connection2[j].add(i);
+					}
+					if(thisEnd2.equals(thatEnd1))
+					{
+						connection2[i].add(j);
+						connection1[j].add(i);
+					}
+					if(thisEnd2.equals(thatEnd2))
+					{
+						connection2[i].add(j);
+						connection2[j].add(i);
+					}
+
+					double it_distance11 = thisEnd1.getDistance(thatEnd1);
+					double it_distance12 = thisEnd1.getDistance(thatEnd2);
+					double it_distance21 = thisEnd2.getDistance(thatEnd1);
+					double it_distance22 = thisEnd2.getDistance(thatEnd2);
+
+					// distance1[i] = Math.min(distance1[i], Math.min(it_distance11, it_distance12));
+					if(it_distance11 < it_distance12)
+					{
+						if(it_distance11 < distance1[i])
+						{
+							distance1[i] = it_distance11;
+							distance1Target[i] = thatEnd1;
+						}
+					}
+					else
+					{
+						if(it_distance12 < distance1[i])
+						{
+							distance1[i] = it_distance12;
+							distance1Target[i] = thatEnd2;
+						}
+					}
+
+					// distance2[i] = Math.min(distance2[i], Math.min(it_distance21, it_distance22));
+					if(it_distance21 < it_distance22)
+					{
+						if(it_distance21 < distance2[i])
+						{
+							distance2[i] = it_distance21;
+							distance2Target[i] = thatEnd1;
+						}
+					}
+					else
+					{
+						if(it_distance22 < distance2[i])
+						{
+							distance2[i] = it_distance22;
+							distance2Target[i] = thatEnd2;
+						}
+					}
+
+					// distance1[j] = Math.min(distance1[j], Math.min(it_distance11, it_distance21));
+					if(it_distance11 < it_distance21)
+					{
+						if(it_distance11 < distance1[j])
+						{
+							distance1[j] = it_distance11;
+							distance1Target[j] = thisEnd1;
+						}
+					}
+					else
+					{
+						if(it_distance21 < distance1[j])
+						{
+							distance1[j] = it_distance21;
+							distance1Target[j] = thisEnd2;
+						}
+					}
+
+					// distance2[j] = Math.min(distance2[j], Math.min(it_distance12, it_distance22));
+					if(it_distance12 < it_distance22)
+					{
+						if(it_distance11 < distance2[j])
+						{
+							distance2[j] = it_distance12;
+							distance2Target[j] = thisEnd1;
+						}
+					}
+					else
+					{
+						if(it_distance22 < distance2[j])
+						{
+							distance2[j] = it_distance22;
+							distance2Target[j] = thisEnd2;
+						}
 					}
 				}
 			}
 		}
-		totalLength = ltotalLength;
+		catch(Throwable e)
+		{ // Including OutOfMemoryError
+			exception = e;
+		}
 	}
 	
 	/**

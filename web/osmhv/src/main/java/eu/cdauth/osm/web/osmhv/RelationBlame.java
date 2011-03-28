@@ -32,6 +32,9 @@ import eu.cdauth.osm.lib.Segment;
 import eu.cdauth.osm.lib.Version;
 import eu.cdauth.osm.lib.Way;
 import eu.cdauth.osm.lib.WayFactory;
+import eu.cdauth.osm.lib.api06.API06API;
+import eu.cdauth.osm.web.common.Cache;
+import eu.cdauth.osm.web.common.Queue;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,125 +43,155 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author cdauth
  */
 public class RelationBlame implements Serializable
 {
-	public final Map<Segment,Changeset> segmentChangeset;
-	public final Date timestamp;
+	private static final Logger sm_logger = Logger.getLogger(RelationBlame.class.getName());
 
-	public RelationBlame(API a_api, ID a_relationId) throws APIError
-	{
-		NodeFactory nodeFactory = a_api.getNodeFactory();
-		WayFactory wayFactory = a_api.getWayFactory();
-		RelationFactory relationFactory = a_api.getRelationFactory();
-		ChangesetFactory changesetFactory = a_api.getChangesetFactory();
-
-		Relation currentRelation = relationFactory.fetchHistory(a_relationId).lastEntry().getValue();
-
-		timestamp = currentRelation.getTimestamp();
-
-		Date currentDate = null;
-		Date nextDate = null;
-		ID currentChangeset = null;
-		ID nextChangeset = null;
-
-		List<Segment> currentSegments = Arrays.asList(currentRelation.getSegmentsRecursive(null));
-		Hashtable<Segment,ID> blame = new Hashtable<Segment,ID>();
-
-		while(true)
+	public static Cache<RelationBlame> cache = null;
+	public static final Queue.Worker worker = new Queue.Worker() {
+		public void work(ID a_id)
 		{
-			Relation mainRelation;
-			Relation mainRelationOlder;
-
-			if(nextDate == null)
-			{ // First run
-				mainRelation = currentRelation;
-				mainRelationOlder = currentRelation;
-			}
-			else
+			try
 			{
-				currentDate = nextDate;
-				nextDate = null;
-				currentChangeset = nextChangeset;
-				nextChangeset = null;
-				mainRelation = relationFactory.fetch(a_relationId, currentDate);
-				mainRelationOlder = relationFactory.fetch(a_relationId, new Date(currentDate.getTime()-1000));
+				RelationBlame route = new RelationBlame(a_id);
+				cache.saveEntry(a_id.toString(), route);
 			}
-
-			if(mainRelation == null)
-				break;
-
-			if(mainRelationOlder != null)
+			catch(Exception e)
 			{
-				nextDate = mainRelationOlder.getTimestamp();
-				nextChangeset = mainRelationOlder.getChangeset();
-			}
-
-			Node[] nodeMembers = mainRelation.getNodesRecursive(currentDate);
-			for(Node nodeMember : nodeMembers)
-			{
-				NavigableMap<Version,Node> nodeHistory = nodeFactory.fetchHistory(nodeMember.getID());
-				for(Node node : nodeHistory.values())
-				{
-					Date nodeDate = node.getTimestamp();
-					if((currentDate == null || nodeDate.compareTo(currentDate) < 0) && (nextDate == null || nodeDate.compareTo(nextDate) > 0))
-					{
-						nextDate = nodeDate;
-						nextChangeset = node.getChangeset();
-					}
-				}
-			}
-
-			Way[] wayMembers = mainRelation.getWaysRecursive(currentDate);
-			for(Way wayMember : wayMembers)
-			{
-				NavigableMap<Version,Way> wayHistory = wayFactory.fetchHistory(wayMember.getID());
-				for(Way way : wayHistory.values())
-				{
-					Date wayDate = way.getTimestamp();
-					if((currentDate == null || wayDate.compareTo(currentDate) < 0) && (nextDate == null || wayDate.compareTo(nextDate) > 0))
-					{
-						nextDate = wayDate;
-						nextChangeset = way.getChangeset();
-					}
-				}
-			}
-
-			Relation[] relationMembers = mainRelation.getRelationsRecursive(currentDate);
-			for(Relation relationMember : relationMembers)
-			{
-				NavigableMap<Version,Relation> relationHistory = relationFactory.fetchHistory(relationMember.getID());
-				for(Relation relation : relationHistory.values())
-				{
-					Date relationDate = relation.getTimestamp();
-					if((currentDate == null || relationDate.compareTo(currentDate) < 0) && (nextDate == null || relationDate.compareTo(nextDate) > 0))
-					{
-						nextDate = relationDate;
-						nextChangeset = relation.getChangeset();
-					}
-				}
-			}
-
-			List<Segment> segments = new ArrayList<Segment>();
-			segments.addAll(Arrays.asList(mainRelation.getSegmentsRecursive(currentDate)));
-			segments.retainAll(currentSegments);
-
-			if(segments.size() == 0)
-				break;
-
-			if(currentChangeset != null)
-			{
-				for(Segment segment : segments)
-					blame.put(segment, currentChangeset);
+				sm_logger.log(Level.WARNING, "Could not save blame of relation "+a_id+".", e);
 			}
 		}
+	};
 
-		Map<ID,Changeset> changesets = changesetFactory.fetch(blame.values().toArray(new ID[blame.size()]));
-		segmentChangeset = new Hashtable<Segment,Changeset>();
-		for(Map.Entry<Segment,ID> e : blame.entrySet())
-			segmentChangeset.put(e.getKey(), changesets.get(e.getValue()));
+	public Map<Segment,Changeset> segmentChangeset = null;
+	public Date timestamp = null;
+	public Throwable exception = null;
+
+	public RelationBlame(ID a_relationId)
+	{
+		try
+		{
+			API api = new API06API();
+			
+			NodeFactory nodeFactory = api.getNodeFactory();
+			WayFactory wayFactory = api.getWayFactory();
+			RelationFactory relationFactory = api.getRelationFactory();
+			ChangesetFactory changesetFactory = api.getChangesetFactory();
+
+			Relation currentRelation = relationFactory.fetchHistory(a_relationId).lastEntry().getValue();
+
+			timestamp = currentRelation.getTimestamp();
+
+			Date currentDate = null;
+			Date nextDate = null;
+			ID currentChangeset = null;
+			ID nextChangeset = null;
+
+			List<Segment> currentSegments = Arrays.asList(currentRelation.getSegmentsRecursive(null));
+			Hashtable<Segment,ID> blame = new Hashtable<Segment,ID>();
+
+			while(true)
+			{
+				Relation mainRelation;
+				Relation mainRelationOlder;
+
+				if(nextDate == null)
+				{ // First run
+					mainRelation = currentRelation;
+					mainRelationOlder = currentRelation;
+				}
+				else
+				{
+					currentDate = nextDate;
+					nextDate = null;
+					currentChangeset = nextChangeset;
+					nextChangeset = null;
+					mainRelation = relationFactory.fetch(a_relationId, currentDate);
+					mainRelationOlder = relationFactory.fetch(a_relationId, new Date(currentDate.getTime()-1000));
+				}
+
+				if(mainRelation == null)
+					break;
+
+				if(mainRelationOlder != null)
+				{
+					nextDate = mainRelationOlder.getTimestamp();
+					nextChangeset = mainRelationOlder.getChangeset();
+				}
+
+				Node[] nodeMembers = mainRelation.getNodesRecursive(currentDate);
+				for(Node nodeMember : nodeMembers)
+				{
+					NavigableMap<Version,Node> nodeHistory = nodeFactory.fetchHistory(nodeMember.getID());
+					for(Node node : nodeHistory.values())
+					{
+						Date nodeDate = node.getTimestamp();
+						if((currentDate == null || nodeDate.compareTo(currentDate) < 0) && (nextDate == null || nodeDate.compareTo(nextDate) > 0))
+						{
+							nextDate = nodeDate;
+							nextChangeset = node.getChangeset();
+						}
+					}
+				}
+
+				Way[] wayMembers = mainRelation.getWaysRecursive(currentDate);
+				for(Way wayMember : wayMembers)
+				{
+					NavigableMap<Version,Way> wayHistory = wayFactory.fetchHistory(wayMember.getID());
+					for(Way way : wayHistory.values())
+					{
+						Date wayDate = way.getTimestamp();
+						if((currentDate == null || wayDate.compareTo(currentDate) < 0) && (nextDate == null || wayDate.compareTo(nextDate) > 0))
+						{
+							nextDate = wayDate;
+							nextChangeset = way.getChangeset();
+						}
+					}
+				}
+
+				Relation[] relationMembers = mainRelation.getRelationsRecursive(currentDate);
+				for(Relation relationMember : relationMembers)
+				{
+					NavigableMap<Version,Relation> relationHistory = relationFactory.fetchHistory(relationMember.getID());
+					for(Relation relation : relationHistory.values())
+					{
+						Date relationDate = relation.getTimestamp();
+						if((currentDate == null || relationDate.compareTo(currentDate) < 0) && (nextDate == null || relationDate.compareTo(nextDate) > 0))
+						{
+							nextDate = relationDate;
+							nextChangeset = relation.getChangeset();
+						}
+					}
+				}
+
+				List<Segment> segments = new ArrayList<Segment>();
+				segments.addAll(Arrays.asList(mainRelation.getSegmentsRecursive(currentDate)));
+				segments.retainAll(currentSegments);
+
+				if(segments.size() == 0)
+					break;
+
+				if(currentChangeset != null)
+				{
+					for(Segment segment : segments)
+						blame.put(segment, currentChangeset);
+				}
+			}
+
+			Map<ID,Changeset> changesets = changesetFactory.fetch(blame.values().toArray(new ID[blame.size()]));
+			segmentChangeset = new Hashtable<Segment,Changeset>();
+			for(Map.Entry<Segment,ID> e : blame.entrySet())
+				segmentChangeset.put(e.getKey(), changesets.get(e.getValue()));
+		}
+		catch(Throwable e)
+		{ // Including OutOfMemoryError
+			exception = e;
+		}
 	}
 }
