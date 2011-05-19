@@ -31,6 +31,11 @@ public class Queue
 	private static final Logger sm_logger = Logger.getLogger(Queue.class.getName());
 
 	/**
+	 * The timeout for workers in milliseconds.
+	 */
+	public static int TIMEOUT = 600000;
+
+	/**
 	 * A callback function for the queue.
 	 */
 	public static interface Worker
@@ -125,14 +130,23 @@ public class Queue
 						}
 					}
 
-					try
+					final ScheduledTask taskF = task;
+					Thread workerThread = new Thread()
 					{
-						task.worker.work(task.id);
-					}
-					catch(Exception e)
-					{
-						sm_logger.log(Level.WARNING, "Queue Worker aborted with exception.", e);
-					}
+						@Override
+						public void run()
+						{
+							try {
+								taskF.worker.work(taskF.id);
+							} catch(Throwable e) {
+								sm_logger.log(Level.WARNING, "Queue Worker aborted with exception.", e);
+							}
+						}
+					};
+					workerThread.start();
+					workerThread.join(TIMEOUT);
+					if(workerThread.isAlive())
+						workerThread.stop(new Error("Timeout"));
 
 					m_queue.taskFinished(task.worker, task.id);
 					task.notify._notify();
