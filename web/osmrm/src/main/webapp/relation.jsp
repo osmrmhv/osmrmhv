@@ -74,7 +74,7 @@
 		gui.setBodyClass("norender");
 	else
 		gui.setJavaScripts(new String[] {
-			"http://www.openlayers.org/api/OpenLayers.js",
+			"http://www.openlayers.org/api/2.11/OpenLayers.js",
 			"http://maps.google.com/maps?file=api&v=2&key=ABQIAAAApZR0PIISH23foUX8nxj4LxQe8fls808ouw55mfsb9VLPMfxZSBRAxMJl1CWns7WN__O20IuUSiDKng",
 			"http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=osmrm",
 			"http://api.facilmap.org/facilmap.js",
