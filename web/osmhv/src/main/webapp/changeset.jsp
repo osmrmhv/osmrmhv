@@ -56,7 +56,7 @@
 	GUI gui = new GUI(request, response);
 	gui.setTitle(String.format(gui._("Changeset %s"), changesetID.toString()));
 	gui.setJavaScripts(new String[]{
-		"http://www.openlayers.org/api/OpenLayers.js",
+		"http://www.openlayers.org/api/2.11/OpenLayers.js",
 		"http://maps.google.com/maps?file=api&v=2&key=ABQIAAAApZR0PIISH23foUX8nxj4LxQThUMYtIDw2iC2eUfTIWgH1b-HoBTSr3REfzI5VMINqd64RXBrAV696w",
 		"http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=osmhv",
 		"http://api.facilmap.org/facilmap.js",
