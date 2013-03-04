@@ -126,7 +126,26 @@ public class API06Changeset extends API06Item implements Changeset
 		for(int i=0; i<modifiedNodes.getLength(); i++)
 			modifiedElements.addAll(getAPI().makeObjects((Element) modifiedNodes.item(i)));
 		for(int i=0; i<deletedNodes.getLength(); i++)
-			deletedElements.addAll(getAPI().makeObjects((Element) deletedNodes.item(i)));
+		{
+			// Deleted items are not fully contained in changeset, we need to download them manually
+			NodeList nodes = deletedNodes.item(i).getChildNodes();
+			for(int j=0; j<nodes.getLength(); j++)
+			{
+				if(nodes.item(j).getNodeType() != org.w3c.dom.Node.ELEMENT_NODE)
+					continue;
+
+				Element el = (Element) nodes.item(j);
+				String tag = el.getTagName();
+				ID id = new ID(el.getAttribute("id"));
+				Version version = new Version(new Version(el.getAttribute("version")).asLong()-1);
+				if("node".equals(tag))
+					deletedElements.add(getAPI().getNodeFactory().fetch(id, version));
+				else if("way".equals(tag))
+					deletedElements.add(getAPI().getWayFactory().fetch(id, version));
+				else if("relation".equals(tag))
+					deletedElements.add(getAPI().getRelationFactory().fetch(id, version));
+			}
+		}
 
 		ArrayList<Item> all = new ArrayList<Item>();
 		all.addAll(createdElements);

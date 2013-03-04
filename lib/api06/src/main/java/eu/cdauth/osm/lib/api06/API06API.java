@@ -21,6 +21,21 @@
 
 package eu.cdauth.osm.lib.api06;
 
+import eu.cdauth.osm.lib.API;
+import eu.cdauth.osm.lib.APIError;
+import eu.cdauth.osm.lib.BoundingBox;
+import eu.cdauth.osm.lib.GeographicalItem;
+import eu.cdauth.osm.lib.Item;
+import eu.cdauth.osm.lib.Node;
+import eu.cdauth.osm.lib.Relation;
+import eu.cdauth.osm.lib.Way;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -30,17 +45,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import eu.cdauth.osm.lib.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import eu.cdauth.osm.lib.Item;
 
 /**
  * Provides static methods to communicate with the OSM API 0.6. Handles the HTTP connection
@@ -160,6 +164,12 @@ public class API06API implements API
 			if(nodes.item(i).getNodeType() != org.w3c.dom.Node.ELEMENT_NODE)
 				continue;
 			Element element = (Element)nodes.item(i);
+
+			// visible=false elements are listed for example in the version history. They are actually deleted,
+			// so they really don’t exist, and their data attributes (for example lon and lat) are missing.
+			if("false".equals(element.getAttribute("visible")))
+				continue;
+
 			if(element.getTagName().equals("node"))
 			{
 				API06Node el = new API06Node(element, this);
