@@ -235,7 +235,7 @@ public class ChangesetAnalyser implements Serializable
 					else
 					{
 						if(!nodesCache.containsKey(id))
-							nodesCache.put(id, api.getNodeFactory().fetch(id, changesetDate));
+							nodesCache.put(id, api.getNodeFactory().fetch(id, ((Way)obj).getTimestamp()));
 						thisNode = nodesCache.get(id);
 					}
 
@@ -258,7 +258,7 @@ public class ChangesetAnalyser implements Serializable
 					else
 					{
 						if(!nodesCache.containsKey(id))
-							nodesCache.put(id, api.getNodeFactory().fetch(id, changesetDate));
+							nodesCache.put(id, api.getNodeFactory().fetch(id, ((Way)obj).getTimestamp()));
 						thisNode = nodesCache.get(id);
 					}
 
@@ -274,7 +274,8 @@ public class ChangesetAnalyser implements Serializable
 					continue;
 
 				Node lastNode = null;
-				for(ID id : ((Way)old.get((Way)obj)).getMembers())
+				Way oldWay = ((Way)old.get((Way)obj));
+				for(ID id : oldWay.getMembers())
 				{
 					Node thisNode;
 					if(nodesRemoved.containsKey(id))
@@ -282,7 +283,7 @@ public class ChangesetAnalyser implements Serializable
 					else
 					{
 						if(!nodesCache.containsKey(id))
-							nodesCache.put(id, api.getNodeFactory().fetch(id, changesetDate));
+							nodesCache.put(id, api.getNodeFactory().fetch(id, oldWay.getTimestamp()));
 						thisNode = nodesCache.get(id);
 					}
 
@@ -300,7 +301,7 @@ public class ChangesetAnalyser implements Serializable
 					else
 					{
 						if(!nodesCache.containsKey(id))
-							nodesCache.put(id, api.getNodeFactory().fetch(id, changesetDate));
+							nodesCache.put(id, api.getNodeFactory().fetch(id, ((Way)obj).getTimestamp()));
 						thisNode = nodesCache.get(id);
 					}
 
