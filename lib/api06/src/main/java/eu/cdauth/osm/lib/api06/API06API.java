@@ -60,6 +60,30 @@ public class API06API implements API
 	private static Logger sm_logger = Logger.getLogger(API06API.class.getName());
 
 	private String m_userAgent = "OSM Route Manager and History Viewer";
+
+	/**
+	 * Is set as root cause for APIErrors that were caused by an invalid status code sent by the server.
+	 */
+	public static class StatusCodeError extends Exception
+	{
+		private final int m_code;
+
+		public StatusCodeError(int a_code)
+		{
+			super();
+
+			m_code = a_code;
+		}
+
+		/**
+		 * Returns the HTTP status code returned by the API.
+		 * @return The HTTP status code returned by the API.
+		 */
+		public int getCode()
+		{
+			return m_code;
+		}
+	}
 	
 	/**
 	 * Sets the User-Agent HTTP request header for all future API requests.
@@ -110,7 +134,7 @@ public class API06API implements API
 			connection.connect();
 	
 			if(connection.getResponseCode() != 200)
-				throw new APIError("ResponseCode is "+connection.getResponseCode()+" for URL "+url+".");
+				throw new APIError("ResponseCode is "+connection.getResponseCode()+" for URL "+url+".", new StatusCodeError(connection.getResponseCode()));
 
 			InputStream in = connection.getInputStream();
 			String encoding = connection.getContentEncoding();

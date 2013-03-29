@@ -243,15 +243,24 @@ public class API06Changeset extends API06Item implements Changeset
 			long version = newVersion.getVersion().asLong()-1;
 			do
 			{
-				if(newVersion instanceof Node)
-					last = getAPI().getNodeFactory().fetch(newVersion.getID(), new Version(version));
-				else if(newVersion instanceof Way)
-					last = getAPI().getWayFactory().fetch(newVersion.getID(), new Version(version));
-				else if(newVersion instanceof Relation)
-					last = getAPI().getRelationFactory().fetch(newVersion.getID(), new Version(version));
+				try
+				{
+					if(newVersion instanceof Node)
+						last = getAPI().getNodeFactory().fetch(newVersion.getID(), new Version(version));
+					else if(newVersion instanceof Way)
+						last = getAPI().getWayFactory().fetch(newVersion.getID(), new Version(version));
+					else if(newVersion instanceof Relation)
+						last = getAPI().getRelationFactory().fetch(newVersion.getID(), new Version(version));
+				}
+				catch(APIError e)
+				{
+					// Since the OSMF License Redaction, there are some versions that are inaccessable and return a status code of 403
+					if(e.getCause() == null || !(e.getCause() instanceof API06API.StatusCodeError) || (((API06API.StatusCodeError)e.getCause()).getCode() != 403 && ((API06API.StatusCodeError)e.getCause()).getCode() != 404))
+						throw e;
+				}
 				version--;
 			}
-			while(last.getChangeset().equals(getID()) && version >= 1);
+			while((last == null || last.getChangeset().equals(getID())) && version >= 1);
 
 			if(last != null && (!a_onlyWithTagChanges || !last.getTags().equals(newVersion.getTags())))
 				ret.put(newVersion, last);
