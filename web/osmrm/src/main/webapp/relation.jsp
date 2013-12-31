@@ -74,10 +74,7 @@
 		gui.setBodyClass("norender");
 	else
 		gui.setJavaScripts(new String[] {
-			"http://www.openlayers.org/api/2.11/OpenLayers.js",
-			"http://maps.google.com/maps?file=api&v=2&key=ABQIAAAApZR0PIISH23foUX8nxj4LxQe8fls808ouw55mfsb9VLPMfxZSBRAxMJl1CWns7WN__O20IuUSiDKng",
-			"http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=osmrm",
-			"http://api.facilmap.org/facilmap.js",
+			"http://api.facilmap.org/facilmap_ol.js",
 			"http://api.facilmap.org/osblayer/osblayer.js"
 		});
 
@@ -192,14 +189,6 @@
 	</ul></dd>
 </dl>
 <h2><%=htmlspecialchars(gui._("Segments"))%></h2>
-<%
-			if(render)
-			{
-%>
-<p><%=htmlspecialchars(gui._("Get GPS coordinates by clicking on the map."))%></p>
-<%
-			}
-%>
 <div id="segment-list">
 	<table>
 		<thead>
@@ -308,15 +297,7 @@
 %>
 	map.addLayers(segments);
 
-	var layerMarkers = new FacilMap.Layer.Markers.LonLat(<%=jsescape(gui._("Markers"))%>, { shortName : "m" });
-	map.addLayer(layerMarkers);
-	var clickControl = new FacilMap.Control.CreateMarker(layerMarkers);
-	map.addControl(clickControl);
-	clickControl.activate();
-
-	var permalinkControl = new OpenLayers.Control.Permalink(null, "http://www.openstreetmap.org/");
-	map.addControl(permalinkControl);
-	permalinkControl.activate();
+	map.addControl(new FacilMap.Control.ToolsMenu.Default());
 
 	var extent;
 	if(segments.length > 0)
@@ -329,16 +310,6 @@
 		map.zoomToExtent(extent);
 	else
 		map.zoomToMaxExtent();
-
-	var hashHandler = new FacilMap.Control.URLHashHandler();
-	hashHandler.updateMapView = function() {
-		var ret = FacilMap.Control.URLHashHandler.prototype.updateMapView.apply(this, arguments);
-		for(var i=0; i<segments.length; i++)
-			document.getElementById("select-segment-"+i).checked = segments[i].getVisibility();
-		return ret;
-	};
-	map.addControl(hashHandler);
-	hashHandler.activate();
 
 <%
 			}

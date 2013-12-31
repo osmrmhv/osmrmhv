@@ -56,10 +56,7 @@
 	GUI gui = new GUI(request, response);
 	gui.setTitle(String.format(gui._("Changeset %s"), changesetID.toString()));
 	gui.setJavaScripts(new String[]{
-		"http://www.openlayers.org/api/2.11/OpenLayers.js",
-		"http://maps.google.com/maps?file=api&v=2&key=ABQIAAAApZR0PIISH23foUX8nxj4LxQe8fls808ouw55mfsb9VLPMfxZSBRAxMJl1CWns7WN__O20IuUSiDKng",
-		"http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=osmhv",
-		"http://api.facilmap.org/facilmap.js",
+		"http://api.facilmap.org/facilmap_ol.js",
 		"http://api.facilmap.org/osblayer/osblayer.js"
 	});
 
@@ -268,12 +265,6 @@
 	map.addLayer(osbLayer);
 	osbLayer.setZIndex(500);
 
-	var layerMarkers = new FacilMap.Layer.Markers.LonLat("Markers", { shortName: "m" });
-	map.addLayer(layerMarkers);
-	var clickControl = new FacilMap.Control.CreateMarker(layerMarkers);
-	map.addControl(clickControl);
-	clickControl.activate();
-
 	var projection = new OpenLayers.Projection("EPSG:4326");
 	var layerCreated = new OpenLayers.Layer.PointTrack("(Created)", {
 		styleMap: styleMapCreated,
@@ -344,9 +335,7 @@
 	else
 		map.zoomToMaxExtent();
 
-	var hashHandler = new FacilMap.Control.URLHashHandler();
-	map.addControl(hashHandler);
-	hashHandler.activate();
+	map.addControl(new FacilMap.Control.ToolsMenu.Default());
 // ]]>
 </script>
 <%
