@@ -86,14 +86,14 @@
 	if(cacheEntry != null)
 	{
 %>
-<p><%=String.format(htmlspecialchars(gui._("This analysation was created on %s.")), gui.formatDate(cacheEntry == null ? null : cacheEntry.date))%></p>
+<p><%=String.format(htmlspecialchars(gui._("This analysis was created on %s.")), gui.formatDate(cacheEntry == null ? null : cacheEntry.date))%></p>
 <%
 	}
 
 	if(queuePosition > 0)
 	{
 %>
-<p class="scheduled"><strong><%=htmlspecialchars(String.format(gui._("An analysation of this changeset is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."), queuePosition))%></strong></p>
+<p class="scheduled"><strong><%=htmlspecialchars(String.format(gui._("An analysis of this changeset is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."), queuePosition))%></strong></p>
 <%
 	}
 

@@ -96,8 +96,8 @@ msgstr "The data was last refreshed on %s. The timestamp of the relation is %s."
 
 #: ../webapp/relation.jsp:130
 #, php-format
-msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
-msgstr "An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgid "An analysis of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgstr "An analysis of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
 
 #: ../webapp/relation.jsp:136
 #, php-format

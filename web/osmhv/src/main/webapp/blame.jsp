@@ -149,7 +149,7 @@
 	if(queuePosition > 0)
 	{
 %>
-<p class="scheduled"><strong><%=htmlspecialchars(String.format(gui._("An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."), queuePosition))%></strong></p>
+<p class="scheduled"><strong><%=htmlspecialchars(String.format(gui._("An analysis of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."), queuePosition))%></strong></p>
 <%
 	}
 	else

@@ -60,7 +60,7 @@ public class RouteAnalyser implements Serializable
 			}
 			catch(Exception e)
 			{
-				sm_logger.log(Level.WARNING, "Could not save analysation of relation "+a_id+".", e);
+				sm_logger.log(Level.WARNING, "Could not save analysis of relation "+a_id+".", e);
 			}
 		}
 	};

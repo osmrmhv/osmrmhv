@@ -42,7 +42,7 @@ msgstr ""
 #: ../webapp/blame.jsp:164
 #, php-format
 msgid ""
-"An analysation of the current version of the relation is scheduled. The "
+"An analysis of the current version of the relation is scheduled. The "
 "position in the queue is %d. Reload this page after a while to see the "
 "updated version."
 msgstr ""
@@ -149,13 +149,13 @@ msgstr ""
 
 #: ../webapp/changeset.jsp:105
 #, php-format
-msgid "This analysation was created on %s."
+msgid "This analysis was created on %s."
 msgstr ""
 
 #: ../webapp/changeset.jsp:112
 #, php-format
 msgid ""
-"An analysation of this changeset is scheduled. The position in the queue is "
+"An analysis of this changeset is scheduled. The position in the queue is "
 "%d. Reload this page after a while to see the updated version."
 msgstr ""
 

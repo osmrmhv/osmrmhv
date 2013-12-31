@@ -96,7 +96,7 @@ msgstr "Die Daten wurden zuletzt am %s vom OSM-Server heruntergeladen. Das Ände
 
 #: ../webapp/relation.jsp:130
 #, php-format
-msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgid "An analysis of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
 msgstr "Die Analyse der aktuellen Version der Relation wurde in Auftrag gegeben. Derzeit befindet sich der Auftrag an %d. Stelle in der Warteschlange. Laden Sie die Seite nach einer Weile neu, um die neue Version zu sehen."
 
 #: ../webapp/relation.jsp:136

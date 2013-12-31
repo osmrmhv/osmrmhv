@@ -42,7 +42,7 @@ msgstr "Die Daten wurden zuletzt am %s vom OSM-Server heruntergeladen. Das Ände
 
 #: ../webapp/blame.jsp:164
 #, php-format
-msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgid "An analysis of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
 msgstr "Die Analyse der aktuellen Version der Relation wurde in Auftrag gegeben. Derzeit befindet sich der Auftrag an %d. Stelle in der Warteschlange. Laden Sie die Seite nach einer Weile neu, um die neue Version zu sehen."
 
 #: ../webapp/blame.jsp:170
@@ -148,12 +148,12 @@ msgstr "Changeset %s"
 
 #: ../webapp/changeset.jsp:105
 #, php-format
-msgid "This analysation was created on %s."
+msgid "This analysis was created on %s."
 msgstr "Diese Analyse wurde am %s erstellt."
 
 #: ../webapp/changeset.jsp:112
 #, php-format
-msgid "An analysation of this changeset is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgid "An analysis of this changeset is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
 msgstr "Die Analyse des Changesets wurde in Auftrag gegeben und befindet sich an %d. Stelle in der Warteschleife. Laden Sie die Seite nach einer Weile neu, um die neue Version zu sehen."
 
 #: ../webapp/changeset.jsp:120

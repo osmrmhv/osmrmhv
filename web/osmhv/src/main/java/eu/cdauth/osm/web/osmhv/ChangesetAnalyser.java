@@ -60,7 +60,7 @@ public class ChangesetAnalyser implements Serializable
 			}
 			catch(Exception e)
 			{
-				sm_logger.log(Level.WARNING, "Could not save analysation of changeset "+a_id+".", e);
+				sm_logger.log(Level.WARNING, "Could not save analysis of changeset "+a_id+".", e);
 			}
 		}
 	};

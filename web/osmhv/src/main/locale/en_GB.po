@@ -42,8 +42,8 @@ msgstr "The data was last refreshed on %s. The timestamp of the relation is %s."
 
 #: ../webapp/blame.jsp:164
 #, php-format
-msgid "An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
-msgstr "An analysation of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgid "An analysis of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgstr "An analysis of the current version of the relation is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
 
 #: ../webapp/blame.jsp:170
 #, php-format
@@ -148,13 +148,13 @@ msgstr "Changeset %s"
 
 #: ../webapp/changeset.jsp:105
 #, php-format
-msgid "This analysation was created on %s."
-msgstr "This analysation was created on %s."
+msgid "This analysis was created on %s."
+msgstr "This analysis was created on %s."
 
 #: ../webapp/changeset.jsp:112
 #, php-format
-msgid "An analysation of this changeset is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
-msgstr "An analysation of this changeset is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgid "An analysis of this changeset is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
+msgstr "An analysis of this changeset is scheduled. The position in the queue is %d. Reload this page after a while to see the updated version."
 
 #: ../webapp/changeset.jsp:120
 msgid "Everything green on this page will show the status after the changeset was committed, red will be the status before, and things displayed in blue haven’t changed."
