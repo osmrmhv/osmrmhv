@@ -54,7 +54,7 @@ import java.util.zip.GZIPInputStream;
 public class API06API implements API
 {
 	protected static final String API_SERVER = "api.openstreetmap.org";
-	protected static final int API_PORT = 80;
+	protected static final int API_PORT = 443;
 	protected static final String API_PREFIX = "/api/0.6";
 
 	private static Logger sm_logger = Logger.getLogger(API06API.class.getName());
@@ -109,7 +109,7 @@ public class API06API implements API
 	 */
 	protected static String getAPIPrefix()
 	{
-		return "http://"+API_SERVER+":"+API_PORT+API_PREFIX;
+		return "https://"+API_SERVER+":"+API_PORT+API_PREFIX;
 	}
 
 	/**
