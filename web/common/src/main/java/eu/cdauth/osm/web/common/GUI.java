@@ -516,7 +516,7 @@ abstract public class GUI
 		out.println("");
 		out.println("\tCopyright © 2010 Candid Dauth");
 		out.println("");
-		out.println("\tObtain the source code from http://gitorious.org/osmrmhv.");
+		out.println("\tObtain the source code from https://github.com/osmrmhv/osmrmhv.");
 		out.println("-->");
 		out.println("\t<head>");
 		out.println("\t\t<title>"+htmlspecialchars(getTitle())+"</title>");
@@ -584,7 +584,7 @@ abstract public class GUI
 		PrintWriter out = m_resp.getWriter();
 		out.println("\t\t\t<hr />");
 		out.println("\t\t\t<p>All geographic data <a href=\"http://www.openstreetmap.org/copyright\">© OpenStreetMap contributors</a>.</p>");
-		out.println("\t\t\t<p>This program is free software: you can redistribute it and/or modify it under the terms of the <a href=\"http://www.gnu.org/licenses/agpl.html\">GNU Affero General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. Get the source code via <a href=\"http://gitorious.org/osmrmhv\">Git</a>.</p>");
+		out.println("\t\t\t<p>This program is free software: you can redistribute it and/or modify it under the terms of the <a href=\"http://www.gnu.org/licenses/agpl.html\">GNU Affero General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. Get the source code via <a href=\"https://github.com/osmrmhv/osmrmhv\">Git</a>.</p>");
 		out.println("\t</body>");
 		out.println("</html>");
 	}
