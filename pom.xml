@@ -74,13 +74,6 @@
 		<module>web</module>
 	</modules>
 
-	<pluginRepositories>
-		<pluginRepository>
-			<id>gettext-commons-site</id>
-			<url>http://gettext-commons.googlecode.com/svn/maven-repository</url>
-		</pluginRepository>
-	</pluginRepositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -118,9 +111,9 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
-					<groupId>org.xnap.commons</groupId>
-					<artifactId>maven-gettext-plugin</artifactId>
-					<version>1.2.1</version>
+					<groupId>com.googlecode.gettext-commons</groupId>
+					<artifactId>gettext-maven-plugin</artifactId>
+					<version>1.2.4</version>
 					<executions>
 						<execution>
 							<phase>compile</phase>

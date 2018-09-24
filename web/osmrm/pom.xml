@@ -47,13 +47,14 @@
 	<properties>
 		<gettextBundle>eu.cdauth.osm.web.osmrm.locale.osmrm</gettextBundle>
 		<jspPackage>eu.cdauth.osm.web.osmrm.jsp</jspPackage>
+		<osmrmhv.basedir>${project.basedir}/../..</osmrmhv.basedir>
 	</properties>
 
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.xnap.commons</groupId>
-				<artifactId>maven-gettext-plugin</artifactId>
+				<groupId>com.googlecode.gettext-commons</groupId>
+				<artifactId>gettext-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
