@@ -258,6 +258,7 @@
 %>
 	var map = new FacilMap.Map("map");
 	map.addAllAvailableLayers();
+	map.setBaseLayer(map.getLayersByName("Mapnik")[0])
 
 	map.addLayer(new OpenLayers.Layer.OpenStreetBugs("OpenStreetBugs", { visibility: false, shortName: "osb" }));
 

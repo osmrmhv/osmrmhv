@@ -245,6 +245,7 @@
 // <![CDATA[
 	var map = new FacilMap.Map("map");
 	map.addAllAvailableLayers();
+	map.setBaseLayer(map.getLayersByName("Mapnik")[0])
 
 	window.onresize = function(){ document.getElementById("map").style.height = Math.round(window.innerHeight*.9)+"px"; map.updateSize(); }
 	window.onresize();
