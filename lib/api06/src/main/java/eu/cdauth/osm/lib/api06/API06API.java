@@ -120,6 +120,11 @@ public class API06API implements API
 	 */
 	protected Element fetch(String a_url) throws APIError
 	{
+		if(Thread.interrupted())
+		{
+			throw new APIError("Thread interrupted. The operation probably took too long.");
+		}
+
 		String url = getAPIPrefix()+a_url;
 		try
 		{

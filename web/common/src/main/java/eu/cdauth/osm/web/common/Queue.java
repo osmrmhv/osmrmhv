@@ -1,12 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package eu.cdauth.osm.web.common;
 
 import eu.cdauth.osm.lib.ID;
-import eu.cdauth.osm.lib.ItemCache;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Map;
@@ -38,9 +32,9 @@ public class Queue
 	/**
 	 * A callback function for the queue.
 	 */
-	public static interface Worker
+	public interface Worker
 	{
-		public void work(ID a_id);
+		void work(ID a_id);
 	}
 	
 	protected static class ScheduledTask
@@ -146,7 +140,7 @@ public class Queue
 					workerThread.start();
 					workerThread.join(TIMEOUT);
 					if(workerThread.isAlive())
-						workerThread.stop(new Error("Timeout"));
+						workerThread.interrupt();
 
 					m_queue.taskFinished(task.worker, task.id);
 					task.notify._notify();
