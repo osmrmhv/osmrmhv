@@ -56,15 +56,15 @@
 	GUI gui = new GUI(request, response);
 	gui.setTitle(String.format(gui._("Changeset %s"), changesetID.toString()));
 	gui.setJavaScripts(new String[]{
-		"http://api.facilmap.org/facilmap_ol.js",
-		"http://api.facilmap.org/osblayer/osblayer.js"
+		"https://api.facilmap.org/facilmap_ol.js",
+		"https://api.facilmap.org/osblayer/osblayer.js"
 	});
 
 	gui.head();
 %>
 <ul>
 	<li><a href="./"><%=htmlspecialchars(gui._("Back to home page"))%></a></li>
-	<li><a href="http://www.openstreetmap.org/browse/changeset/<%=htmlspecialchars(changesetID.toString())%>"><%=htmlspecialchars(gui._("Browse on OpenStreetMap"))%></a></li>
+	<li><a href="https://www.openstreetmap.org/browse/changeset/<%=htmlspecialchars(changesetID.toString())%>"><%=htmlspecialchars(gui._("Browse on OpenStreetMap"))%></a></li>
 </ul>
 <noscript><p><strong><%=htmlspecialchars(gui._("Note that many features of this page will not work without JavaScript."))%></strong></p></noscript>
 <%
@@ -152,7 +152,7 @@
 %>
 
 	<dt><%=htmlspecialchars(gui._("User"))%></dt>
-	<dd><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(urlencode(changes.changeset.getUser().toString()))%>"><%=htmlspecialchars(changes.changeset.getUser().toString())%></a></dd>
+	<dd><a href="https://www.openstreetmap.org/user/<%=htmlspecialchars(urlencode(changes.changeset.getUser().toString()))%>"><%=htmlspecialchars(changes.changeset.getUser().toString())%></a></dd>
 </dl>
 <h2><%=htmlspecialchars(gui._("Changed object tags"))%></h2>
 <%
@@ -189,7 +189,7 @@
 					else
 						continue;
 %>
-	<li><%=htmlspecialchars(type+" "+it.id.toString())%> (<a href="http://www.openstreetmap.org/browse/<%=htmlspecialchars(browse+"/"+it.id.toString())%>"><%=htmlspecialchars(gui._("browse"))%></a>)
+	<li><%=htmlspecialchars(type+" "+it.id.toString())%> (<a href="https://www.openstreetmap.org/browse/<%=htmlspecialchars(browse+"/"+it.id.toString())%>"><%=htmlspecialchars(gui._("browse"))%></a>)
 		<table>
 			<tbody>
 <%

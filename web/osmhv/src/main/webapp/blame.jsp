@@ -106,15 +106,15 @@
 	if(relationID != null)
 		gui.setTitle(String.format(gui._("Relation %s"), relationID.toString()));
 	gui.setJavaScripts(new String[]{
-		"http://api.facilmap.org/facilmap_ol.js",
-		"http://api.facilmap.org/osblayer/osblayer.js"
+		"https://api.facilmap.org/facilmap_ol.js",
+		"https://api.facilmap.org/osblayer/osblayer.js"
 	});
 
 	gui.head();
 %>
 <ul>
 	<li><a href="./"><%=htmlspecialchars(gui._("Back to home page"))%></a></li>
-	<li><a href="http://www.openstreetmap.org/browse/relation/<%=htmlspecialchars(urlencode(relationID.toString()))%>"><%=htmlspecialchars(gui._("Browse on OpenStreetMap"))%></a></li>
+	<li><a href="https://www.openstreetmap.org/browse/relation/<%=htmlspecialchars(urlencode(relationID.toString()))%>"><%=htmlspecialchars(gui._("Browse on OpenStreetMap"))%></a></li>
 </ul>
 <noscript><p><strong><%=htmlspecialchars(gui._("Note that many features of this page will not work without JavaScript."))%></strong></p></noscript>
 <%
@@ -224,14 +224,14 @@
 			for(UserChangeNumber user : userChangeNumber)
 			{
 %>
-		<li><strong class="user-colour" style="color:<%=htmlspecialchars(userColours.get(user.user))%>;"><a href="http://www.openstreetmap.org/user/<%=htmlspecialchars(urlencode(user.user.toString()))%>"><%=htmlspecialchars(user.user.toString())%></a></strong><ul>
+		<li><strong class="user-colour" style="color:<%=htmlspecialchars(userColours.get(user.user))%>;"><a href="https://www.openstreetmap.org/user/<%=htmlspecialchars(urlencode(user.user.toString()))%>"><%=htmlspecialchars(user.user.toString())%></a></strong><ul>
 <%
 				for(Changeset changeset : userChangesets.get(user.user))
 				{
 					String id = changeset.getID().toString();
 					String message = changeset.getTag("comment");
 %>
-			<li><input type="checkbox" id="checkbox-<%=id%>" onchange="layers[<%=id%>].setVisibility(this.checked);" /><label for="checkbox-<%=id%>"><%=id%>: <%=!message.equals("") ? String.format(gui._("“%s”"), htmlspecialchars(message)) : "<span class=\"nocomment\">"+htmlspecialchars(gui._("No comment"))+"</span>"%></label> (<a href="javascript:map.zoomToExtent(layers['<%=id%>'].getDataExtent())"><%=htmlspecialchars(gui._("Zoom"))%></a>) (<a href="http://www.openstreetmap.org/browse/changeset/<%=htmlspecialchars(urlencode(id))%>"><%=htmlspecialchars(gui._("browse"))%></a>) (<a href="changeset.jsp?id=<%=htmlspecialchars(urlencode(id))%>"><%=htmlspecialchars(gui._("view"))%></a>)</li>
+			<li><input type="checkbox" id="checkbox-<%=id%>" onchange="layers[<%=id%>].setVisibility(this.checked);" /><label for="checkbox-<%=id%>"><%=id%>: <%=!message.equals("") ? String.format(gui._("“%s”"), htmlspecialchars(message)) : "<span class=\"nocomment\">"+htmlspecialchars(gui._("No comment"))+"</span>"%></label> (<a href="javascript:map.zoomToExtent(layers['<%=id%>'].getDataExtent())"><%=htmlspecialchars(gui._("Zoom"))%></a>) (<a href="https://www.openstreetmap.org/browse/changeset/<%=htmlspecialchars(urlencode(id))%>"><%=htmlspecialchars(gui._("browse"))%></a>) (<a href="changeset.jsp?id=<%=htmlspecialchars(urlencode(id))%>"><%=htmlspecialchars(gui._("view"))%></a>)</li>
 <%
 				}
 %>

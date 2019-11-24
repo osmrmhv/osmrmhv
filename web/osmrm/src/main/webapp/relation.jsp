@@ -74,17 +74,17 @@
 		gui.setBodyClass("norender");
 	else
 		gui.setJavaScripts(new String[] {
-			"http://api.facilmap.org/facilmap_ol.js",
-			"http://api.facilmap.org/osblayer/osblayer.js"
+			"https://api.facilmap.org/facilmap_ol.js",
+			"https://api.facilmap.org/osblayer/osblayer.js"
 		});
 
 	gui.head();
 %>
 <ul>
 	<li><a href="./"><%=htmlspecialchars(gui._("Back to home page"))%></a></li>
-	<li><a href="http://betaplace.emaitie.de/webapps.relation-analyzer/analyze.jsp?relationId=<%=htmlspecialchars(urlencode(relationId.toString()))%>"><%=htmlspecialchars(gui._("Open this in OSM Relation Analyzer"))%></a></li>
-	<li><a href="http://www.openstreetmap.org/browse/relation/<%=htmlspecialchars(urlencode(relationId.toString()))%>"><%=htmlspecialchars(gui._("Browse on OpenStreetMap"))%></a></li>
-	<li><a href="http://osm.cdauth.eu/history-viewer/blame.jsp?id=<%=htmlspecialchars(urlencode(relationId.toString()))%>"><%=htmlspecialchars(gui._("Blame with History Viewer"))%></a></li>
+	<li><a href="https://betaplace.emaitie.de/webapps.relation-analyzer/analyze.jsp?relationId=<%=htmlspecialchars(urlencode(relationId.toString()))%>"><%=htmlspecialchars(gui._("Open this in OSM Relation Analyzer"))%></a></li>
+	<li><a href="https://www.openstreetmap.org/browse/relation/<%=htmlspecialchars(urlencode(relationId.toString()))%>"><%=htmlspecialchars(gui._("Browse on OpenStreetMap"))%></a></li>
+	<li><a href="https://osmhv.openstreetmap.de/blame.jsp?id=<%=htmlspecialchars(urlencode(relationId.toString()))%>"><%=htmlspecialchars(gui._("Blame with History Viewer"))%></a></li>
 </ul>
 <noscript><p><strong><%=htmlspecialchars(gui._("Note that many features of this page will not work without JavaScript."))%></strong></p></noscript>
 <%
@@ -159,7 +159,7 @@
 <h2><%=htmlspecialchars(gui._("Details"))%></h2>
 <dl>
 	<dt><%=htmlspecialchars(gui._("Last changed"))%></dt>
-	<dd><%=String.format(gui._("%s by %s"), route.timestamp.toString(), "<a href=\"http://www.openstreetmap.org/user/"+urlencode(user.getName())+"\">"+htmlspecialchars(user.getName())+"</a>")%></dd>
+	<dd><%=String.format(gui._("%s by %s"), route.timestamp.toString(), "<a href=\"https://www.openstreetmap.org/user/"+urlencode(user.getName())+"\">"+htmlspecialchars(user.getName())+"</a>")%></dd>
 
 	<dt><%=htmlspecialchars(gui._("Total length"))%></dt>
 	<dd><%=gui.formatNumber(route.totalLength, 2)%>&thinsp;km</dd>

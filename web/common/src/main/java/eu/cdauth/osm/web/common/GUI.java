@@ -324,9 +324,9 @@ abstract public class GUI
 		if(keyLower.equals("url") || keyLower.startsWith("url:"))
 			return "<a href=\"%1$s\">%1$s</a>";
 		else if(keyLower.equals("wiki:symbol") || keyLower.startsWith("wiki:symbol:"))
-			return "<a href=\"http://wiki.openstreetmap.org/wiki/Image:%1$s\">%1$s</a>";
+			return "<a href=\"https://wiki.openstreetmap.org/wiki/Image:%1$s\">%1$s</a>";
 		else if(keyLower.equals("wiki") || keyLower.startsWith("wiki:"))
-			return "<a href=\"http://wiki.openstreetmap.org/wiki/%1$s\">%1$s</a>";
+			return "<a href=\"https://wiki.openstreetmap.org/wiki/%1$s\">%1$s</a>";
 		else
 			return "%1$s";
 	}
@@ -583,8 +583,8 @@ abstract public class GUI
 	{
 		PrintWriter out = m_resp.getWriter();
 		out.println("\t\t\t<hr />");
-		out.println("\t\t\t<p>All geographic data <a href=\"http://www.openstreetmap.org/copyright\">© OpenStreetMap contributors</a>.</p>");
-		out.println("\t\t\t<p>This program is free software: you can redistribute it and/or modify it under the terms of the <a href=\"http://www.gnu.org/licenses/agpl.html\">GNU Affero General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. Get the source code via <a href=\"https://github.com/osmrmhv/osmrmhv\">Git</a>.</p>");
+		out.println("\t\t\t<p>All geographic data <a href=\"https://www.openstreetmap.org/copyright\">© OpenStreetMap contributors</a>.</p>");
+		out.println("\t\t\t<p>This program is free software: you can redistribute it and/or modify it under the terms of the <a href=\"https://www.gnu.org/licenses/agpl.html\">GNU Affero General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. Get the source code via <a href=\"https://github.com/osmrmhv/osmrmhv\">Git</a>.</p>");
 		out.println("\t</body>");
 		out.println("</html>");
 	}
